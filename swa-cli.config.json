@@ -1,0 +1,14 @@
+{
+    "configurations": {
+        "lama-bike-fest": {
+            "appLocation": ".",
+            "outputLocation": ".next",
+            "apiLocation": "api",
+            "appBuildCommand": "npm run build",
+            "apiLanguage": "node",
+            "apiVersion": "18",
+            "appDevserverUrl": "http://localhost:3000",
+            "appDevserverCommand": "npm run dev"
+        }
+    }
+}
