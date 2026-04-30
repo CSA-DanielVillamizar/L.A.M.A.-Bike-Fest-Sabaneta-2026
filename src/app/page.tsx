@@ -10,10 +10,12 @@ export default function Home() {
     <>
       <HeroSection />
       <InfoSections />
-      <OfficialRegistrationForm />
+      <AgendaSection />
       <SponsorsSection />
       <RegistrationForms />
-      <AgendaSection />
+      <div id="registro-oficial">
+        <OfficialRegistrationForm />
+      </div>
     </>
   );
 }

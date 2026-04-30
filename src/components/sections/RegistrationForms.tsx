@@ -29,6 +29,11 @@ export function RegistrationForms() {
     const [clubMessage, setClubMessage] = useState("");
     const [sponsorMessage, setSponsorMessage] = useState("");
 
+    const handleSponsorDossierRequest = () => {
+        const message = "Hola Daniel, estoy interesado en participar como patrocinador en el XIII Aniversario L.A.M.A. Medellín. Me gustaría recibir el Dossier Comercial para conocer los planes de marca.";
+        window.open(`https://wa.me/573106328171?text=${encodeURIComponent(message)}`, "_blank", "noopener,noreferrer");
+    };
+
     const handleClubSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         setClubLoading(true);
@@ -164,6 +169,19 @@ export function RegistrationForms() {
                             </label>
 
                             <label className="flex flex-col gap-2 text-sm text-zinc-300">
+                                Teléfono de Contacto (WhatsApp)
+                                <input
+                                    name="telefono"
+                                    type="tel"
+                                    inputMode="numeric"
+                                    pattern="[0-9]{7,15}"
+                                    required
+                                    disabled={clubLoading}
+                                    className="rounded-lg border border-zinc-700 bg-zinc-900/70 px-3 py-2 text-zinc-100 outline-none ring-orange-400/40 transition focus:ring disabled:opacity-60"
+                                />
+                            </label>
+
+                            <label className="flex flex-col gap-2 text-sm text-zinc-300">
                                 Ciudad/Municipio de origen
                                 <input name="ciudad" required disabled={clubLoading} className="rounded-lg border border-zinc-700 bg-zinc-900/70 px-3 py-2 text-zinc-100 outline-none ring-orange-400/40 transition focus:ring disabled:opacity-60" />
                             </label>
@@ -247,11 +265,11 @@ export function RegistrationForms() {
 
                             <div className="sm:col-span-2">
                                 <button
-                                    type="submit"
-                                    disabled={sponsorLoading}
+                                    type="button"
+                                    onClick={handleSponsorDossierRequest}
                                     className="inline-flex items-center justify-center rounded-full border border-orange-400 px-6 py-3 text-sm font-bold uppercase tracking-[0.12em] text-orange-300 transition hover:bg-orange-500/10 disabled:opacity-60"
                                 >
-                                    {sponsorLoading ? "Enviando..." : "Solicitar Dossier Comercial"}
+                                    Solicitar Dossier Comercial
                                 </button>
                             </div>
                         </form>

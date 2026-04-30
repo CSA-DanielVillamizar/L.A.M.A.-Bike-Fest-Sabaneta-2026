@@ -48,10 +48,10 @@ export function HeroSection() {
 
                 <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
                     <a
-                        href="#registro"
+                        href="#registro-oficial"
                         className="inline-flex items-center justify-center rounded-full bg-orange-500 px-6 py-3 text-sm font-bold uppercase tracking-wider text-zinc-950 transition hover:bg-orange-400"
                     >
-                        ¡Regístrate como Club Invitado!
+                        Inscribirme Ahora
                     </a>
                     <a
                         href="#contacto"

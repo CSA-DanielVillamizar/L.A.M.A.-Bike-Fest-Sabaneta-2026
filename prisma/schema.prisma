@@ -13,6 +13,7 @@ model ClubRegistration {
   id                 String   @id @default(uuid())
   clubName           String
   presidentName      String
+  contactPhone       String
   motorcycleType     String
   estimatedAttendees Int
   originCity         String

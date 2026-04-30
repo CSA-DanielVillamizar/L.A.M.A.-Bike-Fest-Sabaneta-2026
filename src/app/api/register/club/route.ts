@@ -46,9 +46,9 @@ export async function POST(request: NextRequest) {
         }
 
         const body = await request.json();
-        const { nombreClub, delegado, ciudad, asistentes, tipoMoto } = body;
+        const { nombreClub, delegado, telefono, ciudad, asistentes, tipoMoto } = body;
 
-        if (!nombreClub || !delegado || !ciudad || !asistentes || !tipoMoto) {
+        if (!nombreClub || !delegado || !telefono || !ciudad || !asistentes || !tipoMoto) {
             return NextResponse.json({ error: "Faltan campos requeridos" }, { status: 400 });
         }
 
@@ -62,12 +62,13 @@ export async function POST(request: NextRequest) {
             .input("id", sql.NVarChar(36), id)
             .input("clubName", sql.NVarChar(255), String(nombreClub).trim())
             .input("presidentName", sql.NVarChar(255), String(delegado).trim())
+            .input("contactPhone", sql.NVarChar(50), String(telefono).trim())
             .input("originCity", sql.NVarChar(255), String(ciudad).trim())
             .input("estimatedAttendees", sql.Int, parseInt(String(asistentes), 10))
             .input("motorcycleType", sql.NVarChar(255), String(tipoMoto).trim())
             .query(
-                `INSERT INTO ClubRegistration (id, clubName, presidentName, originCity, estimatedAttendees, motorcycleType, createdAt)
-                 VALUES (@id, @clubName, @presidentName, @originCity, @estimatedAttendees, @motorcycleType, GETUTCDATE())`,
+                `INSERT INTO ClubRegistration (id, clubName, presidentName, contactPhone, originCity, estimatedAttendees, motorcycleType, createdAt)
+                 VALUES (@id, @clubName, @presidentName, @contactPhone, @originCity, @estimatedAttendees, @motorcycleType, GETUTCDATE())`,
             );
 
         await pool.close();
