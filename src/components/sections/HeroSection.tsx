@@ -27,8 +27,16 @@ export function HeroSection() {
                     Festival Internacional De Motociclismo
                 </p>
 
-                <h1 className="font-display max-w-4xl text-3xl font-extrabold uppercase leading-[1.1] tracking-tight text-zinc-100 sm:text-5xl lg:text-6xl">
-                    L.A.M.A. Bike Fest Sabaneta 2026
+                <h1 className="font-display max-w-5xl text-zinc-100">
+                    <span className="block text-sm font-bold uppercase tracking-[0.24em] text-amber-300 sm:text-base lg:text-lg">
+                        XIII Aniversario L.A.M.A. Medellín
+                    </span>
+                    <span className="mt-2 block text-3xl font-extrabold uppercase leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl">
+                        &amp; L.A.M.A. Bike Fest
+                    </span>
+                    <span className="mt-1 block text-2xl font-bold uppercase tracking-[0.12em] text-zinc-100 sm:text-4xl lg:text-5xl">
+                        Sabaneta 2026
+                    </span>
                 </h1>
 
                 <p className="mt-4 text-sm uppercase tracking-[0.22em] text-orange-300 sm:text-base">

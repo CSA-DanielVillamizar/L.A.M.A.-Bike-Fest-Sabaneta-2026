@@ -17,6 +17,7 @@ model ClubRegistration {
   motorcycleType     String
   estimatedAttendees Int
   originCity         String
+  isPaid             Boolean  @default(false)
   createdAt          DateTime @default(now())
 }
 
@@ -50,6 +51,7 @@ model OfficialRegistration {
   companionsCount     Int      @default(0)
   companions          Companion[]
   totalToPay          Float
+  isPaid              Boolean  @default(false)
   paymentStatus       String   @default("PENDING")
   createdAt           DateTime @default(now())
 }
