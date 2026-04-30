@@ -233,6 +233,10 @@ export function OfficialRegistrationForm() {
                 throw new Error(result.error || "No fue posible registrar la inscripcion.");
             }
 
+            if (!result.id) {
+                throw new Error("El servidor no devolvio el ID del registro.");
+            }
+
             setSuccessRegistration({
                 id: result.id,
                 fullName: form.fullName,
