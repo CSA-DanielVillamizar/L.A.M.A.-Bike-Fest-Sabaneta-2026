@@ -45,7 +45,7 @@ const agendaDays: AgendaDay[] = [
                 time: "01:00 PM – 06:00 PM",
                 title: "L.A.M.A. Bike Fest Sabaneta 2026",
                 description:
-                    "Exhibición de motos de alta gama, zona comercial y stands de marcas patrocinadoras. Esto se celebrará en la Fonda La Molienda y contará con cantante en vivo, Almuerzo + Cerveza o Gaseosa.",
+                    "Exhibición de motos de alta gama, zona comercial y stands de marcas patrocinadoras. Esto se celebrará en la Fonda La Molienda y contará con cantante en vivo, Almuerzo (Parrilla Mixta) + Cerveza o Gaseosa.",
                 note:
                     "Valor para invitados no L.A.M.A. / clubes hermanos: $85.000 COP. Para miembros L.A.M.A. está incluido con la inscripción al XIII Aniversario.",
             },
