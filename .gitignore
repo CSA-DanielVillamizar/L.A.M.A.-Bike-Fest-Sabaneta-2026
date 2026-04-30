@@ -50,3 +50,4 @@ VISUAL_POLISH.md
 next-env.d.ts
 
 /src/generated/prisma
+.azure

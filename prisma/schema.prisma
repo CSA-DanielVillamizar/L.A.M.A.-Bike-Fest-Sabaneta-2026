@@ -2,8 +2,7 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
@@ -28,4 +27,27 @@ model SponsorRegistration {
   contactEmail  String
   contactPhone  String
   createdAt     DateTime @default(now())
+}
+
+model OfficialRegistration {
+  id                  String   @id @default(uuid())
+  participantCategory String
+  fullName            String
+  documentId          String
+  eps                 String
+  emergencyName       String
+  emergencyPhone      String
+  chapter             String
+  isDirective         Boolean  @default(false)
+  directiveScope      String?
+  directiveRole       String?
+  arrivalDate         String
+  medicalCondition    String?
+  wantsJersey         Boolean  @default(false)
+  jerseySize          String?
+  hasCompanions       Boolean  @default(false)
+  companionsCount     Int      @default(0)
+  totalToPay          Float
+  paymentStatus       String   @default("PENDING")
+  createdAt           DateTime @default(now())
 }

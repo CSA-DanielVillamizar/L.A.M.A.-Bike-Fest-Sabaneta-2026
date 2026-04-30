@@ -17,6 +17,12 @@ export function HeroSection() {
             <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_70%_12%,rgba(249,115,22,0.28),transparent_42%),radial-gradient(circle_at_18%_90%,rgba(220,38,38,0.22),transparent_48%)]" />
 
             <div className="mx-auto flex w-full max-w-6xl flex-col px-4 pb-16 pt-14 sm:px-6 sm:pb-20 sm:pt-20 lg:pb-24">
+                {/* XIII Aniversario badge */}
+                <p className="mb-3 inline-flex w-fit items-center gap-2 rounded-full border border-amber-400/50 bg-amber-400/10 px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.26em] text-amber-300">
+                    <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
+                    XIII Aniversario L.A.M.A. Medellín
+                </p>
+
                 <p className="mb-4 inline-flex w-fit rounded-full border border-orange-500/40 bg-orange-500/15 px-3 py-1 text-[11px] uppercase tracking-[0.24em] text-orange-200">
                     Festival Internacional De Motociclismo
                 </p>
@@ -29,8 +35,13 @@ export function HeroSection() {
                     Exhibición · Stands · Música · Hermandad
                 </p>
 
-                <p className="mt-3 max-w-3xl text-base text-zinc-200 sm:text-lg">
-                    Sabaneta, Antioquia - 27 de junio de 2026
+                <p className="mt-3 max-w-3xl text-base font-semibold text-zinc-100 sm:text-lg">
+                    Sabaneta, Antioquia · 26, 27, 28 y 29 de Junio de 2026
+                </p>
+
+                <p className="mt-1.5 text-sm text-zinc-400 sm:text-base">
+                    Recibiendo delegaciones de{" "}
+                    <span className="font-semibold text-orange-300">26 países invitados</span>
                 </p>
 
                 <CountdownTimer />

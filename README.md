@@ -154,9 +154,11 @@ model SponsorRegistration {
 ## API Endpoints
 
 ### `POST /api/register/club`
+
 Registra un club de motociclismo como asistente al evento.
 
 **Body:**
+
 ```json
 {
   "nombreClub": "string",
@@ -168,9 +170,11 @@ Registra un club de motociclismo como asistente al evento.
 ```
 
 ### `POST /api/register/sponsor`
+
 Registra una empresa como patrocinadora del evento.
 
 **Body:**
+
 ```json
 {
   "empresa": "string",
@@ -186,6 +190,7 @@ Registra una empresa como patrocinadora del evento.
 ## Despliegue en Azure
 
 El proyecto está configurado para desplegarse en:
+
 - **Azure Static Web Apps** (SKU Free) — hosting del sitio
 - **Azure SQL Database** — persistencia de registros
 - **Resource Group:** `RG-ANIVERSARIOMED2026-PROD`
