@@ -40,6 +40,8 @@ const CHAPTERS = [
     "Otros",
 ] as const;
 
+const SORTED_CHAPTERS = [...CHAPTERS].sort((a, b) => a.localeCompare(b, "es"));
+
 const DIRECTIVE_SCOPES = ["Capítulo", "Región", "País", "Internacional"] as const;
 
 const DIRECTIVE_ROLES = [
@@ -66,6 +68,7 @@ type FormValues = {
     emergencyName: string;
     emergencyPhone: string;
     chapter: string;
+    otherChapter: string;
     isDirective: boolean;
     directiveScope: string;
     directiveRole: string;
@@ -93,6 +96,7 @@ const initialForm: FormValues = {
     emergencyName: "",
     emergencyPhone: "",
     chapter: "",
+    otherChapter: "",
     isDirective: false,
     directiveScope: "",
     directiveRole: "",
@@ -186,8 +190,16 @@ export function OfficialRegistrationForm() {
         setSuccessRegistration(null);
 
         try {
+            const normalizedChapter =
+                form.chapter === "Otros" ? form.otherChapter.trim() : form.chapter;
+
+            if (!normalizedChapter) {
+                throw new Error("Debes indicar tu capitulo en Pertenencia L.A.M.A.");
+            }
+
             const payload = {
                 ...form,
+                chapter: normalizedChapter,
                 directiveScope: form.isDirective ? form.directiveScope : null,
                 directiveRole: form.isDirective ? form.directiveRole : null,
                 jerseySize: form.wantsJersey ? form.jerseySize : null,
@@ -201,7 +213,21 @@ export function OfficialRegistrationForm() {
                 body: JSON.stringify(payload),
             });
 
-            const result = await response.json();
+            const contentType = response.headers.get("content-type") || "";
+            let result: { error?: string; id?: string; totalToPay?: number } = {};
+
+            if (contentType.includes("application/json")) {
+                result = await response.json();
+            } else {
+                const rawText = await response.text();
+                if (!response.ok) {
+                    throw new Error(
+                        rawText?.trim()
+                            ? `Error del servidor (${response.status}): ${rawText.slice(0, 180)}`
+                            : `Error del servidor (${response.status}).`,
+                    );
+                }
+            }
 
             if (!response.ok) {
                 throw new Error(result.error || "No fue posible registrar la inscripcion.");
@@ -210,7 +236,7 @@ export function OfficialRegistrationForm() {
             setSuccessRegistration({
                 id: result.id,
                 fullName: form.fullName,
-                chapter: form.chapter,
+                chapter: normalizedChapter,
                 totalToPay: result.totalToPay ?? totalToPay,
                 participantCategory: form.participantCategory,
             });
@@ -416,13 +442,26 @@ export function OfficialRegistrationForm() {
                                         className="rounded-lg border border-zinc-700 bg-zinc-900/70 px-3 py-2 text-zinc-100 outline-none ring-orange-400/40 transition focus:ring"
                                     >
                                         <option value="">Selecciona tu capitulo</option>
-                                        {CHAPTERS.map((chapter) => (
+                                        {SORTED_CHAPTERS.map((chapter) => (
                                             <option key={chapter} value={chapter}>
                                                 {chapter}
                                             </option>
                                         ))}
                                     </select>
                                 </label>
+
+                                {form.chapter === "Otros" && (
+                                    <label className="sm:col-span-2 flex flex-col gap-2 text-sm text-zinc-300">
+                                        Especifica tu capitulo
+                                        <input
+                                            required
+                                            value={form.otherChapter}
+                                            onChange={(event) => updateField("otherChapter", event.target.value)}
+                                            placeholder="Escribe el nombre de tu capitulo"
+                                            className="rounded-lg border border-zinc-700 bg-zinc-900/70 px-3 py-2 text-zinc-100 outline-none ring-orange-400/40 transition focus:ring"
+                                        />
+                                    </label>
+                                )}
 
                                 <label className="sm:col-span-2 flex items-center justify-between rounded-lg border border-zinc-700 bg-zinc-900/50 px-4 py-3 text-sm text-zinc-200">
                                     <span>Es Directivo?</span>
