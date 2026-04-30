@@ -37,13 +37,13 @@ const agendaDays: AgendaDay[] = [
         events: [
             {
                 time: "11:00 AM",
-                title: "Gran Caravana Internacional",
+                title: "L.A.M.A. BIKE FEST \"Gran Caravana Internacional\"",
                 description:
                     "El gran desfile motorizado que recorrerá las calles de Sabaneta con delegaciones de 26 países.",
             },
             {
                 time: "01:00 PM – 06:00 PM",
-                title: "L.A.M.A. Bike Fest Sabaneta 2026",
+                title: "Clausura L.A.M.A. Bike Fest Sabaneta 2026",
                 description:
                     "Exhibición de motos de alta gama, zona comercial y stands de marcas patrocinadoras. Esto se celebrará en la Fonda La Molienda y contará con cantante en vivo, Almuerzo (Parrilla Mixta) + Cerveza o Gaseosa.",
                 note:
