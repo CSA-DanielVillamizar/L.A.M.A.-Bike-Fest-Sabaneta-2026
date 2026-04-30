@@ -84,6 +84,8 @@ function parseSqlServerUrl(rawUrl: string | undefined): SqlServerConfig {
 }
 
 export async function POST(request: NextRequest) {
+    const debugMode = request.headers.get("x-debug") === "1";
+
     try {
         const body = (await request.json()) as OfficialRegistrationPayload;
 
@@ -240,6 +242,17 @@ export async function POST(request: NextRequest) {
         );
     } catch (error) {
         console.error("Error en registro oficial:", error);
+
+        if (debugMode) {
+            return NextResponse.json(
+                {
+                    error: "Debug oficial registration error.",
+                    detail: error instanceof Error ? error.message : String(error),
+                },
+                { status: 200 },
+            );
+        }
+
         return NextResponse.json(
             { error: "Error al procesar la inscripcion oficial." },
             { status: 500 },
