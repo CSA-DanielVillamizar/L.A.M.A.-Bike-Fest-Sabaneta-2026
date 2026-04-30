@@ -17,9 +17,34 @@ const bodyFont = Roboto_Condensed({
 });
 
 export const metadata: Metadata = {
-  title: "XII Aniversario L.A.M.A. Medellín y L.A.M.A. Bike Fest Sabaneta 2026",
+  metadataBase: new URL("https://ambitious-meadow-0bc0fb31e.7.azurestaticapps.net"),
+  title: "XIII Aniversario L.A.M.A. Medellín & L.A.M.A. Bike Fest 2026 🇨🇴",
   description:
-    "Landing page oficial del L.A.M.A. Bike Fest Sabaneta 2026: adrenalina, hermandad y motos de alta gama.",
+    "¡El rugir de motores más grande de América! Únete a delegaciones de 26 países en Sabaneta. Gran Caravana, Parrilla Mixta y conciertos en vivo con Sergio Vargas, Binomio de Oro y más. ¡No te quedes por fuera, asegura tu cupo aquí! 🏁🎸",
+  openGraph: {
+    title: "XIII Aniversario L.A.M.A. Medellín & L.A.M.A. Bike Fest 2026 🇨🇴",
+    description:
+      "¡El rugir de motores más grande de América! Únete a delegaciones de 26 países en Sabaneta. Gran Caravana, Parrilla Mixta y conciertos en vivo con Sergio Vargas, Binomio de Oro y más. ¡No te quedes por fuera, asegura tu cupo aquí! 🏁🎸",
+    url: "https://ambitious-meadow-0bc0fb31e.7.azurestaticapps.net",
+    siteName: "L.A.M.A. Bike Fest Sabaneta",
+    images: [
+      {
+        url: "/images/Logotipo-LM-vertical-transp.png",
+        width: 1200,
+        height: 630,
+        alt: "Logotipo Oficial XIII Aniversario L.A.M.A. Medellín",
+      },
+    ],
+    locale: "es_CO",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "XIII Aniversario L.A.M.A. Medellín & L.A.M.A. Bike Fest 2026 🇨🇴",
+    description:
+      "¡El rugir de motores más grande de América! Únete a delegaciones de 26 países en Sabaneta. Gran Caravana, Parrilla Mixta y conciertos en vivo con Sergio Vargas, Binomio de Oro y más. ¡No te quedes por fuera, asegura tu cupo aquí! 🏁🎸",
+    images: ["/images/Logotipo-LM-vertical-transp.png"],
+  },
 };
 
 export default function RootLayout({
