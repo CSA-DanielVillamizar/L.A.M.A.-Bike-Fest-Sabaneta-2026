@@ -1,3 +1,4 @@
+import { randomUUID } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 
 type OfficialRegistrationPayload = {
@@ -153,6 +154,7 @@ export async function POST(request: NextRequest) {
             (wantsJersey ? JERSEY_COST : 0);
 
         const { default: sql } = await import("mssql");
+        const generatedId = randomUUID();
         const config = parseSqlServerUrl(process.env.DATABASE_URL);
         const pool = await sql.connect({
             server: config.server,
@@ -169,6 +171,7 @@ export async function POST(request: NextRequest) {
         });
 
         const result = await pool.request()
+            .input("id", sql.UniqueIdentifier, generatedId)
             .input("participantCategory", sql.NVarChar(sql.MAX), participantCategory)
             .input("fullName", sql.NVarChar(sql.MAX), fullName)
             .input("documentId", sql.NVarChar(sql.MAX), documentId)
@@ -188,6 +191,7 @@ export async function POST(request: NextRequest) {
             .input("totalToPay", sql.Float, calculatedTotal)
             .query(`
                 INSERT INTO [OfficialRegistration] (
+                    [id],
                     [participantCategory],
                     [fullName],
                     [documentId],
@@ -208,6 +212,7 @@ export async function POST(request: NextRequest) {
                 )
                 OUTPUT INSERTED.[id], INSERTED.[totalToPay]
                 VALUES (
+                    @id,
                     @participantCategory,
                     @fullName,
                     @documentId,
