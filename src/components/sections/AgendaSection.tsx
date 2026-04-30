@@ -57,9 +57,9 @@ const agendaDays: AgendaDay[] = [
             },
             {
                 time: "07:00 PM",
-                title: "After Ride Party — Fiestas del Plátano",
+                title: "L.A.M.A. BIKE FEST \"After Ride Party\" — Fiestas del Plátano",
                 description:
-                    "Integración con los tablados oficiales de las Fiestas del Plátano en Sabaneta.",
+                    "Integración con los tablados oficiales de las Fiestas del Plátano en Sabaneta. Disfrutaremos de artistas de talla internacional como Los Inquietos del Vallenato, Rikarena, Binomio de Oro, Charrito Negro, Sergio Vargas y muchos más.",
             },
         ],
     },
@@ -70,7 +70,7 @@ const agendaDays: AgendaDay[] = [
                 time: "11:00 AM – 02:00 PM",
                 title: "Rodada hacia MEDAYORK Mirador Gastro Bar",
                 description:
-                    "Rodada oficial y punto de encuentro en el mirador.",
+                    "Rodada oficial hacia el Mirador Gastro Bar MEDAYORK. Seguiremos disfrutando de conciertos en vivo y espectáculos exclusivos preparados para todos nuestros visitantes internacionales.",
             },
         ],
     },
