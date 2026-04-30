@@ -85,6 +85,10 @@ type SuccessRegistration = {
     chapter: string;
     totalToPay: number;
     participantCategory: string;
+    wantsJersey: boolean;
+    jerseySize: string;
+    companionsCount: number;
+    companionNames: string[];
 };
 
 const initialForm: FormValues = {
@@ -120,7 +124,16 @@ export function OfficialRegistrationForm() {
     const [loading, setLoading] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
     const [successRegistration, setSuccessRegistration] = useState<SuccessRegistration | null>(null);
+    const [companionNames, setCompanionNames] = useState<string[]>([]);
     const receiptRef = useRef<HTMLDivElement | null>(null);
+
+    const updateCompanionName = (index: number, value: string) => {
+        setCompanionNames((prev) => {
+            const next = [...prev];
+            next[index] = value;
+            return next;
+        });
+    };
 
     const companionsTotal = form.hasCompanions ? form.companionsCount * COMPANION_COST : 0;
     const jerseyTotal = form.wantsJersey ? JERSEY_COST : 0;
@@ -186,7 +199,7 @@ export function OfficialRegistrationForm() {
                 doc.setFontSize(10);
                 doc.text(label, left, y);
                 doc.setFont("helvetica", "normal");
-                doc.text(value, left + 42, y);
+                doc.text(value, left + 50, y);
                 y += lineH;
             };
 
@@ -194,6 +207,26 @@ export function OfficialRegistrationForm() {
             addRow("Nombre:", successRegistration.fullName);
             addRow("Cap\u00edtulo:", successRegistration.chapter);
             addRow("Categor\u00eda:", successRegistration.participantCategory);
+
+            // Jersey
+            if (successRegistration.wantsJersey) {
+                addRow("Camiseta oficial:", `S\u00ed \u2014 Talla ${successRegistration.jerseySize || "por definir"}`);
+            } else {
+                addRow("Camiseta oficial:", "No");
+            }
+
+            // Companions
+            if (successRegistration.companionsCount > 0) {
+                addRow("Acompa\u00f1antes:", String(successRegistration.companionsCount));
+                successRegistration.companionNames.forEach((name, i) => {
+                    if (name?.trim()) {
+                        addRow(`  Acompa\u00f1ante ${i + 1}:`, name.trim());
+                    }
+                });
+            } else {
+                addRow("Acompa\u00f1antes:", "Ninguno");
+            }
+
             addRow("Total a Pagar:", formatCop(successRegistration.totalToPay));
 
             y += 4;
@@ -210,12 +243,40 @@ export function OfficialRegistrationForm() {
             doc.text("Bancolombia Ahorros: 23000013774", left, y);
             y += lineH;
             doc.text("Titular: Fundaci\u00f3n L.A.M.A. Medell\u00edn", left, y);
-            y += 12;
+            y += 14;
 
             doc.line(left, y, right, y);
             y += 10;
 
+            // PAREJA note
+            if (successRegistration.companionsCount > 0) {
+                doc.setFontSize(9);
+                doc.setFont("helvetica", "bold");
+                doc.setTextColor(180, 90, 0);
+                doc.text("IMPORTANTE:", left, y);
+                doc.setFont("helvetica", "normal");
+                doc.setTextColor(80);
+                y += 6;
+                doc.text(
+                    "Si tu acompa\u00f1ante es de categor\u00eda PAREJA, deber\u00e1 diligenciar",
+                    left,
+                    y,
+                    { maxWidth: right - left },
+                );
+                y += 6;
+                doc.text(
+                    "tambi\u00e9n el formulario oficial de inscripci\u00f3n de forma independiente.",
+                    left,
+                    y,
+                    { maxWidth: right - left },
+                );
+                y += 10;
+                doc.line(left, y, right, y);
+                y += 10;
+            }
+
             doc.setFontSize(9);
+            doc.setFont("helvetica", "normal");
             doc.setTextColor(120);
             doc.text(
                 "Env\u00eda el comprobante de pago junto con tu ID por WhatsApp al: +57 310 512 7314",
@@ -290,7 +351,12 @@ export function OfficialRegistrationForm() {
                 chapter: normalizedChapter,
                 totalToPay: result.totalToPay ?? totalToPay,
                 participantCategory: form.participantCategory,
+                wantsJersey: form.wantsJersey,
+                jerseySize: form.wantsJersey ? form.jerseySize : "",
+                companionsCount: form.hasCompanions ? form.companionsCount : 0,
+                companionNames: form.hasCompanions ? [...companionNames] : [],
             });
+            setCompanionNames([]);
             setForm(initialForm);
         } catch (error) {
             setErrorMessage(error instanceof Error ? error.message : "Error al enviar la inscripcion.");
@@ -352,7 +418,31 @@ export function OfficialRegistrationForm() {
                                     <p><span className="font-semibold text-zinc-100">Nombre:</span> {successRegistration.fullName}</p>
                                     <p className="mt-2"><span className="font-semibold text-zinc-100">Capitulo:</span> {successRegistration.chapter}</p>
                                     <p className="mt-2"><span className="font-semibold text-zinc-100">Categoria:</span> {successRegistration.participantCategory}</p>
+                                    {successRegistration.wantsJersey && (
+                                        <p className="mt-2">
+                                            <span className="font-semibold text-zinc-100">Camiseta oficial:</span>{" "}
+                                            Sí — Talla {successRegistration.jerseySize || "por definir"}
+                                        </p>
+                                    )}
+                                    {successRegistration.companionsCount > 0 && (
+                                        <div className="mt-2">
+                                            <p><span className="font-semibold text-zinc-100">Acompañantes:</span> {successRegistration.companionsCount}</p>
+                                            {successRegistration.companionNames.map((name, i) =>
+                                                name?.trim() ? (
+                                                    <p key={i} className="mt-1 pl-3 text-zinc-300">• {name.trim()}</p>
+                                                ) : null,
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
+
+                                {successRegistration.companionsCount > 0 && (
+                                    <div className="mt-4 rounded-lg border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-xs text-amber-200">
+                                        <span className="font-bold">Recuerda:</span> Si algún acompañante es de categoría{" "}
+                                        <span className="font-bold">PAREJA</span>, debe diligenciar el formulario oficial de
+                                        inscripción de forma independiente.
+                                    </div>
+                                )}
 
                                 <div className="mt-6 rounded-xl border border-zinc-700 bg-zinc-900/70 p-4 text-sm text-zinc-300">
                                     <p className="font-semibold text-zinc-100">Datos bancarios para el pago</p>
@@ -643,22 +733,42 @@ export function OfficialRegistrationForm() {
                                 </label>
 
                                 {form.hasCompanions && (
-                                    <label className="sm:col-span-2 flex flex-col gap-2 text-sm text-zinc-300">
-                                        Número de acompañantes
-                                        <input
-                                            type="number"
-                                            min={1}
-                                            required
-                                            value={form.companionsCount}
-                                            onChange={(event) =>
-                                                updateField(
-                                                    "companionsCount",
-                                                    Math.max(1, Number(event.target.value) || 1),
-                                                )
-                                            }
-                                            className="rounded-lg border border-zinc-700 bg-zinc-900/70 px-3 py-2 text-zinc-100 outline-none ring-orange-400/40 transition focus:ring"
-                                        />
-                                    </label>
+                                    <>
+                                        <label className="sm:col-span-2 flex flex-col gap-2 text-sm text-zinc-300">
+                                            Número de acompañantes
+                                            <input
+                                                type="number"
+                                                min={1}
+                                                required
+                                                value={form.companionsCount}
+                                                onChange={(event) => {
+                                                    const count = Math.max(1, Number(event.target.value) || 1);
+                                                    updateField("companionsCount", count);
+                                                    setCompanionNames((prev) => prev.slice(0, count));
+                                                }}
+                                                className="rounded-lg border border-zinc-700 bg-zinc-900/70 px-3 py-2 text-zinc-100 outline-none ring-orange-400/40 transition focus:ring"
+                                            />
+                                        </label>
+
+                                        {Array.from({ length: form.companionsCount }).map((_, i) => (
+                                            <label key={i} className="sm:col-span-2 flex flex-col gap-2 text-sm text-zinc-300">
+                                                Nombre del acompañante {i + 1}
+                                                <input
+                                                    required
+                                                    value={companionNames[i] ?? ""}
+                                                    onChange={(event) => updateCompanionName(i, event.target.value)}
+                                                    placeholder={`Nombre completo del acompañante ${i + 1}`}
+                                                    className="rounded-lg border border-zinc-700 bg-zinc-900/70 px-3 py-2 text-zinc-100 outline-none ring-orange-400/40 transition focus:ring"
+                                                />
+                                            </label>
+                                        ))}
+
+                                        <div className="sm:col-span-2 rounded-lg border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-xs text-amber-200">
+                                            <span className="font-bold">Importante:</span> Si tu acompañante es de categoría{" "}
+                                            <span className="font-bold">PAREJA</span>, deberá diligenciar el formulario oficial de
+                                            inscripción de forma independiente.
+                                        </div>
+                                    </>
                                 )}
                             </div>
 
