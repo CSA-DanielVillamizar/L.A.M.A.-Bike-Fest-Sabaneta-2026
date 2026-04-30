@@ -93,7 +93,7 @@ export default function AdminPage() {
             try {
                 setLoading(true);
                 setErrorMessage("");
-                const response = await fetch("/api/admin/registrations", {
+                const response = await fetch("/api/management/registrations", {
                     cache: "no-store",
                     headers: {
                         "x-admin-access-password": accessPassword,
@@ -132,7 +132,7 @@ export default function AdminPage() {
         setPendingKeys((current) => ({ ...current, [key]: true }));
 
         try {
-            const response = await fetch("/api/admin/toggle-payment", {
+            const response = await fetch("/api/management/toggle-payment", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
