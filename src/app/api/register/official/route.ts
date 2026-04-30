@@ -30,10 +30,19 @@ type OfficialRegistrationPayload = {
 };
 
 const BASE_REGISTRATION_COST = 100000;
+const SATURDAY_PASS_COST = 85000;
 const COMPANION_COST = 100000;
 const JERSEY_COST = 65000;
 
-const ALLOWED_COMPANION_CATEGORIES = new Set(["PAREJA", "INVITADO", "HIJO/A"]);
+const ALLOWED_COMPANION_CATEGORIES = new Set(["PAREJA", "INVITADO", "HIJO/A", "CLUB HERMANO (Solo Sábado)"]);
+
+function getParticipantBaseCost(category: string): number {
+    return category === "CLUB HERMANO / INVITADO (Solo Sábado)" ? SATURDAY_PASS_COST : BASE_REGISTRATION_COST;
+}
+
+function getCompanionBaseCost(category: string): number {
+    return category === "CLUB HERMANO (Solo Sábado)" ? SATURDAY_PASS_COST : COMPANION_COST;
+}
 
 function sanitizeText(value: unknown): string {
     return typeof value === "string" ? value.trim() : "";
@@ -133,10 +142,15 @@ export async function POST(request: NextRequest) {
 
         const companionsCount = normalizedCompanions.length;
         const companionsJerseyCount = normalizedCompanions.filter((c) => c.wantsJersey).length;
+        const participantBaseCost = getParticipantBaseCost(participantCategory);
+        const companionsBaseCost = normalizedCompanions.reduce(
+            (acc, companion) => acc + getCompanionBaseCost(companion.category),
+            0,
+        );
 
         const calculatedTotal =
-            BASE_REGISTRATION_COST +
-            companionsCount * COMPANION_COST +
+            participantBaseCost +
+            companionsBaseCost +
             (wantsJersey ? JERSEY_COST : 0) +
             companionsJerseyCount * JERSEY_COST;
 

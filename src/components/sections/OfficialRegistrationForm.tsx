@@ -11,6 +11,7 @@ const PARTICIPANT_CATEGORIES = [
     "ESPOSA",
     "PAREJA",
     "INVITADO",
+    "CLUB HERMANO / INVITADO (Solo Sábado)",
 ] as const;
 
 const CHAPTERS = [
@@ -54,11 +55,32 @@ const DIRECTIVE_ROLES = [
 ] as const;
 
 const JERSEY_SIZES = ["S", "M", "L", "XL", "XXL"] as const;
-const COMPANION_CATEGORIES = ["PAREJA", "INVITADO", "HIJO/A"] as const;
+const COMPANION_CATEGORIES = ["PAREJA", "INVITADO", "HIJO/A", "CLUB HERMANO (Solo Sábado)"] as const;
 
 const BASE_COST = 100000;
+const SATURDAY_PASS_COST = 85000;
 const COMPANION_COST = 100000;
 const JERSEY_COST = 65000;
+
+function getParticipantBaseCost(category: string): number {
+    return category === "CLUB HERMANO / INVITADO (Solo Sábado)" ? SATURDAY_PASS_COST : BASE_COST;
+}
+
+function getParticipantBaseLabel(category: string): string {
+    return category === "CLUB HERMANO / INVITADO (Solo Sábado)"
+        ? "Pase Sábado Titular"
+        : "Inscripción L.A.M.A. Titular";
+}
+
+function getCompanionBaseCost(category: string): number {
+    return category === "CLUB HERMANO (Solo Sábado)" ? SATURDAY_PASS_COST : COMPANION_COST;
+}
+
+function getCompanionBaseLabel(category: string): string {
+    return category === "CLUB HERMANO (Solo Sábado)"
+        ? "Pase Sábado Club Hermano"
+        : `Acompañante ${category || "general"}`;
+}
 
 type CompanionForm = {
     fullName: string;
@@ -143,15 +165,18 @@ export function OfficialRegistrationForm() {
     const [errorMessage, setErrorMessage] = useState("");
     const [successRegistration, setSuccessRegistration] = useState<SuccessRegistration | null>(null);
 
-    const companionsBaseTotal = form.hasCompanions ? form.companionsCount * COMPANION_COST : 0;
+    const participantBaseTotal = getParticipantBaseCost(form.participantCategory);
+    const companionsBaseTotal = form.hasCompanions
+        ? form.companions.reduce((acc, companion) => acc + getCompanionBaseCost(companion.category), 0)
+        : 0;
     const mainJerseyTotal = form.wantsJersey ? JERSEY_COST : 0;
     const companionsJerseyTotal = form.hasCompanions
         ? form.companions.reduce((acc, companion) => acc + (companion.wantsJersey ? JERSEY_COST : 0), 0)
         : 0;
 
     const totalToPay = useMemo(
-        () => BASE_COST + companionsBaseTotal + mainJerseyTotal + companionsJerseyTotal,
-        [companionsBaseTotal, mainJerseyTotal, companionsJerseyTotal],
+        () => participantBaseTotal + companionsBaseTotal + mainJerseyTotal + companionsJerseyTotal,
+        [participantBaseTotal, companionsBaseTotal, mainJerseyTotal, companionsJerseyTotal],
     );
 
     const updateField = <K extends keyof FormValues>(field: K, value: FormValues[K]) => {
@@ -190,9 +215,15 @@ export function OfficialRegistrationForm() {
     };
 
     const buildWhatsappUrl = (registration: SuccessRegistration) => {
+        const participantBaseLabel = getParticipantBaseLabel(registration.participantCategory);
+        const participantBaseCost = getParticipantBaseCost(registration.participantCategory);
         const companionsText = registration.companions.length
             ? registration.companions
-                .map((c, i) => `${i + 1}. ${c.fullName} (${c.category})${c.wantsJersey ? ` - Camiseta ${c.jerseySize}` : ""}`)
+                .map((c, i) => {
+                    const companionCost = getCompanionBaseCost(c.category);
+                    const jerseyText = c.wantsJersey ? ` + Camiseta ${c.jerseySize} (${formatCop(JERSEY_COST)})` : "";
+                    return `${i + 1}. ${c.fullName} (${c.category}) - ${formatCop(companionCost)}${jerseyText}`;
+                })
                 .join("\n")
             : "Sin acompañantes";
 
@@ -202,6 +233,8 @@ export function OfficialRegistrationForm() {
             `Nombre: ${registration.fullName}`,
             `Capítulo: ${registration.chapter}`,
             `Categoría: ${registration.participantCategory}`,
+            `${participantBaseLabel}: ${formatCop(participantBaseCost)}`,
+            `Camiseta titular: ${registration.wantsJersey ? `Sí - ${registration.jerseySize} (${formatCop(JERSEY_COST)})` : "No"}`,
             `Total a pagar: ${formatCop(registration.totalToPay)}`,
             `Acompañantes:\n${companionsText}`,
             "Por este medio adjuntaré el comprobante de pago.",
@@ -257,9 +290,10 @@ export function OfficialRegistrationForm() {
             addLine("Nombre:", successRegistration.fullName);
             addLine("Capítulo:", successRegistration.chapter);
             addLine("Categoría:", successRegistration.participantCategory);
+            addLine(getParticipantBaseLabel(successRegistration.participantCategory) + ":", formatCop(getParticipantBaseCost(successRegistration.participantCategory)));
             addLine(
                 "Camiseta titular:",
-                successRegistration.wantsJersey ? `Sí - Talla ${successRegistration.jerseySize || "por definir"}` : "No",
+                successRegistration.wantsJersey ? `Sí - Talla ${successRegistration.jerseySize || "por definir"} (${formatCop(JERSEY_COST)})` : "No",
             );
 
             y += 2;
@@ -273,7 +307,7 @@ export function OfficialRegistrationForm() {
                 y += lineH;
             } else {
                 successRegistration.companions.forEach((companion, index) => {
-                    const companionText = `${index + 1}. ${companion.fullName} - Doc: ${companion.documentId} - ${companion.category} - ${companion.wantsJersey ? `Camiseta ${companion.jerseySize}` : "Sin camiseta"}`;
+                    const companionText = `${index + 1}. ${companion.fullName} - Doc: ${companion.documentId} - ${companion.category} - ${formatCop(getCompanionBaseCost(companion.category))}${companion.wantsJersey ? ` + Camiseta ${companion.jerseySize} (${formatCop(JERSEY_COST)})` : " - Sin camiseta"}`;
                     doc.text(companionText, left + 2, y, { maxWidth: right - left - 2 });
                     y += lineH;
                 });
@@ -404,7 +438,7 @@ export function OfficialRegistrationForm() {
                             Formulario Oficial de Inscripción
                         </h2>
                         <p className="mt-2 text-sm text-zinc-300">
-                            Completa los datos para asegurar tu cupo y recibir el resumen oficial de pago.
+                            Inscripción L.A.M.A. ({formatCop(BASE_COST)}) incluye cena de gala. Pase Club Hermano Solo Sábado ({formatCop(SATURDAY_PASS_COST)}) incluye almuerzo y concierto en La Molienda.
                         </p>
                     </div>
 
@@ -440,15 +474,16 @@ export function OfficialRegistrationForm() {
                                     <p><span className="font-semibold text-zinc-100">Nombre:</span> {successRegistration.fullName}</p>
                                     <p className="mt-2"><span className="font-semibold text-zinc-100">Capítulo:</span> {successRegistration.chapter}</p>
                                     <p className="mt-2"><span className="font-semibold text-zinc-100">Categoría:</span> {successRegistration.participantCategory}</p>
+                                    <p className="mt-2"><span className="font-semibold text-zinc-100">{getParticipantBaseLabel(successRegistration.participantCategory)}:</span> {formatCop(getParticipantBaseCost(successRegistration.participantCategory))}</p>
                                     <p className="mt-2">
                                         <span className="font-semibold text-zinc-100">Camiseta titular:</span>{" "}
-                                        {successRegistration.wantsJersey ? `Sí - ${successRegistration.jerseySize}` : "No"}
+                                        {successRegistration.wantsJersey ? `Sí - ${successRegistration.jerseySize} (${formatCop(JERSEY_COST)})` : "No"}
                                     </p>
                                     <div className="mt-3">
                                         <p><span className="font-semibold text-zinc-100">Acompañantes:</span> {successRegistration.companions.length}</p>
                                         {successRegistration.companions.map((companion, i) => (
                                             <p key={`${companion.documentId}-${i}`} className="mt-1 pl-3 text-zinc-300">
-                                                • {companion.fullName} - {companion.category} - Doc: {companion.documentId} - {companion.wantsJersey ? `Camiseta ${companion.jerseySize}` : "Sin camiseta"}
+                                                • {companion.fullName} - {companion.category} - {formatCop(getCompanionBaseCost(companion.category))} - Doc: {companion.documentId} - {companion.wantsJersey ? `Camiseta ${companion.jerseySize} (${formatCop(JERSEY_COST)})` : "Sin camiseta"}
                                             </p>
                                         ))}
                                     </div>
@@ -826,18 +861,28 @@ export function OfficialRegistrationForm() {
                                 <div className="mt-4 space-y-3 text-sm text-zinc-200">
                                     <div className="flex items-start justify-between gap-3">
                                         <div>
-                                            <p>Inscripción base obligatoria</p>
-                                            <p className="text-xs text-zinc-400">Incluye cena del acto protocolario</p>
+                                            <p>{getParticipantBaseLabel(form.participantCategory || "")}</p>
+                                            <p className="text-xs text-zinc-400">
+                                                {form.participantCategory === "CLUB HERMANO / INVITADO (Solo Sábado)"
+                                                    ? "Incluye almuerzo y concierto en La Molienda"
+                                                    : "Incluye cena de gala"}
+                                            </p>
                                         </div>
-                                        <p className="font-semibold">{formatCop(BASE_COST)}</p>
+                                        <p className="font-semibold">{formatCop(participantBaseTotal)}</p>
                                     </div>
 
                                     <div className="flex items-start justify-between gap-3">
                                         <div>
                                             <p>Acompañantes</p>
-                                            <p className="text-xs text-zinc-400">
-                                                {form.hasCompanions ? `${form.companionsCount} x ${formatCop(COMPANION_COST)}` : "Sin acompañantes"}
-                                            </p>
+                                            <div className="text-xs text-zinc-400">
+                                                {form.hasCompanions && form.companions.length > 0
+                                                    ? form.companions.map((companion, index) => (
+                                                        <p key={`${companion.documentId}-${index}`}>
+                                                            - Acompañante {index + 1} ({companion.category || "sin categoría"}): {formatCop(getCompanionBaseCost(companion.category))}
+                                                        </p>
+                                                    ))
+                                                    : "Sin acompañantes"}
+                                            </div>
                                         </div>
                                         <p className="font-semibold">{formatCop(companionsBaseTotal)}</p>
                                     </div>
@@ -868,7 +913,7 @@ export function OfficialRegistrationForm() {
                                             <div className="mt-2 space-y-1 text-xs text-zinc-300">
                                                 {form.companions.map((companion, index) => (
                                                     <p key={`${companion.documentId}-${index}`}>
-                                                        {index + 1}. {companion.fullName || "(sin nombre)"} - {companion.category || "(sin categoría)"} {companion.wantsJersey ? `- Camiseta ${companion.jerseySize || "pendiente"}` : "- Sin camiseta"}
+                                                        {index + 1}. {companion.fullName || "(sin nombre)"} - {companion.category || "(sin categoría)"} - {formatCop(getCompanionBaseCost(companion.category))} {companion.wantsJersey ? `- Camiseta ${companion.jerseySize || "pendiente"} (${formatCop(JERSEY_COST)})` : "- Sin camiseta"}
                                                     </p>
                                                 ))}
                                             </div>

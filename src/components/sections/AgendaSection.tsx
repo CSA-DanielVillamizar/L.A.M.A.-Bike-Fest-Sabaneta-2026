@@ -6,6 +6,7 @@ type AgendaEvent = {
     time: string;
     title: string;
     description: string;
+    note?: string;
 };
 
 type AgendaDay = {
@@ -27,7 +28,7 @@ const agendaDays: AgendaDay[] = [
                 time: "08:00 PM",
                 title: "Gran Integración de Bienvenida",
                 description:
-                    "Primer encuentro de todos los capítulos invitados en el Parque Principal de Sabaneta.",
+                    "Primer encuentro de todos los capítulos invitados en La Fonda La Molienda.",
             },
         ],
     },
@@ -44,7 +45,9 @@ const agendaDays: AgendaDay[] = [
                 time: "01:00 PM – 06:00 PM",
                 title: "L.A.M.A. Bike Fest Sabaneta 2026",
                 description:
-                    "Exhibición de motos de alta gama, zona comercial y stands de marcas patrocinadoras.",
+                    "Exhibición de motos de alta gama, zona comercial y stands de marcas patrocinadoras. Esto se celebrará en la Fonda La Molienda y contará con cantante en vivo, Almuerzo + Cerveza o Gaseosa.",
+                note:
+                    "Valor para invitados no L.A.M.A. / clubes hermanos: $85.000 COP. Para miembros L.A.M.A. está incluido con la inscripción al XIII Aniversario.",
             },
             {
                 time: "04:00 PM",
@@ -64,10 +67,10 @@ const agendaDays: AgendaDay[] = [
         day: "Domingo 28 de Junio",
         events: [
             {
-                time: "Tarde / Noche",
-                title: "Conciertos en Vivo",
+                time: "11:00 AM – 02:00 PM",
+                title: "Rodada hacia MEDAYORK Mirador Gastro Bar",
                 description:
-                    "Presentación de artistas de talla internacional en el escenario principal del festival.",
+                    "Rodada oficial y punto de encuentro en el mirador.",
             },
         ],
     },
@@ -143,8 +146,8 @@ export function AgendaSection() {
                                             >
                                                 <div
                                                     className={`sm:px-8 ${globalIdx % 2 === 0
-                                                            ? "sm:col-start-1 sm:text-right"
-                                                            : "sm:col-start-2 sm:text-left"
+                                                        ? "sm:col-start-1 sm:text-right"
+                                                        : "sm:col-start-2 sm:text-left"
                                                         }`}
                                                 >
                                                     <p className="font-display text-sm uppercase tracking-[0.2em] text-orange-300">
@@ -154,6 +157,11 @@ export function AgendaSection() {
                                                         {event.title}
                                                     </h3>
                                                     <p className="mt-2 text-zinc-300">{event.description}</p>
+                                                    {event.note && (
+                                                        <p className="mt-3 rounded-lg border border-orange-500/30 bg-orange-500/10 px-3 py-2 text-sm italic text-orange-200">
+                                                            {event.note}
+                                                        </p>
+                                                    )}
                                                 </div>
 
                                                 <span className="absolute left-4 top-1.5 h-3 w-3 -translate-x-1/2 rounded-full border border-orange-300 bg-orange-500 shadow-[0_0_0_4px_rgba(9,9,9,0.9)] sm:left-1/2" />
