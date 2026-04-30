@@ -1,4 +1,3 @@
-import sql from "mssql";
 import { NextRequest, NextResponse } from "next/server";
 
 type OfficialRegistrationPayload = {
@@ -151,6 +150,7 @@ export async function POST(request: NextRequest) {
             companionsCount * COMPANION_COST +
             (wantsJersey ? JERSEY_COST : 0);
 
+        const { default: sql } = await import("mssql");
         const config = parseSqlServerUrl(process.env.DATABASE_URL);
         const pool = await sql.connect({
             server: config.server,
