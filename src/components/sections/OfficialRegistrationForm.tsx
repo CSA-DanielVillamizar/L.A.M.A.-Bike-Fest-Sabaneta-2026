@@ -1,6 +1,5 @@
 "use client";
 
-import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
 import { FormEvent, useMemo, useRef, useState } from "react";
 
@@ -156,31 +155,79 @@ export function OfficialRegistrationForm() {
         window.open(buildWhatsappUrl(successRegistration), "_blank", "noopener,noreferrer");
     };
 
-    const generatePDF = async () => {
-        if (!receiptRef.current || !successRegistration) {
-            return;
+    const generatePDF = () => {
+        if (!successRegistration) return;
+
+        try {
+            const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+            const pageW = doc.internal.pageSize.getWidth();
+            const left = 20;
+            const right = pageW - left;
+            const lineH = 8;
+            let y = 22;
+
+            // Header
+            doc.setFontSize(16);
+            doc.setFont("helvetica", "bold");
+            doc.text("XIII Aniversario L.A.M.A. Medell\u00edn", pageW / 2, y, { align: "center" });
+            y += 9;
+            doc.setFontSize(11);
+            doc.setFont("helvetica", "normal");
+            doc.text("Resumen Oficial de Inscripci\u00f3n", pageW / 2, y, { align: "center" });
+            y += 10;
+
+            doc.setDrawColor(180);
+            doc.line(left, y, right, y);
+            y += 10;
+
+            // Registration data
+            const addRow = (label: string, value: string) => {
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(10);
+                doc.text(label, left, y);
+                doc.setFont("helvetica", "normal");
+                doc.text(value, left + 42, y);
+                y += lineH;
+            };
+
+            addRow("ID de Registro:", successRegistration.id);
+            addRow("Nombre:", successRegistration.fullName);
+            addRow("Cap\u00edtulo:", successRegistration.chapter);
+            addRow("Categor\u00eda:", successRegistration.participantCategory);
+            addRow("Total a Pagar:", formatCop(successRegistration.totalToPay));
+
+            y += 4;
+            doc.line(left, y, right, y);
+            y += 10;
+
+            // Bank data
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(11);
+            doc.text("Datos bancarios para el pago", left, y);
+            y += lineH;
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(10);
+            doc.text("Bancolombia Ahorros: 23000013774", left, y);
+            y += lineH;
+            doc.text("Titular: Fundaci\u00f3n L.A.M.A. Medell\u00edn", left, y);
+            y += 12;
+
+            doc.line(left, y, right, y);
+            y += 10;
+
+            doc.setFontSize(9);
+            doc.setTextColor(120);
+            doc.text(
+                "Env\u00eda el comprobante de pago junto con tu ID por WhatsApp al: +57 310 512 7314",
+                left,
+                y,
+                { maxWidth: right - left },
+            );
+
+            doc.save("Inscripcion-LAMA-Medellin.pdf");
+        } catch (err) {
+            console.error("Error generando PDF:", err);
         }
-
-        const canvas = await html2canvas(receiptRef.current, {
-            backgroundColor: "#111111",
-            scale: 2,
-        });
-
-        const imageData = canvas.toDataURL("image/png");
-        const pdf = new jsPDF({
-            orientation: "portrait",
-            unit: "mm",
-            format: "a4",
-        });
-
-        const pageWidth = pdf.internal.pageSize.getWidth();
-        const pageHeight = pdf.internal.pageSize.getHeight();
-        const imageWidth = pageWidth - 20;
-        const imageHeight = (canvas.height * imageWidth) / canvas.width;
-        const finalHeight = Math.min(imageHeight, pageHeight - 20);
-
-        pdf.addImage(imageData, "PNG", 10, 10, imageWidth, finalHeight);
-        pdf.save("Inscripcion-LAMA-Medellin.pdf");
     };
 
     const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -257,9 +304,9 @@ export function OfficialRegistrationForm() {
             <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">
                 <div className="rounded-2xl border border-white/10 bg-black/35 p-6 sm:p-8">
                     <div className="mb-6">
-                        <p className="text-xs uppercase tracking-[0.2em] text-orange-300">XIII Aniversario</p>
+                        <p className="text-xs uppercase tracking-[0.2em] text-orange-300">XIII Aniversario L.A.M.A. Medellín</p>
                         <h2 className="mt-2 text-3xl font-black text-zinc-50 sm:text-4xl">
-                            Formulario Oficial de Inscripcion
+                            Formulario Oficial de Inscripción
                         </h2>
                         <p className="mt-2 text-sm text-zinc-300">
                             Completa los datos para asegurar tu cupo y recibir el resumen oficial de pago.
@@ -309,9 +356,15 @@ export function OfficialRegistrationForm() {
 
                                 <div className="mt-6 rounded-xl border border-zinc-700 bg-zinc-900/70 p-4 text-sm text-zinc-300">
                                     <p className="font-semibold text-zinc-100">Datos bancarios para el pago</p>
-                                    <p className="mt-2">Bancolombia Ahorros: 65200000000</p>
-                                    <p>Nequi: 3106328171</p>
-                                    <p>Titular: L.A.M.A. Medellin</p>
+                                    <p className="mt-2">Bancolombia Ahorros: 23000013774</p>
+                                    <p>Titular: Fundación L.A.M.A. Medellín</p>
+                                    <div className="mt-4 flex justify-center">
+                                        <img
+                                            src="/images/QRBancolombia.jpeg"
+                                            alt="QR Bancolombia para transferencia"
+                                            className="h-44 w-44 rounded-lg object-contain"
+                                        />
+                                    </div>
                                 </div>
                             </div>
 
@@ -424,7 +477,7 @@ export function OfficialRegistrationForm() {
                                 </label>
 
                                 <label className="flex flex-col gap-2 text-sm text-zinc-300">
-                                    Telefono
+                                    Teléfono
                                     <input
                                         required
                                         value={form.emergencyPhone}
@@ -438,14 +491,14 @@ export function OfficialRegistrationForm() {
                                 </h3>
 
                                 <label className="sm:col-span-2 flex flex-col gap-2 text-sm text-zinc-300">
-                                    Capitulo
+                                    Capítulo
                                     <select
                                         required
                                         value={form.chapter}
                                         onChange={(event) => updateField("chapter", event.target.value)}
                                         className="rounded-lg border border-zinc-700 bg-zinc-900/70 px-3 py-2 text-zinc-100 outline-none ring-orange-400/40 transition focus:ring"
                                     >
-                                        <option value="">Selecciona tu capitulo</option>
+                                        <option value="">Selecciona tu capítulo</option>
                                         {SORTED_CHAPTERS.map((chapter) => (
                                             <option key={chapter} value={chapter}>
                                                 {chapter}
@@ -456,12 +509,12 @@ export function OfficialRegistrationForm() {
 
                                 {form.chapter === "Otros" && (
                                     <label className="sm:col-span-2 flex flex-col gap-2 text-sm text-zinc-300">
-                                        Especifica tu capitulo
+                                        Especifica tu capítulo
                                         <input
                                             required
                                             value={form.otherChapter}
                                             onChange={(event) => updateField("otherChapter", event.target.value)}
-                                            placeholder="Escribe el nombre de tu capitulo"
+                                            placeholder="Escribe el nombre de tu capítulo"
                                             className="rounded-lg border border-zinc-700 bg-zinc-900/70 px-3 py-2 text-zinc-100 outline-none ring-orange-400/40 transition focus:ring"
                                         />
                                     </label>
@@ -480,14 +533,14 @@ export function OfficialRegistrationForm() {
                                 {form.isDirective && (
                                     <>
                                         <label className="flex flex-col gap-2 text-sm text-zinc-300">
-                                            Ambito
+                                            Ámbito
                                             <select
                                                 required
                                                 value={form.directiveScope}
                                                 onChange={(event) => updateField("directiveScope", event.target.value)}
                                                 className="rounded-lg border border-zinc-700 bg-zinc-900/70 px-3 py-2 text-zinc-100 outline-none ring-orange-400/40 transition focus:ring"
                                             >
-                                                <option value="">Selecciona ambito</option>
+                                                <option value="">Selecciona ámbito</option>
                                                 {DIRECTIVE_SCOPES.map((scope) => (
                                                     <option key={scope} value={scope}>
                                                         {scope}
@@ -531,7 +584,7 @@ export function OfficialRegistrationForm() {
                                 </label>
 
                                 <label className="sm:col-span-2 flex flex-col gap-2 text-sm text-zinc-300">
-                                    Condicion medica (opcional)
+                                    Condición médica (opcional)
                                     <textarea
                                         rows={3}
                                         value={form.medicalCondition}
@@ -574,11 +627,11 @@ export function OfficialRegistrationForm() {
                                 )}
 
                                 <h3 className="sm:col-span-2 text-sm font-bold uppercase tracking-[0.16em] text-orange-200">
-                                    Acompanantes
+                                    Acompañantes
                                 </h3>
 
                                 <label className="sm:col-span-2 flex items-center justify-between rounded-lg border border-zinc-700 bg-zinc-900/50 px-4 py-3 text-sm text-zinc-200">
-                                    <span>Asiste con acompanante?</span>
+                                    <span>Asiste con acompañante?</span>
                                     <input
                                         type="checkbox"
                                         checked={form.hasCompanions}
@@ -591,7 +644,7 @@ export function OfficialRegistrationForm() {
 
                                 {form.hasCompanions && (
                                     <label className="sm:col-span-2 flex flex-col gap-2 text-sm text-zinc-300">
-                                        Numero de acompanantes
+                                        Número de acompañantes
                                         <input
                                             type="number"
                                             min={1}
@@ -623,11 +676,11 @@ export function OfficialRegistrationForm() {
 
                                     <div className="flex items-start justify-between gap-3">
                                         <div>
-                                            <p>Acompanantes</p>
+                                            <p>Acompañantes</p>
                                             <p className="text-xs text-zinc-400">
                                                 {form.hasCompanions
                                                     ? `${form.companionsCount} x ${formatCop(COMPANION_COST)}`
-                                                    : "Sin acompanantes"}
+                                                    : "Sin acompañantes"}
                                             </p>
                                         </div>
                                         <p className="font-semibold">{formatCop(companionsTotal)}</p>
@@ -652,7 +705,7 @@ export function OfficialRegistrationForm() {
                                 <div className="mt-4 space-y-2 rounded-lg border border-zinc-700 bg-zinc-900/70 p-3 text-xs text-zinc-300">
                                     <p className="font-semibold text-zinc-100">Datos bancarios</p>
                                     <p>Bancolombia Ahorros: 23000013774</p>
-                                    <p>Titular: Fundación L.A.M.A. Medellin</p>
+                                    <p>Titular: Fundación L.A.M.A. Medellín</p>
                                 </div>
 
                                 <button

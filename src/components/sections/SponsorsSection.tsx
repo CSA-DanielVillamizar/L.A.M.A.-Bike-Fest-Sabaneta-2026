@@ -17,9 +17,14 @@ const confirmedSponsors = [
         imgClass: "object-contain p-0",
     },
     {
+        name: "Hotel Extremadura",
+        src: "/images/LogoExtremadura.png",
+        containerClass: "bg-white",
+        imgClass: "object-contain p-2",
+    },
+    {
         name: "Fonda La Molienda Rincón Equino",
         src: "/images/LaMolinedaBW.jpg",
-        // Fondo blanco igual al del nuevo logo
         containerClass: "bg-white",
         imgClass: "object-contain p-2",
     },
