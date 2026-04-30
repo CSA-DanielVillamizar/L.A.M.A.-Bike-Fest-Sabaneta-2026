@@ -5,8 +5,9 @@ import { useEffect, useState } from "react";
 
 const navLinks = [
     { href: "#inicio", label: "Inicio" },
-    { href: "#festival", label: "Festival" },
-    { href: "#registro", label: "Registro" },
+    { href: "#programa", label: "Programa" },
+    { href: "#clubes", label: "Clubes" },
+    { href: "#registro-oficial", label: "Registro" },
     { href: "#contacto", label: "Contacto" },
 ];
 
@@ -50,7 +51,7 @@ export function Navbar() {
                         </Link>
                     ))}
                     <Link
-                        href="#registro"
+                        href="#registro-oficial"
                         className="whitespace-nowrap rounded-full border border-orange-500/60 bg-orange-500/15 px-3 py-1.5 font-semibold text-orange-300 transition hover:bg-orange-500/25 hover:text-orange-200"
                     >
                         VIP PASS

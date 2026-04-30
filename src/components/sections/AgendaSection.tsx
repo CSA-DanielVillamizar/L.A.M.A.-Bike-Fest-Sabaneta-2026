@@ -98,7 +98,7 @@ for (const day of agendaDays) {
 
 export function AgendaSection() {
     return (
-        <section id="agenda" className="py-16 sm:py-20">
+        <section id="programa" className="py-16 sm:py-20">
             <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">
                 <motion.h2
                     initial={{ opacity: 0, y: 20 }}

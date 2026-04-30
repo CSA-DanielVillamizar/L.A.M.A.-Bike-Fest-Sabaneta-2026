@@ -50,9 +50,6 @@ export function InfoSections() {
             </div>
 
             <section id="registro" className="mt-6" aria-hidden />
-            <section id="contacto" className="sr-only" aria-hidden>
-                Contacto
-            </section>
         </section>
     );
 }

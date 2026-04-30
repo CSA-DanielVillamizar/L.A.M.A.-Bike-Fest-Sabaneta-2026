@@ -106,7 +106,7 @@ export function RegistrationForms() {
     };
 
     return (
-        <section id="registro-formularios" className="py-16 sm:py-20">
+        <section id="clubes" className="py-16 sm:py-20">
             <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">
                 <div id="registro" className="rounded-2xl border border-white/10 bg-black/35 p-6 sm:p-8">
                     <div className="inline-flex rounded-full border border-white/10 bg-zinc-900/80 p-1">

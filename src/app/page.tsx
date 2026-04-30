@@ -1,4 +1,5 @@
 import { AgendaSection } from "@/components/sections/AgendaSection";
+import { ContactSection } from "@/components/sections/ContactSection";
 import { HeroSection } from "@/components/sections/HeroSection";
 import { InfoSections } from "@/components/sections/InfoSections";
 import { OfficialRegistrationForm } from "@/components/sections/OfficialRegistrationForm";
@@ -16,6 +17,7 @@ export default function Home() {
       <div id="registro-oficial">
         <OfficialRegistrationForm />
       </div>
+      <ContactSection />
     </>
   );
 }
