@@ -17,7 +17,7 @@ const bodyFont = Roboto_Condensed({
 });
 
 export const metadata: Metadata = {
-  title: "L.A.M.A. Bike Fest Sabaneta 2026",
+  title: "XII Aniversario L.A.M.A. Medellín y L.A.M.A. Bike Fest Sabaneta 2026",
   description:
     "Landing page oficial del L.A.M.A. Bike Fest Sabaneta 2026: adrenalina, hermandad y motos de alta gama.",
 };

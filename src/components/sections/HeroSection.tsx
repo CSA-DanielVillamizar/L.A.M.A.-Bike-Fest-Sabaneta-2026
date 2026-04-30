@@ -36,7 +36,7 @@ export function HeroSection() {
                 </p>
 
                 <p className="mt-3 max-w-3xl text-base font-semibold text-zinc-100 sm:text-lg">
-                    Sabaneta, Antioquia · 26, 27, 28 y 29 de Junio de 2026
+                    Sabaneta, Antioquia · 26, 27 y 28 de Junio de 2026
                 </p>
 
                 <p className="mt-1.5 text-sm text-zinc-400 sm:text-base">

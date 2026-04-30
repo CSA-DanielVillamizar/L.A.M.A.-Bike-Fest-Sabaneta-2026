@@ -44,7 +44,7 @@ export function InfoSections() {
                         de Medellín y el Valle de Aburrá. El L.A.M.A. Bike Fest no es solo
                         para nuestros capítulos; es el punto de encuentro para toda la
                         cultura biker que promueve el respeto y la rodada segura. ¡Vengan a
-                        compartir con hermanos de 27 países!
+                        compartir con hermanos de 26 países!
                     </p>
                 </motion.article>
             </div>

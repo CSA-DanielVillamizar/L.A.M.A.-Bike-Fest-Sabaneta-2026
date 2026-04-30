@@ -1,5 +1,13 @@
-import { randomUUID } from "crypto";
+import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
+
+type CompanionPayload = {
+    fullName?: string;
+    documentId?: string;
+    category?: string;
+    wantsJersey?: boolean;
+    jerseySize?: string | null;
+};
 
 type OfficialRegistrationPayload = {
     participantCategory?: string;
@@ -18,70 +26,17 @@ type OfficialRegistrationPayload = {
     jerseySize?: string | null;
     hasCompanions?: boolean;
     companionsCount?: number;
-    totalToPay?: number;
+    companions?: CompanionPayload[];
 };
 
 const BASE_REGISTRATION_COST = 100000;
 const COMPANION_COST = 100000;
 const JERSEY_COST = 65000;
 
-type SqlServerConfig = {
-    server: string;
-    port: number;
-    database: string;
-    user: string;
-    password: string;
-    encrypt: boolean;
-    trustServerCertificate: boolean;
-    loginTimeout: number;
-};
+const ALLOWED_COMPANION_CATEGORIES = new Set(["PAREJA", "INVITADO", "HIJO/A"]);
 
 function sanitizeText(value: unknown): string {
     return typeof value === "string" ? value.trim() : "";
-}
-
-function parseBooleanSetting(value: string | undefined, fallback: boolean): boolean {
-    if (value === undefined) {
-        return fallback;
-    }
-
-    return value.toLowerCase() === "true";
-}
-
-function parseSqlServerUrl(rawUrl: string | undefined): SqlServerConfig {
-    if (!rawUrl) {
-        throw new Error("DATABASE_URL no esta configurada.");
-    }
-
-    const [basePart, ...segments] = rawUrl.split(";").filter(Boolean);
-
-    if (!basePart.startsWith("sqlserver://")) {
-        throw new Error("DATABASE_URL tiene un formato no soportado.");
-    }
-
-    const hostPart = basePart.replace("sqlserver://", "");
-    const [server, portText] = hostPart.split(":");
-    const settings = new Map<string, string>();
-
-    for (const segment of segments) {
-        const [key, ...rest] = segment.split("=");
-        if (!key || rest.length === 0) {
-            continue;
-        }
-
-        settings.set(key.toLowerCase(), rest.join("="));
-    }
-
-    return {
-        server,
-        port: Number(portText || 1433),
-        database: settings.get("database") || "",
-        user: settings.get("user") || "",
-        password: settings.get("password") || "",
-        encrypt: parseBooleanSetting(settings.get("encrypt"), true),
-        trustServerCertificate: parseBooleanSetting(settings.get("trustservercertificate"), false),
-        loginTimeout: Number(settings.get("logintimeout") || 30),
-    };
 }
 
 export async function POST(request: NextRequest) {
@@ -104,10 +59,6 @@ export async function POST(request: NextRequest) {
         const directiveRole = sanitizeText(body.directiveRole);
         const jerseySize = sanitizeText(body.jerseySize);
         const medicalCondition = sanitizeText(body.medicalCondition);
-
-        const companionsCount = hasCompanions
-            ? Math.max(0, Number(body.companionsCount) || 0)
-            : 0;
 
         if (
             !participantCategory ||
@@ -139,101 +90,90 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        if (hasCompanions && companionsCount <= 0) {
+        const rawCompanions = Array.isArray(body.companions) ? body.companions : [];
+        const normalizedCompanions = hasCompanions
+            ? rawCompanions.map((companion) => ({
+                fullName: sanitizeText(companion.fullName),
+                documentId: sanitizeText(companion.documentId),
+                category: sanitizeText(companion.category),
+                wantsJersey: Boolean(companion.wantsJersey),
+                jerseySize: sanitizeText(companion.jerseySize),
+            }))
+            : [];
+
+        if (hasCompanions && normalizedCompanions.length === 0) {
             return NextResponse.json(
-                { error: "Indica al menos un acompanante." },
+                { error: "Debes registrar al menos un acompanante." },
                 { status: 400 },
             );
         }
 
+        for (const companion of normalizedCompanions) {
+            if (!companion.fullName || !companion.documentId || !companion.category) {
+                return NextResponse.json(
+                    { error: "Cada acompanante debe tener nombre, documento y categoria." },
+                    { status: 400 },
+                );
+            }
+
+            if (!ALLOWED_COMPANION_CATEGORIES.has(companion.category)) {
+                return NextResponse.json(
+                    { error: "Categoria de acompanante no valida." },
+                    { status: 400 },
+                );
+            }
+
+            if (companion.wantsJersey && !companion.jerseySize) {
+                return NextResponse.json(
+                    { error: "Si un acompanante desea camiseta, debe seleccionar talla." },
+                    { status: 400 },
+                );
+            }
+        }
+
+        const companionsCount = normalizedCompanions.length;
+        const companionsJerseyCount = normalizedCompanions.filter((c) => c.wantsJersey).length;
+
         const calculatedTotal =
             BASE_REGISTRATION_COST +
             companionsCount * COMPANION_COST +
-            (wantsJersey ? JERSEY_COST : 0);
+            (wantsJersey ? JERSEY_COST : 0) +
+            companionsJerseyCount * JERSEY_COST;
 
-        const { default: sql } = await import("mssql");
-        const generatedId = randomUUID();
-        const config = parseSqlServerUrl(process.env.DATABASE_URL);
-        const pool = await sql.connect({
-            server: config.server,
-            port: config.port,
-            database: config.database,
-            user: config.user,
-            password: config.password,
-            options: {
-                encrypt: config.encrypt,
-                trustServerCertificate: config.trustServerCertificate,
+        const registration = await prisma.officialRegistration.create({
+            data: {
+                participantCategory,
+                fullName,
+                documentId,
+                eps,
+                emergencyName,
+                emergencyPhone,
+                chapter,
+                isDirective,
+                directiveScope: isDirective ? directiveScope : null,
+                directiveRole: isDirective ? directiveRole : null,
+                arrivalDate,
+                medicalCondition: medicalCondition || null,
+                wantsJersey,
+                jerseySize: wantsJersey ? jerseySize : null,
+                hasCompanions,
+                companionsCount,
+                totalToPay: calculatedTotal,
+                companions: {
+                    create: normalizedCompanions.map((companion) => ({
+                        fullName: companion.fullName,
+                        documentId: companion.documentId,
+                        category: companion.category,
+                        wantsJersey: companion.wantsJersey,
+                        jerseySize: companion.wantsJersey ? companion.jerseySize : null,
+                    })),
+                },
             },
-            connectionTimeout: config.loginTimeout * 1000,
-            requestTimeout: 30000,
+            select: {
+                id: true,
+                totalToPay: true,
+            },
         });
-
-        const result = await pool.request()
-            .input("id", sql.UniqueIdentifier, generatedId)
-            .input("participantCategory", sql.NVarChar(sql.MAX), participantCategory)
-            .input("fullName", sql.NVarChar(sql.MAX), fullName)
-            .input("documentId", sql.NVarChar(sql.MAX), documentId)
-            .input("eps", sql.NVarChar(sql.MAX), eps)
-            .input("emergencyName", sql.NVarChar(sql.MAX), emergencyName)
-            .input("emergencyPhone", sql.NVarChar(sql.MAX), emergencyPhone)
-            .input("chapter", sql.NVarChar(sql.MAX), chapter)
-            .input("isDirective", sql.Bit, isDirective)
-            .input("directiveScope", sql.NVarChar(sql.MAX), isDirective ? directiveScope : null)
-            .input("directiveRole", sql.NVarChar(sql.MAX), isDirective ? directiveRole : null)
-            .input("arrivalDate", sql.NVarChar(sql.MAX), arrivalDate)
-            .input("medicalCondition", sql.NVarChar(sql.MAX), medicalCondition || null)
-            .input("wantsJersey", sql.Bit, wantsJersey)
-            .input("jerseySize", sql.NVarChar(sql.MAX), wantsJersey ? jerseySize : null)
-            .input("hasCompanions", sql.Bit, hasCompanions)
-            .input("companionsCount", sql.Int, companionsCount)
-            .input("totalToPay", sql.Float, calculatedTotal)
-            .query(`
-                INSERT INTO [OfficialRegistration] (
-                    [id],
-                    [participantCategory],
-                    [fullName],
-                    [documentId],
-                    [eps],
-                    [emergencyName],
-                    [emergencyPhone],
-                    [chapter],
-                    [isDirective],
-                    [directiveScope],
-                    [directiveRole],
-                    [arrivalDate],
-                    [medicalCondition],
-                    [wantsJersey],
-                    [jerseySize],
-                    [hasCompanions],
-                    [companionsCount],
-                    [totalToPay]
-                )
-                OUTPUT INSERTED.[id], INSERTED.[totalToPay]
-                VALUES (
-                    @id,
-                    @participantCategory,
-                    @fullName,
-                    @documentId,
-                    @eps,
-                    @emergencyName,
-                    @emergencyPhone,
-                    @chapter,
-                    @isDirective,
-                    @directiveScope,
-                    @directiveRole,
-                    @arrivalDate,
-                    @medicalCondition,
-                    @wantsJersey,
-                    @jerseySize,
-                    @hasCompanions,
-                    @companionsCount,
-                    @totalToPay
-                );
-            `);
-
-        await pool.close();
-
-        const registration = result.recordset[0];
 
         return NextResponse.json(
             {

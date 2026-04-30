@@ -1,7 +1,7 @@
 "use client";
 
 import { jsPDF } from "jspdf";
-import { FormEvent, useMemo, useRef, useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
 
 const PARTICIPANT_CATEGORIES = [
     "DAMA L.A.M.A.",
@@ -54,10 +54,19 @@ const DIRECTIVE_ROLES = [
 ] as const;
 
 const JERSEY_SIZES = ["S", "M", "L", "XL", "XXL"] as const;
+const COMPANION_CATEGORIES = ["PAREJA", "INVITADO", "HIJO/A"] as const;
 
 const BASE_COST = 100000;
 const COMPANION_COST = 100000;
 const JERSEY_COST = 65000;
+
+type CompanionForm = {
+    fullName: string;
+    documentId: string;
+    category: string;
+    wantsJersey: boolean;
+    jerseySize: string;
+};
 
 type FormValues = {
     participantCategory: string;
@@ -77,6 +86,7 @@ type FormValues = {
     jerseySize: string;
     hasCompanions: boolean;
     companionsCount: number;
+    companions: CompanionForm[];
 };
 
 type SuccessRegistration = {
@@ -87,9 +97,16 @@ type SuccessRegistration = {
     participantCategory: string;
     wantsJersey: boolean;
     jerseySize: string;
-    companionsCount: number;
-    companionNames: string[];
+    companions: CompanionForm[];
 };
+
+const emptyCompanion = (): CompanionForm => ({
+    fullName: "",
+    documentId: "",
+    category: "",
+    wantsJersey: false,
+    jerseySize: "",
+});
 
 const initialForm: FormValues = {
     participantCategory: "",
@@ -109,6 +126,7 @@ const initialForm: FormValues = {
     jerseySize: "",
     hasCompanions: false,
     companionsCount: 0,
+    companions: [],
 };
 
 function formatCop(value: number): string {
@@ -124,37 +142,69 @@ export function OfficialRegistrationForm() {
     const [loading, setLoading] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
     const [successRegistration, setSuccessRegistration] = useState<SuccessRegistration | null>(null);
-    const [companionNames, setCompanionNames] = useState<string[]>([]);
-    const receiptRef = useRef<HTMLDivElement | null>(null);
 
-    const updateCompanionName = (index: number, value: string) => {
-        setCompanionNames((prev) => {
-            const next = [...prev];
-            next[index] = value;
-            return next;
-        });
-    };
-
-    const companionsTotal = form.hasCompanions ? form.companionsCount * COMPANION_COST : 0;
-    const jerseyTotal = form.wantsJersey ? JERSEY_COST : 0;
+    const companionsBaseTotal = form.hasCompanions ? form.companionsCount * COMPANION_COST : 0;
+    const mainJerseyTotal = form.wantsJersey ? JERSEY_COST : 0;
+    const companionsJerseyTotal = form.hasCompanions
+        ? form.companions.reduce((acc, companion) => acc + (companion.wantsJersey ? JERSEY_COST : 0), 0)
+        : 0;
 
     const totalToPay = useMemo(
-        () => BASE_COST + companionsTotal + jerseyTotal,
-        [companionsTotal, jerseyTotal],
+        () => BASE_COST + companionsBaseTotal + mainJerseyTotal + companionsJerseyTotal,
+        [companionsBaseTotal, mainJerseyTotal, companionsJerseyTotal],
     );
 
     const updateField = <K extends keyof FormValues>(field: K, value: FormValues[K]) => {
         setForm((current) => ({ ...current, [field]: value }));
     };
 
+    const setCompanionsCount = (count: number) => {
+        setForm((current) => {
+            const normalizedCount = Math.max(1, count);
+            const existing = current.companions;
+            const resized = Array.from({ length: normalizedCount }, (_, index) => existing[index] ?? emptyCompanion());
+
+            return {
+                ...current,
+                companionsCount: normalizedCount,
+                companions: resized,
+            };
+        });
+    };
+
+    const updateCompanion = <K extends keyof CompanionForm>(index: number, field: K, value: CompanionForm[K]) => {
+        setForm((current) => {
+            const companions = [...current.companions];
+            const currentCompanion = companions[index] ?? emptyCompanion();
+            companions[index] = { ...currentCompanion, [field]: value };
+
+            if (field === "wantsJersey" && value === false) {
+                companions[index].jerseySize = "";
+            }
+
+            return {
+                ...current,
+                companions,
+            };
+        });
+    };
+
     const buildWhatsappUrl = (registration: SuccessRegistration) => {
+        const companionsText = registration.companions.length
+            ? registration.companions
+                .map((c, i) => `${i + 1}. ${c.fullName} (${c.category})${c.wantsJersey ? ` - Camiseta ${c.jerseySize}` : ""}`)
+                .join("\n")
+            : "Sin acompañantes";
+
         const whatsappMessage = [
-            "Hola, envio mi resumen de inscripcion al XIII Aniversario L.A.M.A. Medellin:",
+            "Hola, envio mi resumen de inscripción al XIII Aniversario L.A.M.A. Medellín:",
             `ID de registro: ${registration.id}`,
             `Nombre: ${registration.fullName}`,
-            `Capitulo: ${registration.chapter}`,
+            `Capítulo: ${registration.chapter}`,
+            `Categoría: ${registration.participantCategory}`,
             `Total a pagar: ${formatCop(registration.totalToPay)}`,
-            "Por este medio adjuntare el comprobante de pago.",
+            `Acompañantes:\n${companionsText}`,
+            "Por este medio adjuntaré el comprobante de pago.",
         ].join("\n");
 
         return `https://wa.me/573105127314?text=${encodeURIComponent(whatsappMessage)}`;
@@ -169,71 +219,73 @@ export function OfficialRegistrationForm() {
     };
 
     const generatePDF = () => {
-        if (!successRegistration) return;
+        if (!successRegistration) {
+            return;
+        }
 
         try {
             const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
             const pageW = doc.internal.pageSize.getWidth();
             const left = 20;
             const right = pageW - left;
-            const lineH = 8;
-            let y = 22;
+            const lineH = 7;
+            let y = 20;
 
-            // Header
-            doc.setFontSize(16);
-            doc.setFont("helvetica", "bold");
-            doc.text("XIII Aniversario L.A.M.A. Medell\u00edn", pageW / 2, y, { align: "center" });
-            y += 9;
-            doc.setFontSize(11);
-            doc.setFont("helvetica", "normal");
-            doc.text("Resumen Oficial de Inscripci\u00f3n", pageW / 2, y, { align: "center" });
-            y += 10;
-
-            doc.setDrawColor(180);
-            doc.line(left, y, right, y);
-            y += 10;
-
-            // Registration data
-            const addRow = (label: string, value: string) => {
+            const addLine = (label: string, value: string) => {
                 doc.setFont("helvetica", "bold");
                 doc.setFontSize(10);
                 doc.text(label, left, y);
                 doc.setFont("helvetica", "normal");
-                doc.text(value, left + 50, y);
+                doc.text(value, left + 50, y, { maxWidth: right - (left + 50) });
                 y += lineH;
             };
 
-            addRow("ID de Registro:", successRegistration.id);
-            addRow("Nombre:", successRegistration.fullName);
-            addRow("Cap\u00edtulo:", successRegistration.chapter);
-            addRow("Categor\u00eda:", successRegistration.participantCategory);
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(16);
+            doc.text("XIII Aniversario L.A.M.A. Medellín", pageW / 2, y, { align: "center" });
+            y += 8;
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(11);
+            doc.text("Resumen Oficial de Inscripción", pageW / 2, y, { align: "center" });
+            y += 9;
 
-            // Jersey
-            if (successRegistration.wantsJersey) {
-                addRow("Camiseta oficial:", `S\u00ed \u2014 Talla ${successRegistration.jerseySize || "por definir"}`);
-            } else {
-                addRow("Camiseta oficial:", "No");
-            }
-
-            // Companions
-            if (successRegistration.companionsCount > 0) {
-                addRow("Acompa\u00f1antes:", String(successRegistration.companionsCount));
-                successRegistration.companionNames.forEach((name, i) => {
-                    if (name?.trim()) {
-                        addRow(`  Acompa\u00f1ante ${i + 1}:`, name.trim());
-                    }
-                });
-            } else {
-                addRow("Acompa\u00f1antes:", "Ninguno");
-            }
-
-            addRow("Total a Pagar:", formatCop(successRegistration.totalToPay));
-
-            y += 4;
+            doc.setDrawColor(180);
             doc.line(left, y, right, y);
-            y += 10;
+            y += 8;
 
-            // Bank data
+            addLine("ID de Registro:", successRegistration.id);
+            addLine("Nombre:", successRegistration.fullName);
+            addLine("Capítulo:", successRegistration.chapter);
+            addLine("Categoría:", successRegistration.participantCategory);
+            addLine(
+                "Camiseta titular:",
+                successRegistration.wantsJersey ? `Sí - Talla ${successRegistration.jerseySize || "por definir"}` : "No",
+            );
+
+            y += 2;
+            doc.setFont("helvetica", "bold");
+            doc.text("Acompañantes:", left, y);
+            y += lineH;
+            doc.setFont("helvetica", "normal");
+
+            if (successRegistration.companions.length === 0) {
+                doc.text("Sin acompañantes", left + 4, y);
+                y += lineH;
+            } else {
+                successRegistration.companions.forEach((companion, index) => {
+                    const companionText = `${index + 1}. ${companion.fullName} - Doc: ${companion.documentId} - ${companion.category} - ${companion.wantsJersey ? `Camiseta ${companion.jerseySize}` : "Sin camiseta"}`;
+                    doc.text(companionText, left + 2, y, { maxWidth: right - left - 2 });
+                    y += lineH;
+                });
+            }
+
+            y += 2;
+            addLine("Total a pagar:", formatCop(successRegistration.totalToPay));
+
+            y += 2;
+            doc.line(left, y, right, y);
+            y += 8;
+
             doc.setFont("helvetica", "bold");
             doc.setFontSize(11);
             doc.text("Datos bancarios para el pago", left, y);
@@ -242,52 +294,11 @@ export function OfficialRegistrationForm() {
             doc.setFontSize(10);
             doc.text("Bancolombia Ahorros: 23000013774", left, y);
             y += lineH;
-            doc.text("Titular: Fundaci\u00f3n L.A.M.A. Medell\u00edn", left, y);
-            y += 14;
-
-            doc.line(left, y, right, y);
-            y += 10;
-
-            // PAREJA note
-            if (successRegistration.companionsCount > 0) {
-                doc.setFontSize(9);
-                doc.setFont("helvetica", "bold");
-                doc.setTextColor(180, 90, 0);
-                doc.text("IMPORTANTE:", left, y);
-                doc.setFont("helvetica", "normal");
-                doc.setTextColor(80);
-                y += 6;
-                doc.text(
-                    "Si tu acompa\u00f1ante es de categor\u00eda PAREJA, deber\u00e1 diligenciar",
-                    left,
-                    y,
-                    { maxWidth: right - left },
-                );
-                y += 6;
-                doc.text(
-                    "tambi\u00e9n el formulario oficial de inscripci\u00f3n de forma independiente.",
-                    left,
-                    y,
-                    { maxWidth: right - left },
-                );
-                y += 10;
-                doc.line(left, y, right, y);
-                y += 10;
-            }
-
-            doc.setFontSize(9);
-            doc.setFont("helvetica", "normal");
-            doc.setTextColor(120);
-            doc.text(
-                "Env\u00eda el comprobante de pago junto con tu ID por WhatsApp al: +57 310 512 7314",
-                left,
-                y,
-                { maxWidth: right - left },
-            );
+            doc.text("Titular: Fundación L.A.M.A. Medellín", left, y);
 
             doc.save("Inscripcion-LAMA-Medellin.pdf");
-        } catch (err) {
-            console.error("Error generando PDF:", err);
+        } catch (error) {
+            console.error("Error generando PDF:", error);
         }
     };
 
@@ -298,11 +309,26 @@ export function OfficialRegistrationForm() {
         setSuccessRegistration(null);
 
         try {
-            const normalizedChapter =
-                form.chapter === "Otros" ? form.otherChapter.trim() : form.chapter;
+            const normalizedChapter = form.chapter === "Otros" ? form.otherChapter.trim() : form.chapter;
 
             if (!normalizedChapter) {
-                throw new Error("Debes indicar tu capitulo en Pertenencia L.A.M.A.");
+                throw new Error("Debes indicar tu capítulo en Pertenencia L.A.M.A.");
+            }
+
+            const companions = form.hasCompanions ? form.companions : [];
+
+            if (form.hasCompanions && companions.length !== form.companionsCount) {
+                throw new Error("Debes completar la información de todos los acompañantes.");
+            }
+
+            for (const companion of companions) {
+                if (!companion.fullName.trim() || !companion.documentId.trim() || !companion.category.trim()) {
+                    throw new Error("Cada acompañante debe tener nombre, documento y categoría.");
+                }
+
+                if (companion.wantsJersey && !companion.jerseySize) {
+                    throw new Error("Si un acompañante desea camiseta, debes seleccionar su talla.");
+                }
             }
 
             const payload = {
@@ -312,7 +338,7 @@ export function OfficialRegistrationForm() {
                 directiveRole: form.isDirective ? form.directiveRole : null,
                 jerseySize: form.wantsJersey ? form.jerseySize : null,
                 companionsCount: form.hasCompanions ? form.companionsCount : 0,
-                totalToPay,
+                companions,
             };
 
             const response = await fetch("/api/register/official", {
@@ -338,11 +364,11 @@ export function OfficialRegistrationForm() {
             }
 
             if (!response.ok) {
-                throw new Error(result.error || "No fue posible registrar la inscripcion.");
+                throw new Error(result.error || "No fue posible registrar la inscripción.");
             }
 
             if (!result.id) {
-                throw new Error("El servidor no devolvio el ID del registro.");
+                throw new Error("El servidor no devolvió el ID del registro.");
             }
 
             setSuccessRegistration({
@@ -353,13 +379,16 @@ export function OfficialRegistrationForm() {
                 participantCategory: form.participantCategory,
                 wantsJersey: form.wantsJersey,
                 jerseySize: form.wantsJersey ? form.jerseySize : "",
-                companionsCount: form.hasCompanions ? form.companionsCount : 0,
-                companionNames: form.hasCompanions ? [...companionNames] : [],
+                companions: companions.map((companion) => ({
+                    ...companion,
+                    fullName: companion.fullName.trim(),
+                    documentId: companion.documentId.trim(),
+                })),
             });
-            setCompanionNames([]);
+
             setForm(initialForm);
         } catch (error) {
-            setErrorMessage(error instanceof Error ? error.message : "Error al enviar la inscripcion.");
+            setErrorMessage(error instanceof Error ? error.message : "Error al enviar la inscripción.");
         } finally {
             setLoading(false);
         }
@@ -387,14 +416,9 @@ export function OfficialRegistrationForm() {
 
                     {successRegistration ? (
                         <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-                            <div
-                                ref={receiptRef}
-                                className="rounded-2xl border border-green-500/40 bg-zinc-950/80 p-6"
-                            >
+                            <div className="rounded-2xl border border-green-500/40 bg-zinc-950/80 p-6">
                                 <p className="text-xs uppercase tracking-[0.2em] text-green-300">Registro completado</p>
-                                <h3 className="mt-2 text-3xl font-black text-zinc-50">
-                                    Registro completado con exito
-                                </h3>
+                                <h3 className="mt-2 text-3xl font-black text-zinc-50">Registro completado con éxito</h3>
                                 <p className="mt-2 text-sm text-zinc-300">
                                     Ya puedes realizar el pago y enviar el soporte por WhatsApp para finalizar tu proceso.
                                 </p>
@@ -402,9 +426,7 @@ export function OfficialRegistrationForm() {
                                 <div className="mt-6 grid gap-4 sm:grid-cols-2">
                                     <div className="rounded-xl border border-zinc-700 bg-zinc-900/70 p-4">
                                         <p className="text-xs uppercase tracking-[0.12em] text-zinc-400">ID de registro</p>
-                                        <p className="mt-2 break-all text-lg font-bold text-zinc-100">
-                                            {successRegistration.id}
-                                        </p>
+                                        <p className="mt-2 break-all text-lg font-bold text-zinc-100">{successRegistration.id}</p>
                                     </div>
                                     <div className="rounded-xl border border-zinc-700 bg-zinc-900/70 p-4">
                                         <p className="text-xs uppercase tracking-[0.12em] text-zinc-400">Total a pagar</p>
@@ -416,33 +438,21 @@ export function OfficialRegistrationForm() {
 
                                 <div className="mt-6 rounded-xl border border-zinc-700 bg-zinc-900/70 p-4 text-sm text-zinc-200">
                                     <p><span className="font-semibold text-zinc-100">Nombre:</span> {successRegistration.fullName}</p>
-                                    <p className="mt-2"><span className="font-semibold text-zinc-100">Capitulo:</span> {successRegistration.chapter}</p>
-                                    <p className="mt-2"><span className="font-semibold text-zinc-100">Categoria:</span> {successRegistration.participantCategory}</p>
-                                    {successRegistration.wantsJersey && (
-                                        <p className="mt-2">
-                                            <span className="font-semibold text-zinc-100">Camiseta oficial:</span>{" "}
-                                            Sí — Talla {successRegistration.jerseySize || "por definir"}
-                                        </p>
-                                    )}
-                                    {successRegistration.companionsCount > 0 && (
-                                        <div className="mt-2">
-                                            <p><span className="font-semibold text-zinc-100">Acompañantes:</span> {successRegistration.companionsCount}</p>
-                                            {successRegistration.companionNames.map((name, i) =>
-                                                name?.trim() ? (
-                                                    <p key={i} className="mt-1 pl-3 text-zinc-300">• {name.trim()}</p>
-                                                ) : null,
-                                            )}
-                                        </div>
-                                    )}
-                                </div>
-
-                                {successRegistration.companionsCount > 0 && (
-                                    <div className="mt-4 rounded-lg border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-xs text-amber-200">
-                                        <span className="font-bold">Recuerda:</span> Si algún acompañante es de categoría{" "}
-                                        <span className="font-bold">PAREJA</span>, debe diligenciar el formulario oficial de
-                                        inscripción de forma independiente.
+                                    <p className="mt-2"><span className="font-semibold text-zinc-100">Capítulo:</span> {successRegistration.chapter}</p>
+                                    <p className="mt-2"><span className="font-semibold text-zinc-100">Categoría:</span> {successRegistration.participantCategory}</p>
+                                    <p className="mt-2">
+                                        <span className="font-semibold text-zinc-100">Camiseta titular:</span>{" "}
+                                        {successRegistration.wantsJersey ? `Sí - ${successRegistration.jerseySize}` : "No"}
+                                    </p>
+                                    <div className="mt-3">
+                                        <p><span className="font-semibold text-zinc-100">Acompañantes:</span> {successRegistration.companions.length}</p>
+                                        {successRegistration.companions.map((companion, i) => (
+                                            <p key={`${companion.documentId}-${i}`} className="mt-1 pl-3 text-zinc-300">
+                                                • {companion.fullName} - {companion.category} - Doc: {companion.documentId} - {companion.wantsJersey ? `Camiseta ${companion.jerseySize}` : "Sin camiseta"}
+                                            </p>
+                                        ))}
                                     </div>
-                                )}
+                                </div>
 
                                 <div className="mt-6 rounded-xl border border-zinc-700 bg-zinc-900/70 p-4 text-sm text-zinc-300">
                                     <p className="font-semibold text-zinc-100">Datos bancarios para el pago</p>
@@ -497,30 +507,24 @@ export function OfficialRegistrationForm() {
                     ) : (
                         <form onSubmit={handleSubmit} className="grid gap-8 lg:grid-cols-[2fr_1fr]">
                             <div className="grid gap-5 sm:grid-cols-2">
-                                <h3 className="sm:col-span-2 text-sm font-bold uppercase tracking-[0.16em] text-orange-200">
-                                    Tipo de Participante
-                                </h3>
+                                <h3 className="sm:col-span-2 text-sm font-bold uppercase tracking-[0.16em] text-orange-200">Tipo de Participante</h3>
 
                                 <label className="sm:col-span-2 flex flex-col gap-2 text-sm text-zinc-300">
-                                    Categoria
+                                    Categoría
                                     <select
                                         required
                                         value={form.participantCategory}
                                         onChange={(event) => updateField("participantCategory", event.target.value)}
                                         className="rounded-lg border border-zinc-700 bg-zinc-900/70 px-3 py-2 text-zinc-100 outline-none ring-orange-400/40 transition focus:ring"
                                     >
-                                        <option value="">Selecciona una categoria</option>
+                                        <option value="">Selecciona una categoría</option>
                                         {PARTICIPANT_CATEGORIES.map((category) => (
-                                            <option key={category} value={category}>
-                                                {category}
-                                            </option>
+                                            <option key={category} value={category}>{category}</option>
                                         ))}
                                     </select>
                                 </label>
 
-                                <h3 className="sm:col-span-2 text-sm font-bold uppercase tracking-[0.16em] text-orange-200">
-                                    Datos Personales
-                                </h3>
+                                <h3 className="sm:col-span-2 text-sm font-bold uppercase tracking-[0.16em] text-orange-200">Datos Personales</h3>
 
                                 <label className="sm:col-span-2 flex flex-col gap-2 text-sm text-zinc-300">
                                     Nombre completo
@@ -552,9 +556,7 @@ export function OfficialRegistrationForm() {
                                     />
                                 </label>
 
-                                <h3 className="sm:col-span-2 text-sm font-bold uppercase tracking-[0.16em] text-orange-200">
-                                    Contacto de Emergencia
-                                </h3>
+                                <h3 className="sm:col-span-2 text-sm font-bold uppercase tracking-[0.16em] text-orange-200">Contacto de Emergencia</h3>
 
                                 <label className="flex flex-col gap-2 text-sm text-zinc-300">
                                     Nombre
@@ -576,9 +578,7 @@ export function OfficialRegistrationForm() {
                                     />
                                 </label>
 
-                                <h3 className="sm:col-span-2 text-sm font-bold uppercase tracking-[0.16em] text-orange-200">
-                                    Pertenencia L.A.M.A.
-                                </h3>
+                                <h3 className="sm:col-span-2 text-sm font-bold uppercase tracking-[0.16em] text-orange-200">Pertenencia L.A.M.A.</h3>
 
                                 <label className="sm:col-span-2 flex flex-col gap-2 text-sm text-zinc-300">
                                     Capítulo
@@ -590,9 +590,7 @@ export function OfficialRegistrationForm() {
                                     >
                                         <option value="">Selecciona tu capítulo</option>
                                         {SORTED_CHAPTERS.map((chapter) => (
-                                            <option key={chapter} value={chapter}>
-                                                {chapter}
-                                            </option>
+                                            <option key={chapter} value={chapter}>{chapter}</option>
                                         ))}
                                     </select>
                                 </label>
@@ -632,9 +630,7 @@ export function OfficialRegistrationForm() {
                                             >
                                                 <option value="">Selecciona ámbito</option>
                                                 {DIRECTIVE_SCOPES.map((scope) => (
-                                                    <option key={scope} value={scope}>
-                                                        {scope}
-                                                    </option>
+                                                    <option key={scope} value={scope}>{scope}</option>
                                                 ))}
                                             </select>
                                         </label>
@@ -649,18 +645,14 @@ export function OfficialRegistrationForm() {
                                             >
                                                 <option value="">Selecciona cargo</option>
                                                 {DIRECTIVE_ROLES.map((role) => (
-                                                    <option key={role} value={role}>
-                                                        {role}
-                                                    </option>
+                                                    <option key={role} value={role}>{role}</option>
                                                 ))}
                                             </select>
                                         </label>
                                     </>
                                 )}
 
-                                <h3 className="sm:col-span-2 text-sm font-bold uppercase tracking-[0.16em] text-orange-200">
-                                    Logistica
-                                </h3>
+                                <h3 className="sm:col-span-2 text-sm font-bold uppercase tracking-[0.16em] text-orange-200">Logística</h3>
 
                                 <label className="flex flex-col gap-2 text-sm text-zinc-300">
                                     Fecha de llegada a Sabaneta
@@ -683,9 +675,7 @@ export function OfficialRegistrationForm() {
                                     />
                                 </label>
 
-                                <h3 className="sm:col-span-2 text-sm font-bold uppercase tracking-[0.16em] text-orange-200">
-                                    Mercadeo
-                                </h3>
+                                <h3 className="sm:col-span-2 text-sm font-bold uppercase tracking-[0.16em] text-orange-200">Mercadeo</h3>
 
                                 <label className="sm:col-span-2 flex items-center justify-between rounded-lg border border-zinc-700 bg-zinc-900/50 px-4 py-3 text-sm text-zinc-200">
                                     <span>Interesado en la Camiseta Oficial del Evento? ({formatCop(JERSEY_COST)})</span>
@@ -708,26 +698,32 @@ export function OfficialRegistrationForm() {
                                         >
                                             <option value="">Selecciona talla</option>
                                             {JERSEY_SIZES.map((size) => (
-                                                <option key={size} value={size}>
-                                                    {size}
-                                                </option>
+                                                <option key={size} value={size}>{size}</option>
                                             ))}
                                         </select>
                                     </label>
                                 )}
 
-                                <h3 className="sm:col-span-2 text-sm font-bold uppercase tracking-[0.16em] text-orange-200">
-                                    Acompañantes
-                                </h3>
+                                <h3 className="sm:col-span-2 text-sm font-bold uppercase tracking-[0.16em] text-orange-200">Acompañantes</h3>
 
                                 <label className="sm:col-span-2 flex items-center justify-between rounded-lg border border-zinc-700 bg-zinc-900/50 px-4 py-3 text-sm text-zinc-200">
                                     <span>Asiste con acompañante?</span>
                                     <input
                                         type="checkbox"
                                         checked={form.hasCompanions}
-                                        onChange={(event) =>
-                                            updateField("hasCompanions", event.target.checked)
-                                        }
+                                        onChange={(event) => {
+                                            const checked = event.target.checked;
+                                            updateField("hasCompanions", checked);
+                                            if (checked) {
+                                                setCompanionsCount(form.companionsCount > 0 ? form.companionsCount : 1);
+                                            } else {
+                                                setForm((current) => ({
+                                                    ...current,
+                                                    companionsCount: 0,
+                                                    companions: [],
+                                                }));
+                                            }
+                                        }}
                                         className="h-4 w-4 accent-orange-500"
                                     />
                                 </label>
@@ -741,33 +737,85 @@ export function OfficialRegistrationForm() {
                                                 min={1}
                                                 required
                                                 value={form.companionsCount}
-                                                onChange={(event) => {
-                                                    const count = Math.max(1, Number(event.target.value) || 1);
-                                                    updateField("companionsCount", count);
-                                                    setCompanionNames((prev) => prev.slice(0, count));
-                                                }}
+                                                onChange={(event) => setCompanionsCount(Math.max(1, Number(event.target.value) || 1))}
                                                 className="rounded-lg border border-zinc-700 bg-zinc-900/70 px-3 py-2 text-zinc-100 outline-none ring-orange-400/40 transition focus:ring"
                                             />
                                         </label>
 
-                                        {Array.from({ length: form.companionsCount }).map((_, i) => (
-                                            <label key={i} className="sm:col-span-2 flex flex-col gap-2 text-sm text-zinc-300">
-                                                Nombre del acompañante {i + 1}
-                                                <input
-                                                    required
-                                                    value={companionNames[i] ?? ""}
-                                                    onChange={(event) => updateCompanionName(i, event.target.value)}
-                                                    placeholder={`Nombre completo del acompañante ${i + 1}`}
-                                                    className="rounded-lg border border-zinc-700 bg-zinc-900/70 px-3 py-2 text-zinc-100 outline-none ring-orange-400/40 transition focus:ring"
-                                                />
-                                            </label>
-                                        ))}
+                                        {Array.from({ length: form.companionsCount }).map((_, index) => {
+                                            const companion = form.companions[index] ?? emptyCompanion();
+                                            return (
+                                                <div key={index} className="sm:col-span-2 rounded-lg border border-zinc-700 bg-zinc-900/50 p-4">
+                                                    <p className="mb-3 text-sm font-bold uppercase tracking-[0.12em] text-orange-200">
+                                                        Acompañante {index + 1}
+                                                    </p>
 
-                                        <div className="sm:col-span-2 rounded-lg border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-xs text-amber-200">
-                                            <span className="font-bold">Importante:</span> Si tu acompañante es de categoría{" "}
-                                            <span className="font-bold">PAREJA</span>, deberá diligenciar el formulario oficial de
-                                            inscripción de forma independiente.
-                                        </div>
+                                                    <div className="grid gap-3 sm:grid-cols-2">
+                                                        <label className="sm:col-span-2 flex flex-col gap-2 text-sm text-zinc-300">
+                                                            Nombre completo
+                                                            <input
+                                                                required
+                                                                value={companion.fullName}
+                                                                onChange={(event) => updateCompanion(index, "fullName", event.target.value)}
+                                                                className="rounded-lg border border-zinc-700 bg-zinc-900/70 px-3 py-2 text-zinc-100 outline-none ring-orange-400/40 transition focus:ring"
+                                                            />
+                                                        </label>
+
+                                                        <label className="flex flex-col gap-2 text-sm text-zinc-300">
+                                                            Documento de identidad
+                                                            <input
+                                                                required
+                                                                value={companion.documentId}
+                                                                onChange={(event) => updateCompanion(index, "documentId", event.target.value)}
+                                                                className="rounded-lg border border-zinc-700 bg-zinc-900/70 px-3 py-2 text-zinc-100 outline-none ring-orange-400/40 transition focus:ring"
+                                                            />
+                                                        </label>
+
+                                                        <label className="flex flex-col gap-2 text-sm text-zinc-300">
+                                                            Categoría
+                                                            <select
+                                                                required
+                                                                value={companion.category}
+                                                                onChange={(event) => updateCompanion(index, "category", event.target.value)}
+                                                                className="rounded-lg border border-zinc-700 bg-zinc-900/70 px-3 py-2 text-zinc-100 outline-none ring-orange-400/40 transition focus:ring"
+                                                            >
+                                                                <option value="">Selecciona categoría</option>
+                                                                {COMPANION_CATEGORIES.map((category) => (
+                                                                    <option key={category} value={category}>{category}</option>
+                                                                ))}
+                                                            </select>
+                                                        </label>
+
+                                                        <label className="sm:col-span-2 flex items-center justify-between rounded-lg border border-zinc-700 bg-zinc-900/50 px-4 py-3 text-sm text-zinc-200">
+                                                            <span>¿Desea Camiseta Oficial? ({formatCop(JERSEY_COST)})</span>
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={companion.wantsJersey}
+                                                                onChange={(event) => updateCompanion(index, "wantsJersey", event.target.checked)}
+                                                                className="h-4 w-4 accent-orange-500"
+                                                            />
+                                                        </label>
+
+                                                        {companion.wantsJersey && (
+                                                            <label className="sm:col-span-2 flex flex-col gap-2 text-sm text-zinc-300">
+                                                                Talla de camiseta
+                                                                <select
+                                                                    required
+                                                                    value={companion.jerseySize}
+                                                                    onChange={(event) => updateCompanion(index, "jerseySize", event.target.value)}
+                                                                    className="rounded-lg border border-zinc-700 bg-zinc-900/70 px-3 py-2 text-zinc-100 outline-none ring-orange-400/40 transition focus:ring"
+                                                                >
+                                                                    <option value="">Selecciona talla</option>
+                                                                    {JERSEY_SIZES.map((size) => (
+                                                                        <option key={size} value={size}>{size}</option>
+                                                                    ))}
+                                                                </select>
+                                                            </label>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
                                     </>
                                 )}
                             </div>
@@ -778,7 +826,7 @@ export function OfficialRegistrationForm() {
                                 <div className="mt-4 space-y-3 text-sm text-zinc-200">
                                     <div className="flex items-start justify-between gap-3">
                                         <div>
-                                            <p>Inscripcion base obligatoria</p>
+                                            <p>Inscripción base obligatoria</p>
                                             <p className="text-xs text-zinc-400">Incluye cena del acto protocolario</p>
                                         </div>
                                         <p className="font-semibold">{formatCop(BASE_COST)}</p>
@@ -788,23 +836,44 @@ export function OfficialRegistrationForm() {
                                         <div>
                                             <p>Acompañantes</p>
                                             <p className="text-xs text-zinc-400">
-                                                {form.hasCompanions
-                                                    ? `${form.companionsCount} x ${formatCop(COMPANION_COST)}`
-                                                    : "Sin acompañantes"}
+                                                {form.hasCompanions ? `${form.companionsCount} x ${formatCop(COMPANION_COST)}` : "Sin acompañantes"}
                                             </p>
                                         </div>
-                                        <p className="font-semibold">{formatCop(companionsTotal)}</p>
+                                        <p className="font-semibold">{formatCop(companionsBaseTotal)}</p>
                                     </div>
 
                                     <div className="flex items-start justify-between gap-3">
                                         <div>
-                                            <p>Camiseta oficial</p>
+                                            <p>Camiseta titular</p>
                                             <p className="text-xs text-zinc-400">
                                                 {form.wantsJersey ? `Talla ${form.jerseySize || "pendiente"}` : "No incluida"}
                                             </p>
                                         </div>
-                                        <p className="font-semibold">{formatCop(jerseyTotal)}</p>
+                                        <p className="font-semibold">{formatCop(mainJerseyTotal)}</p>
                                     </div>
+
+                                    <div className="flex items-start justify-between gap-3">
+                                        <div>
+                                            <p>Camisetas de acompañantes</p>
+                                            <p className="text-xs text-zinc-400">
+                                                {form.hasCompanions ? `${form.companions.filter((c) => c.wantsJersey).length} camiseta(s)` : "Ninguna"}
+                                            </p>
+                                        </div>
+                                        <p className="font-semibold">{formatCop(companionsJerseyTotal)}</p>
+                                    </div>
+
+                                    {form.hasCompanions && form.companions.length > 0 && (
+                                        <div className="rounded-lg border border-zinc-700 bg-zinc-900/70 p-3">
+                                            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-300">Detalle acompañantes</p>
+                                            <div className="mt-2 space-y-1 text-xs text-zinc-300">
+                                                {form.companions.map((companion, index) => (
+                                                    <p key={`${companion.documentId}-${index}`}>
+                                                        {index + 1}. {companion.fullName || "(sin nombre)"} - {companion.category || "(sin categoría)"} {companion.wantsJersey ? `- Camiseta ${companion.jerseySize || "pendiente"}` : "- Sin camiseta"}
+                                                    </p>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div className="mt-4 border-t border-zinc-700 pt-4">
@@ -823,7 +892,7 @@ export function OfficialRegistrationForm() {
                                     disabled={loading}
                                     className="mt-5 inline-flex w-full items-center justify-center rounded-full bg-orange-500 px-6 py-3 text-sm font-bold uppercase tracking-[0.12em] text-zinc-950 transition hover:bg-orange-400 disabled:opacity-60"
                                 >
-                                    {loading ? "Guardando..." : "Enviar Inscripcion"}
+                                    {loading ? "Guardando..." : "Enviar Inscripción"}
                                 </button>
                             </aside>
                         </form>

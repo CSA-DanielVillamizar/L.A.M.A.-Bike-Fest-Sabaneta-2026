@@ -47,7 +47,19 @@ model OfficialRegistration {
   jerseySize          String?
   hasCompanions       Boolean  @default(false)
   companionsCount     Int      @default(0)
+  companions          Companion[]
   totalToPay          Float
   paymentStatus       String   @default("PENDING")
   createdAt           DateTime @default(now())
+}
+
+model Companion {
+  id             String               @id @default(uuid())
+  registrationId String
+  registration   OfficialRegistration @relation(fields: [registrationId], references: [id])
+  fullName       String
+  documentId     String
+  category       String
+  wantsJersey    Boolean              @default(false)
+  jerseySize     String?
 }
