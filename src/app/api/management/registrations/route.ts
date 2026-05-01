@@ -33,27 +33,6 @@ const COUNTRY_TO_ISO_A3: Record<string, string> = {
     venezuela: "VEN",
 };
 
-const COLOMBIA_CITY_HINTS = [
-    "sabaneta",
-    "medellin",
-    "envigado",
-    "itagui",
-    "bello",
-    "cali",
-    "bogota",
-    "cartagena",
-    "bucaramanga",
-    "pereira",
-    "manizales",
-    "ibague",
-    "cucuta",
-    "santa marta",
-    "barranquilla",
-    "antioquia",
-    "valle del cauca",
-    "cundinamarca",
-];
-
 const GLOBAL_COUNTRY_GOAL = 26;
 
 function normalizeText(value: string | null | undefined) {
@@ -65,57 +44,8 @@ function normalizeText(value: string | null | undefined) {
         .trim();
 }
 
-function getOfficialCountry(chapter: string | null | undefined): string | null {
-    const normalized = normalizeText(chapter);
-
-    if (!normalized) return "Colombia";
-    if (COUNTRY_TO_ISO_A3[normalized]) return toTitleCase(normalized);
-    if (normalized.includes("internacional")) return null;
-
-    return "Colombia";
-}
-
-function getClubCountry(originCity: string | null | undefined): string | null {
-    const normalized = normalizeText(originCity);
-
-    if (!normalized) return "Colombia";
-    if (COUNTRY_TO_ISO_A3[normalized]) return toTitleCase(normalized);
-
-    const isLikelyColombia = COLOMBIA_CITY_HINTS.some((hint) => normalized.includes(hint));
-    if (isLikelyColombia) return "Colombia";
-
-    // La mayoría de clubes usan ciudad de origen; por defecto se mapea a Colombia.
-    return "Colombia";
-}
-
-function toTitleCase(value: string) {
-    return value
-        .split(" ")
-        .map((word) => (word ? word[0].toUpperCase() + word.slice(1) : ""))
-        .join(" ");
-}
-
 function countryToIsoA3(country: string) {
     return COUNTRY_TO_ISO_A3[normalizeText(country)] || null;
-}
-
-function getDistinctCountries(
-    officialRegistrations: Array<{ chapter: string }>,
-    clubRegistrations: Array<{ originCity: string }>,
-) {
-    const countries = new Set<string>();
-
-    for (const registration of officialRegistrations) {
-        const country = getOfficialCountry(registration.chapter);
-        if (country) countries.add(country);
-    }
-
-    for (const registration of clubRegistrations) {
-        const country = getClubCountry(registration.originCity);
-        if (country) countries.add(country);
-    }
-
-    return Array.from(countries.values()).sort((a, b) => a.localeCompare(b, "es"));
 }
 
 function parseSqlServerUrl(rawUrl: string | undefined) {
@@ -210,7 +140,7 @@ export async function GET(request: Request) {
         const officialRegistrations = officialResult.recordset as Array<{
             id: string;
             fullName: string;
-            country: string;
+            country: string | null;
             chapter: string;
             emergencyPhone: string;
             companionsCount: number;
@@ -224,7 +154,7 @@ export async function GET(request: Request) {
             clubName: string;
             presidentName: string;
             contactPhone: string;
-            country: string;
+            country: string | null;
             originCity: string;
             estimatedAttendees: number;
             isPaid: boolean;
@@ -234,14 +164,14 @@ export async function GET(request: Request) {
         const countryTotals = new Map<string, number>();
 
         for (const registration of officialRegistrations) {
-            const country = registration.country || getOfficialCountry(registration.chapter);
+            const country = (registration.country || "").trim();
             if (!country) continue;
             const totalPeople = (Number(registration.companionsCount) || 0) + 1;
             countryTotals.set(country, (countryTotals.get(country) || 0) + totalPeople);
         }
 
         for (const registration of clubRegistrations) {
-            const country = registration.country || getClubCountry(registration.originCity);
+            const country = (registration.country || "").trim();
             if (!country) continue;
             const totalPeople = Number(registration.estimatedAttendees) || 0;
             countryTotals.set(country, (countryTotals.get(country) || 0) + totalPeople);
@@ -277,7 +207,13 @@ export async function GET(request: Request) {
             .map(([chapter, totalPeople]) => ({ chapter, totalPeople }))
             .sort((a, b) => b.totalPeople - a.totalPeople);
 
-        const distinctCountries = getDistinctCountries(officialRegistrations, clubRegistrations);
+        const distinctCountries = Array.from(
+            new Set(
+                [...officialRegistrations, ...clubRegistrations]
+                    .map((registration) => (registration.country || "").trim())
+                    .filter((country) => Boolean(country)),
+            ).values(),
+        ).sort((a, b) => a.localeCompare(b, "es"));
         const activeCountries = distinctCountries.length;
         const percentage = Math.min(100, Math.round((activeCountries / GLOBAL_COUNTRY_GOAL) * 100));
 
@@ -285,7 +221,7 @@ export async function GET(request: Request) {
             id: registration.id,
             name: registration.fullName,
             chapter: registration.chapter,
-            country: registration.country || (registration.chapter === "Internacional" ? "Internacional" : "Colombia"),
+            country: (registration.country || "").trim() || "No registrado",
             phone: registration.emergencyPhone,
             email: "No registrado",
             companions: registration.companionsCount > 0 ? `${registration.companionsCount} acompanante(s)` : "No",
@@ -298,7 +234,7 @@ export async function GET(request: Request) {
             id: registration.id,
             name: registration.clubName,
             delegate: registration.presidentName,
-            country: registration.country || registration.originCity,
+            country: (registration.country || "").trim() || "No registrado",
             phone: registration.contactPhone,
             attendees: registration.estimatedAttendees,
             isPaid: registration.isPaid,

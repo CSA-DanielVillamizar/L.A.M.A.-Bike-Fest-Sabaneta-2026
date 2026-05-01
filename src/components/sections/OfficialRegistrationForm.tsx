@@ -1,8 +1,8 @@
 "use client";
 
-import { COLOMBIAN_CHAPTERS, COUNTRIES } from "@/constants/countries";
+import { CHAPTERS_BY_COUNTRY, COUNTRIES } from "@/constants/countries";
 import { jsPDF } from "jspdf";
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
 
 const PARTICIPANT_CATEGORIES = [
     "DAMA L.A.M.A.",
@@ -14,8 +14,6 @@ const PARTICIPANT_CATEGORIES = [
     "INVITADO",
     "CLUB HERMANO / INVITADO (Solo Sábado)",
 ] as const;
-
-const SORTED_COLOMBIAN_CHAPTERS = [...COLOMBIAN_CHAPTERS].sort((a, b) => a.localeCompare(b, "es"));
 
 const DIRECTIVE_SCOPES = ["Capítulo", "Región", "País", "Internacional"] as const;
 
@@ -145,30 +143,12 @@ export function OfficialRegistrationForm() {
     const [errorMessage, setErrorMessage] = useState("");
     const [successRegistration, setSuccessRegistration] = useState<SuccessRegistration | null>(null);
 
-    useEffect(() => {
-        setForm((current) => {
-            if (!selectedCountry) {
-                return {
-                    ...current,
-                    chapter: "",
-                    specifiedChapter: "",
-                };
-            }
-
-            if (selectedCountry === "Colombia") {
-                return {
-                    ...current,
-                    chapter: current.chapter === "Internacional" ? "" : current.chapter,
-                    specifiedChapter: "",
-                };
-            }
-
-            return {
-                ...current,
-                chapter: "Internacional",
-            };
-        });
-    }, [selectedCountry]);
+    const availableChapters = useMemo(
+        () => [...(CHAPTERS_BY_COUNTRY[selectedCountry] || [])].sort((a, b) => a.localeCompare(b, "es")),
+        [selectedCountry],
+    );
+    const hasPredefinedChapters = availableChapters.length > 0;
+    const shouldAskSpecifiedChapter = Boolean(selectedCountry) && (!hasPredefinedChapters || form.chapter === "Otro");
 
     const participantBaseTotal = getParticipantBaseCost(form.participantCategory);
     const companionsBaseTotal = form.hasCompanions
@@ -353,9 +333,17 @@ export function OfficialRegistrationForm() {
                 throw new Error("Debes seleccionar tu país en Pertenencia L.A.M.A.");
             }
 
-            const normalizedChapter = selectedCountry === "Colombia"
-                ? form.chapter.trim()
-                : form.specifiedChapter.trim();
+            const selectedChapter = form.chapter.trim();
+            const manualChapter = form.specifiedChapter.trim();
+            const normalizedChapter = shouldAskSpecifiedChapter ? manualChapter : selectedChapter;
+
+            if (hasPredefinedChapters && !selectedChapter) {
+                throw new Error("Debes seleccionar tu capítulo en Pertenencia L.A.M.A.");
+            }
+
+            if (shouldAskSpecifiedChapter && !manualChapter) {
+                throw new Error("Debes especificar tu capítulo en Pertenencia L.A.M.A.");
+            }
 
             if (!normalizedChapter) {
                 throw new Error("Debes indicar tu capítulo en Pertenencia L.A.M.A.");
@@ -651,7 +639,12 @@ export function OfficialRegistrationForm() {
                                         onChange={(event) => {
                                             const country = event.target.value;
                                             setSelectedCountry(country);
-                                            updateField("country", country);
+                                            setForm((current) => ({
+                                                ...current,
+                                                country,
+                                                chapter: "",
+                                                specifiedChapter: "",
+                                            }));
                                         }}
                                         className="rounded-lg border border-zinc-700 bg-zinc-900/70 px-3 py-2 text-zinc-100 outline-none ring-orange-400/40 transition focus:ring"
                                     >
@@ -662,22 +655,32 @@ export function OfficialRegistrationForm() {
                                     </select>
                                 </label>
 
-                                {selectedCountry === "Colombia" ? (
+                                {hasPredefinedChapters && (
                                     <label className="sm:col-span-2 flex flex-col gap-2 text-sm text-zinc-300">
                                         Capítulo
                                         <select
                                             required
                                             value={form.chapter}
-                                            onChange={(event) => updateField("chapter", event.target.value)}
+                                            onChange={(event) => {
+                                                const chapter = event.target.value;
+                                                setForm((current) => ({
+                                                    ...current,
+                                                    chapter,
+                                                    specifiedChapter: chapter === "Otro" ? current.specifiedChapter : "",
+                                                }));
+                                            }}
                                             className="rounded-lg border border-zinc-700 bg-zinc-900/70 px-3 py-2 text-zinc-100 outline-none ring-orange-400/40 transition focus:ring"
                                         >
                                             <option value="">Selecciona tu capítulo</option>
-                                            {SORTED_COLOMBIAN_CHAPTERS.map((chapter) => (
+                                            {availableChapters.map((chapter) => (
                                                 <option key={chapter} value={chapter}>{chapter}</option>
                                             ))}
+                                            <option value="Otro">Otro</option>
                                         </select>
                                     </label>
-                                ) : selectedCountry ? (
+                                )}
+
+                                {shouldAskSpecifiedChapter ? (
                                     <label className="sm:col-span-2 flex flex-col gap-2 text-sm text-zinc-300">
                                         Especifica tu capítulo
                                         <input

@@ -27,26 +27,14 @@ export const COUNTRIES = [
     "Venezuela",
 ] as const;
 
-export const COLOMBIAN_CHAPTERS = [
-    "Armenia",
-    "Barranquilla",
-    "Bogotá",
-    "Bucaramanga",
-    "Cali",
-    "Cartagena",
-    "Cúcuta",
-    "Duitama",
-    "Floridablanca",
-    "Ibagué",
-    "Manizales",
-    "Medellín",
-    "Mocoa",
-    "Neiva",
-    "Pasto",
-    "Pereira",
-    "Popayán",
-    "Puerto Colombia",
-    "Sabana",
-    "Valle de Aburrá",
-    "Zenu",
-] as const;
+export const CHAPTERS_BY_COUNTRY: Record<string, string[]> = {
+    "Argentina": ["Aconcagua", "Buenos Aires", "Mar del Plata", "Mendoza", "Rio Gallegos"],
+    "Bolivia": ["Cochabamba", "Santa Cruz de la Sierra", "Urubo"],
+    "Brasil": ["Anapolis", "Aparecida", "Goiania", "Rio de Janeiro"],
+    "Chile": ["Antofagasta", "Rancagua", "Valparaiso", "Viña del Mar"],
+    "Colombia": ["Antioquia", "Arauquita", "Atlantico", "Barranquilla", "Bogota", "Bucaramanga", "Cali", "Cartagena", "Cucuta", "Ipiales", "Medellin", "Monteria", "Neiva", "Pasto", "Pereira", "Popayan", "Quindio", "Riohacha", "Sabaneta", "Santa Marta", "Sincelejo", "Tulua", "Valledupar", "Villavicencio", "Yopal"],
+    "Ecuador": ["Babahoyo", "Cuenca", "Guayaquil", "Lagoagrio", "Manta", "Otavalo", "Portoviejo", "Quito", "Riobamba", "Valles"],
+    "Peru": ["Arequipa", "Lima"],
+    "Uruguay": ["Cupe", "Las Piedras", "Montevideo", "Rivera"],
+    "Venezuela": ["Barquisimeto", "Caracas", "Maturin", "Merida", "San Cristobal", "Tucupita", "Valencia"],
+};
