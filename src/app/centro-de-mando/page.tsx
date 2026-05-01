@@ -16,6 +16,7 @@ import {
 } from "recharts";
 
 const SESSION_PASSWORD_KEY = "lama-admin-access-password";
+const PRESENTATION_MODE_KEY = "lama-presentation-mode";
 const WORLD_GEO_URL = "https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson";
 
 type OfficialAdminRecord = {
@@ -93,6 +94,7 @@ export default function AdminPage() {
     });
     const [mapTooltip, setMapTooltip] = useState<{ country: string; totalPeople: number } | null>(null);
     const [copyToast, setCopyToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
+    const [presentationMode, setPresentationMode] = useState(false);
     const [passwordInput, setPasswordInput] = useState("");
     const [accessPassword, setAccessPassword] = useState("");
     const [isAuthorized, setIsAuthorized] = useState(false);
@@ -121,6 +123,17 @@ export default function AdminPage() {
             window.sessionStorage.removeItem(SESSION_PASSWORD_KEY);
         }
     }, [expectedPassword]);
+
+    useEffect(() => {
+        const storedPresentationMode = window.localStorage.getItem(PRESENTATION_MODE_KEY);
+        if (storedPresentationMode === "true") {
+            setPresentationMode(true);
+        }
+    }, []);
+
+    useEffect(() => {
+        window.localStorage.setItem(PRESENTATION_MODE_KEY, String(presentationMode));
+    }, [presentationMode]);
 
     useEffect(() => {
         if (!isAuthorized || !accessPassword) {
@@ -329,12 +342,16 @@ export default function AdminPage() {
             maximumFractionDigits: 0,
         }).format(totalRevenueAmount);
 
+        const revenueLine = presentationMode
+            ? "💰 *Recaudación Total:* *** USD"
+            : `💰 *Recaudación Total:* $${formattedRevenue} USD`;
+
         const report = `📊 *REPORTE DIARIO: XIII ANIVERSARIO L.A.M.A. MEDELLÍN* 🏍️
 📅 Fecha: ${formattedDate}
 
 🌎 *Países Confirmados:* ${globalCountryProgress.activeCountries} de 26 (${globalCountryProgress.percentage}%)
 👥 *Total Almas Confirmadas:* ${totalConfirmedPeople} (Pilotos + Acompañantes)
-💰 *Recaudación Total:* $${formattedRevenue} USD
+    ${revenueLine}
 
 🏁 _"¡La pasión no conoce fronteras, nos vemos en Sabaneta!"_
 🌐 lamabikefestsabaneta.com`;
@@ -434,6 +451,17 @@ export default function AdminPage() {
                         <div className="flex flex-wrap gap-2 sm:justify-end">
                             <button
                                 type="button"
+                                onClick={() => setPresentationMode((current) => !current)}
+                                className={`inline-flex items-center justify-center rounded-full px-5 py-3 text-sm font-bold uppercase tracking-[0.08em] transition ${presentationMode
+                                    ? "border border-amber-400 bg-amber-400/15 text-amber-300 hover:bg-amber-400/25"
+                                    : "border border-zinc-600 text-zinc-300 hover:border-zinc-400 hover:text-zinc-100"
+                                    }`}
+                            >
+                                {presentationMode ? "Ocultar Modo Presentación" : "Activar Modo Presentación"}
+                            </button>
+
+                            <button
+                                type="button"
                                 onClick={handleCopyDailyReport}
                                 className="inline-flex items-center justify-center rounded-full bg-[#25D366] px-5 py-3 text-sm font-bold uppercase tracking-[0.08em] text-zinc-950 transition hover:brightness-110"
                             >
@@ -470,10 +498,20 @@ export default function AdminPage() {
                     </div>
                 </header>
 
+                {presentationMode ? (
+                    <div className="rounded-xl border border-amber-500/35 bg-amber-500/10 px-4 py-3 text-sm font-semibold text-amber-200">
+                        Modo Presentación Activo: Datos Sensibles Ocultos
+                    </div>
+                ) : null}
+
                 <section className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <article className="rounded-2xl border border-white/10 bg-black/35 p-6">
                         <p className="text-xs uppercase tracking-[0.2em] text-zinc-400">Total Recaudado</p>
-                        <p className="mt-3 font-display text-4xl font-bold text-orange-300">{totalPaidCount}</p>
+                        <p className="mt-3 font-display text-4xl font-bold text-orange-300">
+                            <span className={presentationMode ? "blur-sm select-none" : ""}>
+                                ${new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(totalRevenueAmount)} USD
+                            </span>
+                        </p>
                         <p className="mt-2 text-sm text-zinc-400">Pagos confirmados en el sistema.</p>
                     </article>
 
@@ -705,7 +743,7 @@ export default function AdminPage() {
                                                             : "bg-red-500/20 text-red-300 hover:bg-red-500/30"
                                                             }`}
                                                     >
-                                                        {pendingKeys[pendingKey] ? "Actualizando..." : item.isPaid ? "Pagado" : "Pendiente"}
+                                                        {presentationMode ? "Oculto" : pendingKeys[pendingKey] ? "Actualizando..." : item.isPaid ? "Pagado" : "Pendiente"}
                                                     </button>
                                                 </td>
                                             </tr>
@@ -768,7 +806,7 @@ export default function AdminPage() {
                                                             : "bg-red-500/20 text-red-300 hover:bg-red-500/30"
                                                             }`}
                                                     >
-                                                        {pendingKeys[pendingKey] ? "Actualizando..." : item.isPaid ? "Pagado" : "Pendiente"}
+                                                        {presentationMode ? "Oculto" : pendingKeys[pendingKey] ? "Actualizando..." : item.isPaid ? "Pagado" : "Pendiente"}
                                                     </button>
                                                 </td>
                                             </tr>
