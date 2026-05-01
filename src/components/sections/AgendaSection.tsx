@@ -70,7 +70,7 @@ const agendaDays: AgendaDay[] = [
                 time: "11:00 AM – 02:00 PM",
                 title: "Rodada hacia MEDAYORK Mirador Gastro Bar",
                 description:
-                    "Rodada oficial hacia el Mirador Gastro Bar MEDAYORK. Seguiremos disfrutando de conciertos en vivo y espectáculos exclusivos preparados para todos nuestros visitantes internacionales.",
+                    "Rodada oficial hacia el Mirador Gastro Bar MEDAYORK. Seguiremos disfrutando de conciertos en vivo y espectáculos exclusivos preparados para todos nuestros visitantes.",
             },
         ],
     },
