@@ -3,6 +3,7 @@
 import { CHAPTERS_BY_COUNTRY, COUNTRIES } from "@/constants/countries";
 import { AnimatePresence, motion } from "framer-motion";
 import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
 import { FormEvent, useMemo, useState } from "react";
 
 const PARTICIPANT_CATEGORIES = [
@@ -370,26 +371,19 @@ export function OfficialRegistrationForm() {
 
             if (logoDataUrl) {
                 const props = doc.getImageProperties(logoDataUrl);
-                const logoWidth = 80;
+                const logoWidth = 55;
                 const logoHeight = logoWidth * (props.height / props.width);
                 const logoX = (pageW - logoWidth) / 2;
                 doc.addImage(logoDataUrl, getImageFormat(logoDataUrl), logoX, y, logoWidth, logoHeight);
                 logoBottomY = y + logoHeight;
             }
 
+            const tableTitleY = logoBottomY + 12;
             doc.setFont("helvetica", "bold");
-            doc.setFontSize(16);
-            doc.text("XIII Aniversario L.A.M.A. Medellín", pageW / 2, logoBottomY + 8, { align: "center" });
-            doc.setFont("helvetica", "normal");
-            doc.setFontSize(11);
-            doc.text("Resumen Oficial de Inscripción", pageW / 2, logoBottomY + 14, { align: "center" });
+            doc.setFontSize(15);
+            doc.text("Resumen Oficial de Inscripción", pageW / 2, tableTitleY, { align: "center" });
 
-            // 15mm of whitespace between logo and table start.
-            y = logoBottomY + 15;
-
-            doc.setDrawColor(210, 210, 210);
-            doc.line(left, y, right, y);
-            y += 7;
+            y = tableTitleY + 6;
 
             const tableRows: Array<[string, string]> = [
                 ["ID de Registro", successRegistration.id],
@@ -408,34 +402,45 @@ export function OfficialRegistrationForm() {
                 ["Total a pagar", formatCop(successRegistration.totalToPay)],
             ];
 
-            const rowH = 8;
-            const tableW = right - left;
-            const labelColW = 56;
-
-            doc.setDrawColor(224, 224, 224);
-            doc.setLineWidth(0.2);
-            tableRows.forEach(([label, value], index) => {
-                const rowTop = y + index * rowH;
-                if (index % 2 === 0) {
-                    doc.setFillColor(250, 250, 250);
-                    doc.rect(left, rowTop, tableW, rowH, "F");
-                }
-
-                doc.rect(left, rowTop, tableW, rowH);
-                doc.line(left + labelColW, rowTop, left + labelColW, rowTop + rowH);
-
-                doc.setFont("helvetica", "bold");
-                doc.setFontSize(10);
-                doc.text(label, left + 2, rowTop + 5.4);
-
-                doc.setFont("helvetica", "normal");
-                doc.text(value, left + labelColW + 2, rowTop + 5.4, { maxWidth: tableW - labelColW - 4 });
+            autoTable(doc, {
+                startY: y,
+                margin: { left, right: pageW - right },
+                head: [["Campo", "Detalle"]],
+                body: tableRows,
+                theme: "grid",
+                headStyles: {
+                    fillColor: [249, 115, 22],
+                    textColor: [255, 255, 255],
+                    fontStyle: "bold",
+                    fontSize: 11,
+                    lineColor: [233, 236, 239],
+                    lineWidth: 0.2,
+                },
+                bodyStyles: {
+                    fontSize: 10,
+                    cellPadding: 5,
+                    lineColor: [233, 236, 239],
+                    lineWidth: 0.2,
+                    textColor: [40, 40, 40],
+                },
+                alternateRowStyles: {
+                    fillColor: [248, 249, 250],
+                },
+                styles: {
+                    overflow: "linebreak",
+                    font: "helvetica",
+                },
+                columnStyles: {
+                    0: { cellWidth: 62, fontStyle: "bold" },
+                    1: { cellWidth: "auto" },
+                },
             });
 
-            y += tableRows.length * rowH + 10;
+            const tableEndY = (doc as jsPDF & { lastAutoTable?: { finalY?: number } }).lastAutoTable?.finalY || y;
 
             doc.setFont("helvetica", "bold");
             doc.setFontSize(11);
+            y = tableEndY + 7;
             doc.text("Instrucciones de Pago", left, y);
             y += 6;
             doc.setFont("helvetica", "normal");
@@ -449,11 +454,18 @@ export function OfficialRegistrationForm() {
                 const qrWidth = 45;
                 const qrHeight = (qrWidth * 753) / 423;
                 const qrX = (pageW - qrWidth) / 2;
-                const qrY = Math.max(y + 10, pageH - qrHeight - 14);
+                let qrTitleY = Math.max(tableEndY + 15, y + 12);
+                let qrY = qrTitleY + 4;
+
+                if (qrY + qrHeight + 10 > pageH) {
+                    doc.addPage();
+                    qrTitleY = 30;
+                    qrY = qrTitleY + 4;
+                }
 
                 doc.setFont("helvetica", "bold");
                 doc.setFontSize(12);
-                doc.text("PASO FINAL: REALIZA TU PAGO", pageW / 2, qrY - 6, { align: "center" });
+                doc.text("PASO FINAL: REALIZA TU PAGO", pageW / 2, qrTitleY, { align: "center" });
 
                 doc.setDrawColor(230, 230, 230);
                 doc.roundedRect(qrX - 3, qrY - 3, qrWidth + 6, qrHeight + 6, 2, 2);
