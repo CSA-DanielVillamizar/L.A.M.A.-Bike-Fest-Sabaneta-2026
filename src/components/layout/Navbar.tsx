@@ -7,7 +7,7 @@ const navLinks = [
     { href: "#inicio", label: "Inicio" },
     { href: "#programa", label: "Programa" },
     { href: "#clubes", label: "Clubes" },
-    { href: "#registro-oficial", label: "Registro" },
+    { href: "#registro-oficial", label: "Inscribirme" },
     { href: "#contacto", label: "Contacto" },
 ];
 
@@ -45,17 +45,14 @@ export function Navbar() {
                         <Link
                             key={link.href}
                             href={link.href}
-                            className="whitespace-nowrap rounded-full px-2 py-1 transition hover:text-orange-400"
+                            className={`whitespace-nowrap rounded-full px-2 py-1 transition ${link.href === "#registro-oficial"
+                                ? "border border-orange-500/60 bg-orange-500/15 px-3 py-1.5 font-semibold text-orange-300 hover:bg-orange-500/25 hover:text-orange-200"
+                                : "hover:text-orange-400"
+                                }`}
                         >
                             {link.label}
                         </Link>
                     ))}
-                    <Link
-                        href="#registro-oficial"
-                        className="whitespace-nowrap rounded-full border border-orange-500/60 bg-orange-500/15 px-3 py-1.5 font-semibold text-orange-300 transition hover:bg-orange-500/25 hover:text-orange-200"
-                    >
-                        VIP PASS
-                    </Link>
                 </div>
             </nav>
         </header>
