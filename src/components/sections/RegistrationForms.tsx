@@ -52,17 +52,18 @@ export function RegistrationForms() {
                 body: JSON.stringify(data),
             });
 
+            const result = await response.json();
+
             if (!response.ok) {
-                throw new Error("Error en la solicitud");
+                throw new Error(result.error || "Error en la solicitud");
             }
 
-            await response.json();
             setClubSuccess(true);
-            setClubMessage("¡Club registrado correctamente! Te contactaremos pronto.");
+            setClubMessage(result.message || "¡Club registrado correctamente! Te contactaremos pronto.");
             event.currentTarget.reset();
             setTimeout(() => setClubSuccess(false), 5000);
         } catch (error) {
-            setClubMessage("Error al registrar el club. Intenta nuevamente.");
+            setClubMessage(error instanceof Error ? error.message : "Error al registrar el club. Intenta nuevamente.");
             console.error(error);
         } finally {
             setClubLoading(false);
