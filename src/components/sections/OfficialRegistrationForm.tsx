@@ -357,29 +357,35 @@ export function OfficialRegistrationForm() {
 
             // Brand strip header
             doc.setFillColor(249, 115, 22);
-            doc.rect(0, 0, pageW, 14, "F");
+            doc.rect(0, 0, pageW, 8, "F");
             doc.setFont("helvetica", "bold");
             doc.setFontSize(10);
             doc.setTextColor(255, 255, 255);
-            doc.text("L.A.M.A. Medellín | Registro Oficial", left, 9);
+            doc.text("L.A.M.A. Medellín | Registro Oficial", left, 5.6);
             doc.setTextColor(0, 0, 0);
 
-            y = 20;
+            y = 14;
+
+            let logoBottomY = y;
 
             if (logoDataUrl) {
                 const props = doc.getImageProperties(logoDataUrl);
-                const logoWidth = 22;
+                const logoWidth = 80;
                 const logoHeight = logoWidth * (props.height / props.width);
-                doc.addImage(logoDataUrl, getImageFormat(logoDataUrl), left, y - 1, logoWidth, logoHeight);
+                const logoX = (pageW - logoWidth) / 2;
+                doc.addImage(logoDataUrl, getImageFormat(logoDataUrl), logoX, y, logoWidth, logoHeight);
+                logoBottomY = y + logoHeight;
             }
 
             doc.setFont("helvetica", "bold");
             doc.setFontSize(16);
-            doc.text("XIII Aniversario L.A.M.A. Medellín", pageW / 2 + 12, y + 7, { align: "center" });
+            doc.text("XIII Aniversario L.A.M.A. Medellín", pageW / 2, logoBottomY + 8, { align: "center" });
             doc.setFont("helvetica", "normal");
             doc.setFontSize(11);
-            doc.text("Resumen Oficial de Inscripción", pageW / 2 + 12, y + 14, { align: "center" });
-            y += 34;
+            doc.text("Resumen Oficial de Inscripción", pageW / 2, logoBottomY + 14, { align: "center" });
+
+            // 15mm of whitespace between logo and table start.
+            y = logoBottomY + 15;
 
             doc.setDrawColor(210, 210, 210);
             doc.line(left, y, right, y);
@@ -437,18 +443,25 @@ export function OfficialRegistrationForm() {
             doc.text("Bancolombia Ahorros: 23000013774", left, y);
             y += 5;
             doc.text("Titular: Fundación L.A.M.A. Medellín", left, y);
-            y += 9;
+            y += 8;
 
             if (qrDataUrl) {
-                const qrSize = 40;
-                const qrX = right - qrSize;
-                const qrY = Math.min(y, pageH - qrSize - 18);
+                const qrWidth = 45;
+                const qrHeight = (qrWidth * 753) / 423;
+                const qrX = (pageW - qrWidth) / 2;
+                const qrY = Math.max(y + 10, pageH - qrHeight - 14);
+
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(12);
+                doc.text("PASO FINAL: REALIZA TU PAGO", pageW / 2, qrY - 6, { align: "center" });
 
                 doc.setDrawColor(230, 230, 230);
-                doc.roundedRect(qrX - 3, qrY - 3, qrSize + 6, qrSize + 6, 2, 2);
-                doc.addImage(qrDataUrl, getImageFormat(qrDataUrl), qrX, qrY, qrSize, qrSize);
-                doc.setFont("helvetica", "bold");
-                doc.text("Escanea para pagar desde tu App Bancaria", left, qrY + 20);
+                doc.roundedRect(qrX - 3, qrY - 3, qrWidth + 6, qrHeight + 6, 2, 2);
+                doc.addImage(qrDataUrl, getImageFormat(qrDataUrl), qrX, qrY, qrWidth, qrHeight);
+
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(10);
+                doc.text("Escanea para pagar desde tu App Bancaria", pageW / 2, qrY + qrHeight + 6, { align: "center" });
             }
 
             doc.save("Inscripcion-LAMA-Medellin.pdf");
