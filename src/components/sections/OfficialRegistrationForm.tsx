@@ -371,7 +371,7 @@ export function OfficialRegistrationForm() {
 
             if (logoDataUrl) {
                 const props = doc.getImageProperties(logoDataUrl);
-                const logoWidth = 55;
+                const logoWidth = 45;
                 const logoHeight = logoWidth * (props.height / props.width);
                 const logoX = (pageW - logoWidth) / 2;
                 doc.addImage(logoDataUrl, getImageFormat(logoDataUrl), logoX, y, logoWidth, logoHeight);
@@ -414,17 +414,17 @@ export function OfficialRegistrationForm() {
                     fontStyle: "bold",
                     fontSize: 11,
                     lineColor: [233, 236, 239],
-                    lineWidth: 0.2,
+                    lineWidth: 0.1,
                 },
                 bodyStyles: {
                     fontSize: 10,
                     cellPadding: 5,
                     lineColor: [233, 236, 239],
-                    lineWidth: 0.2,
+                    lineWidth: 0.1,
                     textColor: [40, 40, 40],
                 },
                 alternateRowStyles: {
-                    fillColor: [248, 249, 250],
+                    fillColor: [252, 252, 252],
                 },
                 styles: {
                     overflow: "linebreak",

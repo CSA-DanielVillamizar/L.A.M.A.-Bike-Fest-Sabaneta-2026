@@ -62,6 +62,12 @@ type AdminPayload = {
 
 const DONUT_COLORS = ["#f97316", "#ea580c", "#c2410c", "#a16207", "#0f172a", "#1f2937", "#334155", "#52525b"];
 
+const formatCopCurrency = (value: number) => new Intl.NumberFormat("es-CO", {
+    style: "currency",
+    currency: "COP",
+    maximumFractionDigits: 0,
+}).format(value);
+
 function downloadCsvFile(filename: string, rows: string[][]) {
     // Agregar BOM para UTF-8 — obliga a Excel a reconocer acentos y ñ
     const BOM = '\uFEFF';
@@ -338,14 +344,11 @@ export default function AdminPage() {
             year: "numeric",
         });
 
-        const formattedRevenue = new Intl.NumberFormat("en-US", {
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 0,
-        }).format(totalRevenueAmount);
+        const formattedRevenue = formatCopCurrency(totalRevenueAmount);
 
         const revenueLine = presentationMode
-            ? "💰 *Recaudación Total:* *** USD"
-            : `💰 *Recaudación Total:* $${formattedRevenue} USD`;
+            ? "💰 *Recaudación Total:* *** COP"
+            : `💰 *Recaudación Total:* ${formattedRevenue} COP`;
 
         const report = `📊 *REPORTE DIARIO: XIII ANIVERSARIO L.A.M.A. MEDELLÍN* 🏍️
 📅 Fecha: ${formattedDate}
@@ -513,7 +516,7 @@ export default function AdminPage() {
                         <p className="text-xs uppercase tracking-[0.2em] text-zinc-400">Total Recaudado</p>
                         <p className="mt-3 font-display text-4xl font-bold text-orange-300">
                             <span className={presentationMode ? "blur-sm select-none" : ""}>
-                                ${new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(totalRevenueAmount)} USD
+                                {formatCopCurrency(totalRevenueAmount)} COP
                             </span>
                         </p>
                         <p className="mt-2 text-sm text-zinc-400">Pagos confirmados en el sistema.</p>
