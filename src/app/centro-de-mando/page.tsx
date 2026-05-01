@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { scaleLinear } from "d3-scale";
+import { ComposableMap, Geographies, Geography } from "react-simple-maps";
 import {
     Bar,
     BarChart,
@@ -14,6 +16,7 @@ import {
 } from "recharts";
 
 const SESSION_PASSWORD_KEY = "lama-admin-access-password";
+const WORLD_GEO_URL = "https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson";
 
 type OfficialAdminRecord = {
     id: string;
@@ -44,6 +47,7 @@ type AdminPayload = {
     clubs: ClubAdminRecord[];
     analytics: {
         registrationsByCountry: Array<{ country: string; totalPeople: number }>;
+        registrationsByCountryIso: Array<{ country: string; isoA3: string; totalPeople: number }>;
         registrationsByChapter: Array<{ chapter: string; totalPeople: number }>;
     };
 };
@@ -74,7 +78,9 @@ export default function AdminPage() {
     const [errorMessage, setErrorMessage] = useState("");
     const [pendingKeys, setPendingKeys] = useState<Record<string, boolean>>({});
     const [registrationsByCountry, setRegistrationsByCountry] = useState<Array<{ country: string; totalPeople: number }>>([]);
+    const [registrationsByCountryIso, setRegistrationsByCountryIso] = useState<Array<{ country: string; isoA3: string; totalPeople: number }>>([]);
     const [registrationsByChapter, setRegistrationsByChapter] = useState<Array<{ chapter: string; totalPeople: number }>>([]);
+    const [mapTooltip, setMapTooltip] = useState<{ country: string; totalPeople: number } | null>(null);
     const [passwordInput, setPasswordInput] = useState("");
     const [accessPassword, setAccessPassword] = useState("");
     const [isAuthorized, setIsAuthorized] = useState(false);
@@ -129,6 +135,7 @@ export default function AdminPage() {
                 setOfficials(data.officials);
                 setClubs(data.clubs);
                 setRegistrationsByCountry(data.analytics?.registrationsByCountry ?? []);
+                setRegistrationsByCountryIso(data.analytics?.registrationsByCountryIso ?? []);
                 setRegistrationsByChapter(data.analytics?.registrationsByChapter ?? []);
             } catch (error) {
                 setErrorMessage(error instanceof Error ? error.message : "No fue posible cargar el panel.");
@@ -223,8 +230,26 @@ export default function AdminPage() {
         setOfficials([]);
         setClubs([]);
         setRegistrationsByCountry([]);
+        setRegistrationsByCountryIso([]);
         setRegistrationsByChapter([]);
+        setMapTooltip(null);
     };
+
+    const countryTotalsByIso = useMemo(() => {
+        const entries = registrationsByCountryIso.map((item) => [item.isoA3.toUpperCase(), item] as const);
+        return new Map(entries);
+    }, [registrationsByCountryIso]);
+
+    const maxCountryPeople = useMemo(
+        () => Math.max(0, ...registrationsByCountryIso.map((item) => item.totalPeople)),
+        [registrationsByCountryIso],
+    );
+
+    const heatColorScale = useMemo(() => {
+        return scaleLinear<string>()
+            .domain([1, Math.max(1, maxCountryPeople)])
+            .range(["#fdba74", "#f97316"]);
+    }, [maxCountryPeople]);
 
     const handleExportCsv = () => {
         // Función helper para formatear fechas
@@ -359,6 +384,87 @@ export default function AdminPage() {
                         <p className="mt-3 font-display text-4xl font-bold text-zinc-100">{totalRecordsCount}</p>
                         <p className="mt-2 text-sm text-zinc-400">Registros oficiales y clubes consolidados.</p>
                     </article>
+                </section>
+
+                <section className="rounded-2xl border border-white/10 bg-black/35 p-6">
+                    <div className="mb-4 flex flex-col gap-2">
+                        <h2 className="font-display text-2xl font-bold text-zinc-100">Mapa de Calor Mundial</h2>
+                        <p className="text-sm text-zinc-400">
+                            Densidad de inscritos por país, sumando oficiales, acompañantes y asistentes estimados de clubes.
+                        </p>
+                    </div>
+
+                    <div className="relative h-[340px] w-full overflow-hidden rounded-xl border border-white/10 bg-zinc-950/60 sm:h-[420px]">
+                        <ComposableMap
+                            projection="geoMercator"
+                            projectionConfig={{ scale: 120 }}
+                            width={980}
+                            height={460}
+                            style={{ width: "100%", height: "100%" }}
+                        >
+                            <Geographies geography={WORLD_GEO_URL}>
+                                {({ geographies }) =>
+                                    geographies.map((geo) => {
+                                        const isoA3 = String(geo.id || "").toUpperCase();
+                                        const countryData = countryTotalsByIso.get(isoA3);
+                                        const totalPeople = countryData?.totalPeople || 0;
+                                        const countryName = countryData?.country || (geo.properties.name as string) || "País";
+
+                                        const fillColor = totalPeople > 0
+                                            ? heatColorScale(totalPeople)
+                                            : "#1a1a1a";
+
+                                        return (
+                                            <Geography
+                                                key={geo.rsmKey}
+                                                geography={geo}
+                                                onMouseEnter={() => {
+                                                    if (totalPeople > 0) {
+                                                        setMapTooltip({ country: countryName, totalPeople });
+                                                    }
+                                                }}
+                                                onMouseLeave={() => setMapTooltip(null)}
+                                                style={{
+                                                    default: {
+                                                        fill: fillColor,
+                                                        stroke: "#27272a",
+                                                        strokeWidth: 0.5,
+                                                        outline: "none",
+                                                    },
+                                                    hover: {
+                                                        fill: totalPeople > 0 ? "#fb923c" : "#262626",
+                                                        stroke: "#3f3f46",
+                                                        strokeWidth: 0.7,
+                                                        outline: "none",
+                                                    },
+                                                    pressed: {
+                                                        fill: fillColor,
+                                                        outline: "none",
+                                                    },
+                                                }}
+                                            />
+                                        );
+                                    })
+                                }
+                            </Geographies>
+                        </ComposableMap>
+
+                        <div className="pointer-events-none absolute bottom-3 left-3 rounded-lg border border-white/10 bg-black/70 px-3 py-2 text-[11px] text-zinc-300">
+                            <div className="mb-1 text-[10px] uppercase tracking-[0.14em] text-zinc-400">Intensidad</div>
+                            <div className="h-2 w-28 rounded-full bg-gradient-to-r from-[#fdba74] to-[#f97316]" />
+                            <div className="mt-1 flex justify-between text-[10px] text-zinc-400">
+                                <span>1</span>
+                                <span>{maxCountryPeople || 0}</span>
+                            </div>
+                        </div>
+
+                        {mapTooltip && (
+                            <div className="pointer-events-none absolute right-3 top-3 rounded-lg border border-orange-500/40 bg-zinc-950/95 px-3 py-2 text-xs text-zinc-100 shadow-lg shadow-black/40">
+                                <p className="font-semibold text-orange-300">{mapTooltip.country}</p>
+                                <p className="mt-0.5 text-zinc-300">{mapTooltip.totalPeople} persona(s)</p>
+                            </div>
+                        )}
+                    </div>
                 </section>
 
                 <section className="grid grid-cols-1 gap-4 xl:grid-cols-2">
