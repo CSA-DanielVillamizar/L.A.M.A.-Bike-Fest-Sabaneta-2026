@@ -92,6 +92,7 @@ export default function AdminPage() {
         percentage: 0,
     });
     const [mapTooltip, setMapTooltip] = useState<{ country: string; totalPeople: number } | null>(null);
+    const [copyToast, setCopyToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
     const [passwordInput, setPasswordInput] = useState("");
     const [accessPassword, setAccessPassword] = useState("");
     const [isAuthorized, setIsAuthorized] = useState(false);
@@ -167,6 +168,16 @@ export default function AdminPage() {
     const totalRecordsCount = useMemo(
         () => officials.length + clubs.length,
         [officials.length, clubs.length],
+    );
+
+    const totalConfirmedPeople = useMemo(
+        () => registrationsByCountry.reduce((sum, item) => sum + item.totalPeople, 0),
+        [registrationsByCountry],
+    );
+
+    const totalRevenueAmount = useMemo(
+        () => officials.filter((item) => item.isPaid).reduce((sum, item) => sum + (Number(item.totalToPay) || 0), 0),
+        [officials],
     );
 
     const chapterDonutData = useMemo(() => {
@@ -305,6 +316,39 @@ export default function AdminPage() {
         downloadCsvFile("centro-de-mando-xiii-aniversario.csv", rows);
     };
 
+    const handleCopyDailyReport = async () => {
+        const now = new Date();
+        const formattedDate = now.toLocaleDateString("es-CO", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+        });
+
+        const formattedRevenue = new Intl.NumberFormat("en-US", {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0,
+        }).format(totalRevenueAmount);
+
+        const report = `📊 *REPORTE DIARIO: XIII ANIVERSARIO L.A.M.A. MEDELLÍN* 🏍️
+📅 Fecha: ${formattedDate}
+
+🌎 *Países Confirmados:* ${globalCountryProgress.activeCountries} de 26 (${globalCountryProgress.percentage}%)
+👥 *Total Almas Confirmadas:* ${totalConfirmedPeople} (Pilotos + Acompañantes)
+💰 *Recaudación Total:* $${formattedRevenue} USD
+
+🏁 _"¡La pasión no conoce fronteras, nos vemos en Sabaneta!"_
+🌐 lamabikefestsabaneta.com`;
+
+        try {
+            await navigator.clipboard.writeText(report);
+            setCopyToast({ type: "success", message: "¡Reporte copiado! Listo para pegar en WhatsApp" });
+        } catch {
+            setCopyToast({ type: "error", message: "No fue posible copiar el reporte. Intenta nuevamente." });
+        }
+
+        window.setTimeout(() => setCopyToast(null), 2600);
+    };
+
     if (!isAuthorized) {
         return (
             <div className="min-h-screen bg-zinc-950 px-4 py-10 text-zinc-100 sm:px-6">
@@ -386,21 +430,44 @@ export default function AdminPage() {
                         </div>
                     </div>
 
-                    <button
-                        type="button"
-                        onClick={handleExportCsv}
-                        className="inline-flex items-center justify-center rounded-full border border-orange-400 px-5 py-3 text-sm font-bold uppercase tracking-[0.12em] text-orange-300 transition hover:bg-orange-500/10"
-                    >
-                        Exportar CSV
-                    </button>
+                    <div className="flex flex-col gap-3 sm:items-end">
+                        <div className="flex flex-wrap gap-2 sm:justify-end">
+                            <button
+                                type="button"
+                                onClick={handleCopyDailyReport}
+                                className="inline-flex items-center justify-center rounded-full bg-[#25D366] px-5 py-3 text-sm font-bold uppercase tracking-[0.08em] text-zinc-950 transition hover:brightness-110"
+                            >
+                                Copiar Reporte Diario
+                            </button>
 
-                    <button
-                        type="button"
-                        onClick={handleLogout}
-                        className="inline-flex items-center justify-center rounded-full border border-zinc-600 px-5 py-3 text-sm font-bold uppercase tracking-[0.12em] text-zinc-300 transition hover:border-zinc-400 hover:text-zinc-100"
-                    >
-                        Cerrar sesión
-                    </button>
+                            <button
+                                type="button"
+                                onClick={handleExportCsv}
+                                className="inline-flex items-center justify-center rounded-full border border-orange-400 px-5 py-3 text-sm font-bold uppercase tracking-[0.12em] text-orange-300 transition hover:bg-orange-500/10"
+                            >
+                                Exportar CSV
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={handleLogout}
+                                className="inline-flex items-center justify-center rounded-full border border-zinc-600 px-5 py-3 text-sm font-bold uppercase tracking-[0.12em] text-zinc-300 transition hover:border-zinc-400 hover:text-zinc-100"
+                            >
+                                Cerrar sesión
+                            </button>
+                        </div>
+
+                        {copyToast ? (
+                            <div
+                                className={`rounded-lg px-3 py-2 text-xs font-semibold ${copyToast.type === "success"
+                                    ? "border border-emerald-500/40 bg-emerald-500/10 text-emerald-300"
+                                    : "border border-red-500/40 bg-red-500/10 text-red-300"
+                                    }`}
+                            >
+                                {copyToast.message}
+                            </div>
+                        ) : null}
+                    </div>
                 </header>
 
                 <section className="grid grid-cols-1 gap-4 md:grid-cols-2">
