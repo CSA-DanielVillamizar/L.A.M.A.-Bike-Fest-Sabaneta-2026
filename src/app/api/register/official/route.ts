@@ -16,6 +16,7 @@ type OfficialRegistrationPayload = {
     eps?: string;
     emergencyName?: string;
     emergencyPhone?: string;
+    country?: string;
     chapter?: string;
     isDirective?: boolean;
     directiveScope?: string | null;
@@ -100,6 +101,7 @@ export async function POST(request: NextRequest) {
         const eps = sanitizeText(body.eps);
         const emergencyName = sanitizeText(body.emergencyName);
         const emergencyPhone = sanitizeText(body.emergencyPhone);
+        const country = sanitizeText(body.country);
         const chapter = sanitizeText(body.chapter);
         const arrivalDate = sanitizeText(body.arrivalDate);
         const isDirective = Boolean(body.isDirective);
@@ -118,6 +120,7 @@ export async function POST(request: NextRequest) {
             !eps ||
             !emergencyName ||
             !emergencyPhone ||
+            !country ||
             !chapter ||
             !arrivalDate
         ) {
@@ -201,6 +204,10 @@ export async function POST(request: NextRequest) {
         const pool = await sql.connect(config);
         const registrationId = randomUUID().toUpperCase();
 
+        await pool
+            .request()
+            .query(`IF COL_LENGTH('OfficialRegistration', 'country') IS NULL ALTER TABLE OfficialRegistration ADD country NVARCHAR(255) NULL;`);
+
         const transaction = new sql.Transaction(pool);
 
         try {
@@ -214,6 +221,7 @@ export async function POST(request: NextRequest) {
                 .input("eps", sql.NVarChar(255), eps)
                 .input("emergencyName", sql.NVarChar(255), emergencyName)
                 .input("emergencyPhone", sql.NVarChar(100), emergencyPhone)
+                .input("country", sql.NVarChar(255), country)
                 .input("chapter", sql.NVarChar(255), chapter)
                 .input("isDirective", sql.Bit, isDirective)
                 .input("directiveScope", sql.NVarChar(255), isDirective ? directiveScope : null)
@@ -234,6 +242,7 @@ export async function POST(request: NextRequest) {
                         eps,
                         emergencyName,
                         emergencyPhone,
+                        country,
                         chapter,
                         isDirective,
                         directiveScope,
@@ -255,6 +264,7 @@ export async function POST(request: NextRequest) {
                         @eps,
                         @emergencyName,
                         @emergencyPhone,
+                        @country,
                         @chapter,
                         @isDirective,
                         @directiveScope,

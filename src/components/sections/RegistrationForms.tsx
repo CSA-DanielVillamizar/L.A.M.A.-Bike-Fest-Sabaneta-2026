@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { COUNTRIES } from "@/constants/countries";
 
 type ActiveTab = "clubs" | "brands";
 
@@ -203,6 +204,18 @@ export function RegistrationForms() {
                             </label>
 
                             <label className="flex flex-col gap-2 text-sm text-zinc-300">
+                                País
+                                <select name="country" required disabled={clubLoading} className="rounded-lg border border-zinc-700 bg-zinc-900/70 px-3 py-2 text-zinc-100 outline-none ring-orange-400/40 transition focus:ring disabled:opacity-60">
+                                    <option value="">Selecciona una opción</option>
+                                    {COUNTRIES.map((country) => (
+                                        <option key={country} value={country}>
+                                            {country}
+                                        </option>
+                                    ))}
+                                </select>
+                            </label>
+
+                            <label className="flex flex-col gap-2 text-sm text-zinc-300">
                                 Número de asistentes estimados
                                 <input name="asistentes" type="number" min={1} required disabled={clubLoading} className="rounded-lg border border-zinc-700 bg-zinc-900/70 px-3 py-2 text-zinc-100 outline-none ring-orange-400/40 transition focus:ring disabled:opacity-60" />
                             </label>
@@ -253,6 +266,18 @@ export function RegistrationForms() {
                                     {sponsorCategories.map((category) => (
                                         <option key={category} value={category}>
                                             {category}
+                                        </option>
+                                    ))}
+                                </select>
+                            </label>
+
+                            <label className="flex flex-col gap-2 text-sm text-zinc-300">
+                                País
+                                <select name="country" required disabled={sponsorLoading} className="rounded-lg border border-zinc-700 bg-zinc-900/70 px-3 py-2 text-zinc-100 outline-none ring-orange-400/40 transition focus:ring disabled:opacity-60">
+                                    <option value="">Selecciona una opción</option>
+                                    {COUNTRIES.map((country) => (
+                                        <option key={country} value={country}>
+                                            {country}
                                         </option>
                                     ))}
                                 </select>

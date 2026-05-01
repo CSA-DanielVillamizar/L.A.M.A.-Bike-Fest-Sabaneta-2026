@@ -2,6 +2,7 @@
 
 import { jsPDF } from "jspdf";
 import { FormEvent, useMemo, useState } from "react";
+import { COUNTRIES } from "@/constants/countries";
 
 const PARTICIPANT_CATEGORIES = [
     "DAMA L.A.M.A.",
@@ -98,6 +99,7 @@ type FormValues = {
     eps: string;
     emergencyName: string;
     emergencyPhone: string;
+    country: string;
     chapter: string;
     otherChapter: string;
     isDirective: boolean;
@@ -115,6 +117,7 @@ type FormValues = {
 type SuccessRegistration = {
     id: string;
     fullName: string;
+    country: string;
     chapter: string;
     totalToPay: number;
     participantCategory: string;
@@ -138,6 +141,7 @@ const initialForm: FormValues = {
     eps: "",
     emergencyName: "",
     emergencyPhone: "",
+    country: "",
     chapter: "",
     otherChapter: "",
     isDirective: false,
@@ -289,6 +293,7 @@ export function OfficialRegistrationForm() {
 
             addLine("ID de Registro:", successRegistration.id);
             addLine("Nombre:", successRegistration.fullName);
+            addLine("País:", successRegistration.country);
             addLine("Capítulo:", successRegistration.chapter);
             addLine("Categoría:", successRegistration.participantCategory);
             addLine(getParticipantBaseLabel(successRegistration.participantCategory) + ":", formatCop(getParticipantBaseCost(successRegistration.participantCategory)));
@@ -350,6 +355,10 @@ export function OfficialRegistrationForm() {
                 throw new Error("Debes indicar tu capítulo en Pertenencia L.A.M.A.");
             }
 
+            if (!form.country) {
+                throw new Error("Debes seleccionar tu país en Pertenencia L.A.M.A.");
+            }
+
             const companions = form.hasCompanions ? form.companions : [];
 
             if (form.hasCompanions && companions.length !== form.companionsCount) {
@@ -409,6 +418,7 @@ export function OfficialRegistrationForm() {
             setSuccessRegistration({
                 id: result.id,
                 fullName: form.fullName,
+                country: form.country,
                 chapter: normalizedChapter,
                 totalToPay: result.totalToPay ?? totalToPay,
                 participantCategory: form.participantCategory,
@@ -485,6 +495,7 @@ export function OfficialRegistrationForm() {
 
                                 <div className="mt-6 rounded-xl border border-zinc-700 bg-zinc-900/70 p-4 text-sm text-zinc-200">
                                     <p><span className="font-semibold text-zinc-100">Nombre:</span> {successRegistration.fullName}</p>
+                                    <p className="mt-2"><span className="font-semibold text-zinc-100">País:</span> {successRegistration.country}</p>
                                     <p className="mt-2"><span className="font-semibold text-zinc-100">Capítulo:</span> {successRegistration.chapter}</p>
                                     <p className="mt-2"><span className="font-semibold text-zinc-100">Categoría:</span> {successRegistration.participantCategory}</p>
                                     <p className="mt-2"><span className="font-semibold text-zinc-100">{getParticipantBaseLabel(successRegistration.participantCategory)}:</span> {formatCop(getParticipantBaseCost(successRegistration.participantCategory))}</p>
@@ -627,6 +638,21 @@ export function OfficialRegistrationForm() {
                                 </label>
 
                                 <h3 className="sm:col-span-2 text-sm font-bold uppercase tracking-[0.16em] text-orange-200">Pertenencia L.A.M.A.</h3>
+
+                                <label className="sm:col-span-2 flex flex-col gap-2 text-sm text-zinc-300">
+                                    País
+                                    <select
+                                        required
+                                        value={form.country}
+                                        onChange={(event) => updateField("country", event.target.value)}
+                                        className="rounded-lg border border-zinc-700 bg-zinc-900/70 px-3 py-2 text-zinc-100 outline-none ring-orange-400/40 transition focus:ring"
+                                    >
+                                        <option value="">Selecciona tu país</option>
+                                        {COUNTRIES.map((country) => (
+                                            <option key={country} value={country}>{country}</option>
+                                        ))}
+                                    </select>
+                                </label>
 
                                 <label className="sm:col-span-2 flex flex-col gap-2 text-sm text-zinc-300">
                                     Capítulo

@@ -46,9 +46,9 @@ export async function POST(request: NextRequest) {
         }
 
         const body = await request.json();
-        const { empresa, email, telefono, categoria, intereses } = body;
+        const { empresa, email, telefono, categoria, country, intereses } = body;
 
-        if (!empresa || !email || !telefono || !categoria || !intereses) {
+        if (!empresa || !email || !telefono || !categoria || !country || !intereses) {
             return NextResponse.json({ error: "Faltan campos requeridos" }, { status: 400 });
         }
 
@@ -61,15 +61,20 @@ export async function POST(request: NextRequest) {
 
         await pool
             .request()
+            .query(`IF COL_LENGTH('SponsorRegistration', 'country') IS NULL ALTER TABLE SponsorRegistration ADD country NVARCHAR(255) NULL;`);
+
+        await pool
+            .request()
             .input("id", sql.NVarChar(36), id)
             .input("companyName", sql.NVarChar(255), String(empresa).trim())
             .input("contactEmail", sql.NVarChar(255), String(email).trim())
             .input("contactPhone", sql.NVarChar(100), String(telefono).trim())
             .input("category", sql.NVarChar(100), String(categoria).trim())
+            .input("country", sql.NVarChar(255), String(country).trim())
             .input("interests", sql.NVarChar(1000), interestsArray)
             .query(
-                `INSERT INTO SponsorRegistration (id, companyName, contactEmail, contactPhone, category, interests, createdAt)
-                 VALUES (@id, @companyName, @contactEmail, @contactPhone, @category, @interests, GETUTCDATE())`,
+                `INSERT INTO SponsorRegistration (id, companyName, contactEmail, contactPhone, category, country, interests, createdAt)
+                 VALUES (@id, @companyName, @contactEmail, @contactPhone, @category, @country, @interests, GETUTCDATE())`,
             );
 
         await pool.close();

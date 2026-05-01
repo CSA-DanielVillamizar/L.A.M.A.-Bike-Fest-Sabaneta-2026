@@ -13,6 +13,7 @@ model ClubRegistration {
   motorcycleType     String
   estimatedAttendees Int
   originCity         String
+  country            String
   createdAt          DateTime @default(now())
   contactPhone       String
   isPaid             Boolean  @default(false)
@@ -22,6 +23,7 @@ model SponsorRegistration {
   id           String   @id @default(uuid())
   companyName  String
   category     String
+  country      String
   interests    String
   contactEmail String
   contactPhone String
@@ -36,6 +38,7 @@ model OfficialRegistration {
   eps                 String
   emergencyName       String
   emergencyPhone      String
+  country             String
   chapter             String
   isDirective         Boolean     @default(false)
   directiveScope      String?

@@ -5,15 +5,22 @@ const COUNTRY_TO_ISO_A3: Record<string, string> = {
     bolivia: "BOL",
     brasil: "BRA",
     brazil: "BRA",
+    canada: "CAN",
     chile: "CHL",
     colombia: "COL",
     "costa rica": "CRI",
+    cuba: "CUB",
     ecuador: "ECU",
+    "el salvador": "SLV",
     espana: "ESP",
     spain: "ESP",
     "estados unidos": "USA",
+    "estados unidos (usa)": "USA",
+    guatemala: "GTM",
+    honduras: "HND",
     usa: "USA",
     mexico: "MEX",
+    nicaragua: "NIC",
     panama: "PAN",
     paraguay: "PRY",
     peru: "PER",
@@ -159,11 +166,17 @@ export async function GET(request: Request) {
         const { default: sql } = await import("mssql");
         const pool = await sql.connect(config);
 
+        await pool.request().query(`
+            IF COL_LENGTH('OfficialRegistration', 'country') IS NULL ALTER TABLE OfficialRegistration ADD country NVARCHAR(255) NULL;
+            IF COL_LENGTH('ClubRegistration', 'country') IS NULL ALTER TABLE ClubRegistration ADD country NVARCHAR(255) NULL;
+        `);
+
         const [officialResult, clubResult] = await Promise.all([
             pool.request().query(`
                 SELECT
                     id,
                     fullName,
+                    country,
                     chapter,
                     emergencyPhone,
                     companionsCount,
@@ -179,6 +192,7 @@ export async function GET(request: Request) {
                     clubName,
                     presidentName,
                     contactPhone,
+                    country,
                     originCity,
                     estimatedAttendees,
                     isPaid,
@@ -193,6 +207,7 @@ export async function GET(request: Request) {
         const officialRegistrations = officialResult.recordset as Array<{
             id: string;
             fullName: string;
+            country: string;
             chapter: string;
             emergencyPhone: string;
             companionsCount: number;
@@ -206,6 +221,7 @@ export async function GET(request: Request) {
             clubName: string;
             presidentName: string;
             contactPhone: string;
+            country: string;
             originCity: string;
             estimatedAttendees: number;
             isPaid: boolean;
@@ -215,14 +231,14 @@ export async function GET(request: Request) {
         const countryTotals = new Map<string, number>();
 
         for (const registration of officialRegistrations) {
-            const country = getOfficialCountry(registration.chapter);
+            const country = registration.country || getOfficialCountry(registration.chapter);
             if (!country) continue;
             const totalPeople = (Number(registration.companionsCount) || 0) + 1;
             countryTotals.set(country, (countryTotals.get(country) || 0) + totalPeople);
         }
 
         for (const registration of clubRegistrations) {
-            const country = getClubCountry(registration.originCity);
+            const country = registration.country || getClubCountry(registration.originCity);
             if (!country) continue;
             const totalPeople = Number(registration.estimatedAttendees) || 0;
             countryTotals.set(country, (countryTotals.get(country) || 0) + totalPeople);
@@ -266,7 +282,7 @@ export async function GET(request: Request) {
             id: registration.id,
             name: registration.fullName,
             chapter: registration.chapter,
-            country: registration.chapter === "Internacional" ? "Internacional" : "Colombia",
+            country: registration.country || (registration.chapter === "Internacional" ? "Internacional" : "Colombia"),
             phone: registration.emergencyPhone,
             email: "No registrado",
             companions: registration.companionsCount > 0 ? `${registration.companionsCount} acompanante(s)` : "No",
@@ -279,7 +295,7 @@ export async function GET(request: Request) {
             id: registration.id,
             name: registration.clubName,
             delegate: registration.presidentName,
-            country: registration.originCity,
+            country: registration.country || registration.originCity,
             phone: registration.contactPhone,
             attendees: registration.estimatedAttendees,
             isPaid: registration.isPaid,
