@@ -18,7 +18,7 @@ export function HeroSection() {
 
             <div className="mx-auto flex w-full max-w-6xl flex-col px-4 pb-16 pt-14 sm:px-6 sm:pb-20 sm:pt-20 lg:pb-24">
                 <p className="mb-4 inline-flex w-fit self-start items-center rounded-full border border-orange-500/40 bg-orange-500/15 px-3 py-1 text-[11px] uppercase tracking-[0.24em] text-orange-200">
-                    Festival Internacional De Motociclismo
+                    Festival Internacional De Mototurismo
                 </p>
 
                 <h1 className="font-display max-w-5xl leading-[1.1] text-zinc-100">

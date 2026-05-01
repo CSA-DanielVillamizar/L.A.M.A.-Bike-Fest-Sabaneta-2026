@@ -17,7 +17,7 @@ const bodyFont = Roboto_Condensed({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://ambitious-meadow-0bc0fb31e.7.azurestaticapps.net"),
+  metadataBase: new URL("https://lamamedellinbikefestsabaneta.azurewebsites.net"),
   title: "XIII Aniversario L.A.M.A. Medellín & L.A.M.A. Bike Fest 2026 🇨🇴",
   description:
     "¡El rugir de motores más grande de América! Únete a delegaciones de 26 países en Sabaneta. Gran Caravana, Parrilla Mixta y conciertos en vivo con Sergio Vargas, Binomio de Oro y más. ¡No te quedes por fuera, asegura tu cupo aquí! 🏁🎸",
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     title: "XIII Aniversario L.A.M.A. Medellín & L.A.M.A. Bike Fest 2026 🇨🇴",
     description:
       "¡El rugir de motores más grande de América! Únete a delegaciones de 26 países en Sabaneta. Gran Caravana, Parrilla Mixta y conciertos en vivo con Sergio Vargas, Binomio de Oro y más. ¡No te quedes por fuera, asegura tu cupo aquí! 🏁🎸",
-    url: "https://ambitious-meadow-0bc0fb31e.7.azurestaticapps.net",
+    url: "https://lamamedellinbikefestsabaneta.azurewebsites.net",
     siteName: "L.A.M.A. Bike Fest Sabaneta",
     images: [
       {
