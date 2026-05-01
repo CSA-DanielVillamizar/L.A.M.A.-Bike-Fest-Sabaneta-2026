@@ -145,7 +145,7 @@ export function AgendaSection() {
                                                 className="relative grid gap-4 sm:grid-cols-2 sm:gap-8"
                                             >
                                                 <div
-                                                    className={`relative z-10 pl-10 sm:px-8 ${globalIdx % 2 === 0
+                                                    className={`relative z-10 pl-12 sm:px-8 ${globalIdx % 2 === 0
                                                         ? "sm:col-start-1 sm:text-right"
                                                         : "sm:col-start-2 sm:text-left"
                                                         }`}

@@ -30,11 +30,11 @@ function getTimeLeft(targetDate: Date): TimeLeft {
 
 function TimeCard({ value, label }: { value: number; label: string }) {
     return (
-        <div className="min-w-16 rounded-xl border border-orange-400/35 bg-black/55 px-3 py-2 text-center backdrop-blur">
-            <p className="font-display text-2xl font-extrabold leading-none text-orange-300 sm:text-3xl">
+        <div className="flex-1 rounded-lg border border-orange-400/35 bg-black/55 px-2 py-2 text-center backdrop-blur">
+            <p className="font-display text-xl font-extrabold leading-none text-orange-300 sm:text-3xl">
                 {String(value).padStart(2, "0")}
             </p>
-            <p className="mt-1 text-[10px] uppercase tracking-[0.2em] text-zinc-300 sm:text-[11px]">
+            <p className="mt-0.5 text-[8px] uppercase tracking-[0.15em] text-zinc-300 sm:mt-1 sm:text-[11px]">
                 {label}
             </p>
         </div>
@@ -74,15 +74,15 @@ export function CountdownTimer() {
                 <p className="mb-3 text-xs uppercase tracking-[0.2em] text-zinc-300">
                     Cuenta regresiva oficial
                 </p>
-                <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                <div className="grid grid-cols-4 gap-1.5 sm:gap-3">
                     {["Días", "Horas", "Minutos", "Segundos"].map((label) => (
                         <div
                             key={label}
-                            className="min-w-16 rounded-xl border border-orange-400/35 bg-black/55 px-3 py-[0.625rem] text-center backdrop-blur"
+                            className="flex-1 rounded-lg border border-orange-400/35 bg-black/55 px-2 py-2 text-center backdrop-blur"
                             aria-hidden
                         >
-                            <div className="h-8 sm:h-9" />
-                            <div className="mt-1 h-[10px]" />
+                            <div className="h-6 sm:h-9" />
+                            <div className="mt-0.5 h-[8px] sm:mt-1 sm:h-[10px]" />
                         </div>
                     ))}
                 </div>
@@ -95,7 +95,7 @@ export function CountdownTimer() {
             <p className="mb-3 text-xs uppercase tracking-[0.2em] text-zinc-300">
                 Cuenta regresiva oficial
             </p>
-            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+            <div className="grid grid-cols-4 gap-1.5 sm:gap-3">
                 {cards.map((card) => (
                     <TimeCard key={card.label} value={card.value} label={card.label} />
                 ))}
