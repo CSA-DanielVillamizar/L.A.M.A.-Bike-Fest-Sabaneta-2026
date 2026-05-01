@@ -122,7 +122,7 @@ const initialForm: FormValues = {
     isDirective: false,
     directiveScope: "",
     directiveRole: "",
-    arrivalDate: "",
+    arrivalDate: "2026-06-26",
     medicalCondition: "",
     wantsJersey: false,
     jerseySize: "",
@@ -156,6 +156,10 @@ async function loadImageAsDataUrl(imagePath: string): Promise<string | null> {
     } catch {
         return null;
     }
+}
+
+function getImageFormat(dataUrl: string): "PNG" | "JPEG" {
+    return dataUrl.includes("image/png") ? "PNG" : "JPEG";
 }
 
 export function OfficialRegistrationForm() {
@@ -341,6 +345,7 @@ export function OfficialRegistrationForm() {
         try {
             const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
             const pageW = doc.internal.pageSize.getWidth();
+            const pageH = doc.internal.pageSize.getHeight();
             const left = 20;
             const right = pageW - left;
             let y = 18;
@@ -350,21 +355,35 @@ export function OfficialRegistrationForm() {
                 loadImageAsDataUrl("/images/QRBancolombia.jpeg"),
             ]);
 
+            // Brand strip header
+            doc.setFillColor(249, 115, 22);
+            doc.rect(0, 0, pageW, 14, "F");
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(10);
+            doc.setTextColor(255, 255, 255);
+            doc.text("L.A.M.A. Medellín | Registro Oficial", left, 9);
+            doc.setTextColor(0, 0, 0);
+
+            y = 20;
+
             if (logoDataUrl) {
-                doc.addImage(logoDataUrl, "PNG", left, y - 2, 20, 28);
+                const props = doc.getImageProperties(logoDataUrl);
+                const logoWidth = 22;
+                const logoHeight = logoWidth * (props.height / props.width);
+                doc.addImage(logoDataUrl, getImageFormat(logoDataUrl), left, y - 1, logoWidth, logoHeight);
             }
 
             doc.setFont("helvetica", "bold");
             doc.setFontSize(16);
-            doc.text("XIII Aniversario L.A.M.A. Medellín", pageW / 2 + 10, y + 6, { align: "center" });
+            doc.text("XIII Aniversario L.A.M.A. Medellín", pageW / 2 + 12, y + 7, { align: "center" });
             doc.setFont("helvetica", "normal");
             doc.setFontSize(11);
-            doc.text("Resumen Oficial de Inscripción", pageW / 2 + 10, y + 13, { align: "center" });
-            y += 30;
+            doc.text("Resumen Oficial de Inscripción", pageW / 2 + 12, y + 14, { align: "center" });
+            y += 34;
 
-            doc.setDrawColor(180);
+            doc.setDrawColor(210, 210, 210);
             doc.line(left, y, right, y);
-            y += 6;
+            y += 7;
 
             const tableRows: Array<[string, string]> = [
                 ["ID de Registro", successRegistration.id],
@@ -384,22 +403,30 @@ export function OfficialRegistrationForm() {
             ];
 
             const rowH = 8;
+            const tableW = right - left;
+            const labelColW = 56;
+
+            doc.setDrawColor(224, 224, 224);
+            doc.setLineWidth(0.2);
             tableRows.forEach(([label, value], index) => {
                 const rowTop = y + index * rowH;
                 if (index % 2 === 0) {
-                    doc.setFillColor(246, 246, 246);
-                    doc.rect(left, rowTop, right - left, rowH, "F");
+                    doc.setFillColor(250, 250, 250);
+                    doc.rect(left, rowTop, tableW, rowH, "F");
                 }
+
+                doc.rect(left, rowTop, tableW, rowH);
+                doc.line(left + labelColW, rowTop, left + labelColW, rowTop + rowH);
 
                 doc.setFont("helvetica", "bold");
                 doc.setFontSize(10);
                 doc.text(label, left + 2, rowTop + 5.4);
 
                 doc.setFont("helvetica", "normal");
-                doc.text(value, left + 58, rowTop + 5.4, { maxWidth: right - left - 60 });
+                doc.text(value, left + labelColW + 2, rowTop + 5.4, { maxWidth: tableW - labelColW - 4 });
             });
 
-            y += tableRows.length * rowH + 7;
+            y += tableRows.length * rowH + 10;
 
             doc.setFont("helvetica", "bold");
             doc.setFontSize(11);
@@ -410,12 +437,18 @@ export function OfficialRegistrationForm() {
             doc.text("Bancolombia Ahorros: 23000013774", left, y);
             y += 5;
             doc.text("Titular: Fundación L.A.M.A. Medellín", left, y);
-            y += 8;
+            y += 9;
 
             if (qrDataUrl) {
-                doc.addImage(qrDataUrl, "JPEG", left, y, 36, 36);
+                const qrSize = 40;
+                const qrX = right - qrSize;
+                const qrY = Math.min(y, pageH - qrSize - 18);
+
+                doc.setDrawColor(230, 230, 230);
+                doc.roundedRect(qrX - 3, qrY - 3, qrSize + 6, qrSize + 6, 2, 2);
+                doc.addImage(qrDataUrl, getImageFormat(qrDataUrl), qrX, qrY, qrSize, qrSize);
                 doc.setFont("helvetica", "bold");
-                doc.text("Escanea para pagar desde tu App Bancaria", left + 42, y + 16);
+                doc.text("Escanea para pagar desde tu App Bancaria", left, qrY + 20);
             }
 
             doc.save("Inscripcion-LAMA-Medellin.pdf");
@@ -1038,6 +1071,8 @@ export function OfficialRegistrationForm() {
                                                     <input
                                                         type="date"
                                                         required
+                                                        min="2026-06-01"
+                                                        max="2026-06-30"
                                                         value={form.arrivalDate}
                                                         onChange={(event) => updateField("arrivalDate", event.target.value)}
                                                         className="rounded-lg border border-zinc-700 bg-zinc-900/70 px-3 py-2 text-zinc-100 outline-none ring-orange-400/40 transition focus:ring"
