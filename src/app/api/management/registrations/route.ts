@@ -133,13 +133,25 @@ export async function GET(request: Request) {
                 officials,
                 clubs,
             },
-            { status: 200 },
+            {
+                status: 200,
+                headers: {
+                    'Cache-Control': 'no-store, max-age=0',
+                    'Pragma': 'no-cache',
+                    'Expires': '0',
+                },
+            },
         );
     } catch (error) {
         console.error("Error obteniendo registros administrativos:", error);
         return NextResponse.json(
             { error: "No fue posible obtener los registros administrativos." },
-            { status: 500 },
+            {
+                status: 500,
+                headers: {
+                    'Cache-Control': 'no-store, max-age=0',
+                },
+            },
         );
     }
 }

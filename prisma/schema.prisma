@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -13,26 +10,26 @@ model ClubRegistration {
   id                 String   @id @default(uuid())
   clubName           String
   presidentName      String
-  contactPhone       String
   motorcycleType     String
   estimatedAttendees Int
   originCity         String
-  isPaid             Boolean  @default(false)
   createdAt          DateTime @default(now())
+  contactPhone       String
+  isPaid             Boolean  @default(false)
 }
 
 model SponsorRegistration {
-  id            String   @id @default(uuid())
-  companyName   String
-  category      String
-  interests     String
-  contactEmail  String
-  contactPhone  String
-  createdAt     DateTime @default(now())
+  id           String   @id @default(uuid())
+  companyName  String
+  category     String
+  interests    String
+  contactEmail String
+  contactPhone String
+  createdAt    DateTime @default(now())
 }
 
 model OfficialRegistration {
-  id                  String   @id @default(uuid())
+  id                  String      @id @default(uuid())
   participantCategory String
   fullName            String
   documentId          String
@@ -40,29 +37,29 @@ model OfficialRegistration {
   emergencyName       String
   emergencyPhone      String
   chapter             String
-  isDirective         Boolean  @default(false)
+  isDirective         Boolean     @default(false)
   directiveScope      String?
   directiveRole       String?
   arrivalDate         String
   medicalCondition    String?
-  wantsJersey         Boolean  @default(false)
+  wantsJersey         Boolean     @default(false)
   jerseySize          String?
-  hasCompanions       Boolean  @default(false)
-  companionsCount     Int      @default(0)
-  companions          Companion[]
+  hasCompanions       Boolean     @default(false)
+  companionsCount     Int         @default(0)
   totalToPay          Float
-  isPaid              Boolean  @default(false)
-  paymentStatus       String   @default("PENDING")
-  createdAt           DateTime @default(now())
+  paymentStatus       String      @default("PENDING")
+  createdAt           DateTime    @default(now())
+  isPaid              Boolean     @default(false)
+  companions          Companion[]
 }
 
 model Companion {
   id             String               @id @default(uuid())
   registrationId String
-  registration   OfficialRegistration @relation(fields: [registrationId], references: [id])
   fullName       String
   documentId     String
   category       String
   wantsJersey    Boolean              @default(false)
   jerseySize     String?
+  registration   OfficialRegistration @relation(fields: [registrationId], references: [id])
 }
