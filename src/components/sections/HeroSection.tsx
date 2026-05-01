@@ -17,21 +17,15 @@ export function HeroSection() {
             <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_70%_12%,rgba(249,115,22,0.28),transparent_42%),radial-gradient(circle_at_18%_90%,rgba(220,38,38,0.22),transparent_48%)]" />
 
             <div className="mx-auto flex w-full max-w-6xl flex-col px-4 pb-16 pt-14 sm:px-6 sm:pb-20 sm:pt-20 lg:pb-24">
-                {/* XIII Aniversario badge */}
-                <p className="mb-3 inline-flex w-fit items-center gap-2 rounded-full border border-amber-400/50 bg-amber-400/10 px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.26em] text-amber-300">
-                    <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
-                    XIII Aniversario L.A.M.A. Medellín
-                </p>
-
-                <p className="mb-4 inline-flex w-fit rounded-full border border-orange-500/40 bg-orange-500/15 px-3 py-1 text-[11px] uppercase tracking-[0.24em] text-orange-200">
+                <p className="mb-4 inline-flex w-fit self-start items-center rounded-full border border-orange-500/40 bg-orange-500/15 px-3 py-1 text-[11px] uppercase tracking-[0.24em] text-orange-200">
                     Festival Internacional De Motociclismo
                 </p>
 
-                <h1 className="font-display max-w-5xl text-zinc-100">
+                <h1 className="font-display max-w-5xl leading-[1.1] text-zinc-100">
                     <span className="block text-sm font-bold uppercase tracking-[0.24em] text-amber-300 sm:text-base lg:text-lg">
                         XIII Aniversario L.A.M.A. Medellín
                     </span>
-                    <span className="mt-2 block text-3xl font-extrabold uppercase leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl">
+                    <span className="mt-2 block text-3xl font-extrabold uppercase tracking-tight sm:text-5xl lg:text-6xl">
                         &amp; L.A.M.A. Bike Fest
                     </span>
                     <span className="mt-1 block text-2xl font-bold uppercase tracking-[0.12em] text-zinc-100 sm:text-4xl lg:text-5xl">
