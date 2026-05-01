@@ -133,7 +133,11 @@ const initialForm: FormValues = {
 };
 
 function formatCop(value: number): string {
-    return `$ ${Math.round(value).toLocaleString("es-CO")}`;
+    return new Intl.NumberFormat("es-CO", {
+        style: "currency",
+        currency: "COP",
+        maximumFractionDigits: 0,
+    }).format(value);
 }
 
 async function loadImageAsDataUrl(imagePath: string): Promise<string | null> {
@@ -366,19 +370,19 @@ export function OfficialRegistrationForm() {
 
             if (logoDataUrl) {
                 const props = doc.getImageProperties(logoDataUrl);
-                const logoWidth = 45;
+                const logoWidth = 35;
                 const logoHeight = logoWidth * (props.height / props.width);
                 const logoX = (pageW - logoWidth) / 2;
                 doc.addImage(logoDataUrl, getImageFormat(logoDataUrl), logoX, y, logoWidth, logoHeight);
                 logoBottomY = y + logoHeight;
             }
 
-            const tableTitleY = Math.max(45, logoBottomY + 4);
+            const tableTitleY = Math.max(45, logoBottomY + 3);
             doc.setFont("helvetica", "bold");
-            doc.setFontSize(15);
+            doc.setFontSize(14);
             doc.text("Resumen Oficial de Inscripción", pageW / 2, tableTitleY, { align: "center" });
 
-            y = Math.max(52, tableTitleY + 7);
+            y = tableTitleY + 1;
 
             const tableRows: Array<[string, string]> = [
                 ["ID de Registro", successRegistration.id],
@@ -408,13 +412,13 @@ export function OfficialRegistrationForm() {
                     fillColor: [249, 115, 22],
                     textColor: [255, 255, 255],
                     fontStyle: "bold",
-                    fontSize: 10,
+                    fontSize: 9,
                     lineColor: [233, 236, 239],
                     lineWidth: 0.1,
                 },
                 bodyStyles: {
-                    fontSize: 9,
-                    cellPadding: 3,
+                    fontSize: 8,
+                    cellPadding: 2,
                     lineColor: [233, 236, 239],
                     lineWidth: 0.1,
                     textColor: [40, 40, 40],
@@ -435,40 +439,40 @@ export function OfficialRegistrationForm() {
             const tableEndY = (doc as jsPDF & { lastAutoTable?: { finalY?: number } }).lastAutoTable?.finalY || y;
 
             if (qrDataUrl) {
-                const qrWidth = 45;
-                const qrHeight = (qrWidth * 753) / 423;
+                const qrWidth = 30;
+                const qrHeight = 53;
                 const qrX = (pageW - qrWidth) / 2;
-                const blockSpacingFromTable = 10;
-                const blockInnerGap = 4;
-                const accountLinesHeight = 12;
-                const captionGap = 6;
-                const bottomSafeMargin = 12;
+                const blockSpacingFromTable = 5;
+                const blockInnerGap = 3;
+                const accountLinesHeight = 10;
+                const captionGap = 5;
+                const bottomSafeMargin = 10;
 
-                const blockHeight = 6 + blockInnerGap + accountLinesHeight + blockInnerGap + qrHeight + captionGap + 5;
+                const blockHeight = 5 + blockInnerGap + accountLinesHeight + blockInnerGap + qrHeight + captionGap + 4;
                 const minBlockStartY = tableEndY + blockSpacingFromTable;
                 const maxBlockStartY = pageH - bottomSafeMargin - blockHeight;
                 const blockStartY = Math.min(minBlockStartY, maxBlockStartY);
 
-                const qrTitleY = blockStartY + 6;
+                const qrTitleY = blockStartY + 5;
                 const accountY = qrTitleY + blockInnerGap;
                 const qrY = accountY + accountLinesHeight + blockInnerGap;
 
                 doc.setFont("helvetica", "bold");
-                doc.setFontSize(12);
+                doc.setFontSize(11);
                 doc.text("PASO FINAL: REALIZA TU PAGO", pageW / 2, qrTitleY, { align: "center" });
 
                 doc.setFont("helvetica", "normal");
-                doc.setFontSize(10);
-                doc.text("Bancolombia Ahorros: 23000013774", pageW / 2, accountY + 4, { align: "center" });
-                doc.text("Titular: Fundación L.A.M.A. Medellín", pageW / 2, accountY + 9, { align: "center" });
+                doc.setFontSize(9);
+                doc.text("Bancolombia Ahorros: 23000013774", pageW / 2, accountY + 3.5, { align: "center" });
+                doc.text("Titular: Fundación L.A.M.A. Medellín", pageW / 2, accountY + 8, { align: "center" });
 
                 doc.setDrawColor(230, 230, 230);
-                doc.roundedRect(qrX - 3, qrY - 3, qrWidth + 6, qrHeight + 6, 2, 2);
+                doc.roundedRect(qrX - 2, qrY - 2, qrWidth + 4, qrHeight + 4, 2, 2);
                 doc.addImage(qrDataUrl, getImageFormat(qrDataUrl), qrX, qrY, qrWidth, qrHeight);
 
                 doc.setFont("helvetica", "normal");
-                doc.setFontSize(10);
-                doc.text("Escanea para pagar desde tu App Bancaria", pageW / 2, qrY + qrHeight + 6, { align: "center" });
+                doc.setFontSize(9);
+                doc.text("Escanea para pagar desde tu App Bancaria", pageW / 2, qrY + qrHeight + 5, { align: "center" });
             }
 
             doc.save("Inscripcion-LAMA-Medellin.pdf");
