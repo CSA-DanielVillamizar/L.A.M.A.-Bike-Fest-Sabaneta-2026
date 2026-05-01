@@ -145,12 +145,12 @@ export function AgendaSection() {
                                                 className="relative grid gap-4 sm:grid-cols-2 sm:gap-8"
                                             >
                                                 <div
-                                                    className={`sm:px-8 ${globalIdx % 2 === 0
+                                                    className={`relative z-10 pl-10 sm:px-8 ${globalIdx % 2 === 0
                                                         ? "sm:col-start-1 sm:text-right"
                                                         : "sm:col-start-2 sm:text-left"
                                                         }`}
                                                 >
-                                                    <p className="font-display text-sm uppercase tracking-[0.2em] text-orange-300">
+                                                    <p className="font-display text-sm uppercase tracking-[0.14em] text-orange-300 sm:text-base sm:tracking-[0.2em]">
                                                         {event.time}
                                                     </p>
                                                     <h3 className="mt-2 text-xl font-bold text-zinc-100">
@@ -164,7 +164,7 @@ export function AgendaSection() {
                                                     )}
                                                 </div>
 
-                                                <span className="absolute left-4 top-1.5 h-3 w-3 -translate-x-1/2 rounded-full border border-orange-300 bg-orange-500 shadow-[0_0_0_4px_rgba(9,9,9,0.9)] sm:left-1/2" />
+                                                <span className="absolute left-4 top-2 h-2.5 w-2.5 -translate-x-1/2 rounded-full border border-orange-300 bg-orange-500 shadow-[0_0_0_4px_rgba(9,9,9,0.9)] sm:left-1/2 sm:top-1.5 sm:h-3 sm:w-3" />
                                             </motion.article>
                                         );
                                     })}
