@@ -1,8 +1,8 @@
 "use client";
 
+import { COLOMBIAN_CHAPTERS, COUNTRIES } from "@/constants/countries";
 import { jsPDF } from "jspdf";
-import { FormEvent, useMemo, useState } from "react";
-import { COUNTRIES } from "@/constants/countries";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 
 const PARTICIPANT_CATEGORIES = [
     "DAMA L.A.M.A.",
@@ -15,33 +15,7 @@ const PARTICIPANT_CATEGORIES = [
     "CLUB HERMANO / INVITADO (Solo Sábado)",
 ] as const;
 
-const CHAPTERS = [
-    "Cartagena",
-    "Barranquilla",
-    "Puerto Colombia",
-    "Zenu",
-    "Medellín",
-    "Valle de Aburrá",
-    "Pereira",
-    "Armenia",
-    "Manizales",
-    "Cali",
-    "Popayán",
-    "Neiva",
-    "Ibagué",
-    "Mocoa",
-    "Bucaramanga",
-    "Floridablanca",
-    "Cúcuta",
-    "Pasto",
-    "Bogotá",
-    "Sabana",
-    "Duitama",
-    "Internacional",
-    "Otros",
-] as const;
-
-const SORTED_CHAPTERS = [...CHAPTERS].sort((a, b) => a.localeCompare(b, "es"));
+const SORTED_COLOMBIAN_CHAPTERS = [...COLOMBIAN_CHAPTERS].sort((a, b) => a.localeCompare(b, "es"));
 
 const DIRECTIVE_SCOPES = ["Capítulo", "Región", "País", "Internacional"] as const;
 
@@ -101,7 +75,7 @@ type FormValues = {
     emergencyPhone: string;
     country: string;
     chapter: string;
-    otherChapter: string;
+    specifiedChapter: string;
     isDirective: boolean;
     directiveScope: string;
     directiveRole: string;
@@ -143,7 +117,7 @@ const initialForm: FormValues = {
     emergencyPhone: "",
     country: "",
     chapter: "",
-    otherChapter: "",
+    specifiedChapter: "",
     isDirective: false,
     directiveScope: "",
     directiveRole: "",
@@ -166,9 +140,35 @@ function formatCop(value: number): string {
 
 export function OfficialRegistrationForm() {
     const [form, setForm] = useState<FormValues>(initialForm);
+    const [selectedCountry, setSelectedCountry] = useState("");
     const [loading, setLoading] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
     const [successRegistration, setSuccessRegistration] = useState<SuccessRegistration | null>(null);
+
+    useEffect(() => {
+        setForm((current) => {
+            if (!selectedCountry) {
+                return {
+                    ...current,
+                    chapter: "",
+                    specifiedChapter: "",
+                };
+            }
+
+            if (selectedCountry === "Colombia") {
+                return {
+                    ...current,
+                    chapter: current.chapter === "Internacional" ? "" : current.chapter,
+                    specifiedChapter: "",
+                };
+            }
+
+            return {
+                ...current,
+                chapter: "Internacional",
+            };
+        });
+    }, [selectedCountry]);
 
     const participantBaseTotal = getParticipantBaseCost(form.participantCategory);
     const companionsBaseTotal = form.hasCompanions
@@ -349,14 +349,16 @@ export function OfficialRegistrationForm() {
         setSuccessRegistration(null);
 
         try {
-            const normalizedChapter = form.chapter === "Otros" ? form.otherChapter.trim() : form.chapter;
+            if (!selectedCountry) {
+                throw new Error("Debes seleccionar tu país en Pertenencia L.A.M.A.");
+            }
+
+            const normalizedChapter = selectedCountry === "Colombia"
+                ? form.chapter.trim()
+                : form.specifiedChapter.trim();
 
             if (!normalizedChapter) {
                 throw new Error("Debes indicar tu capítulo en Pertenencia L.A.M.A.");
-            }
-
-            if (!form.country) {
-                throw new Error("Debes seleccionar tu país en Pertenencia L.A.M.A.");
             }
 
             const companions = form.hasCompanions ? form.companions : [];
@@ -377,6 +379,7 @@ export function OfficialRegistrationForm() {
 
             const payload = {
                 ...form,
+                country: selectedCountry,
                 chapter: normalizedChapter,
                 directiveScope: form.isDirective ? form.directiveScope : null,
                 directiveRole: form.isDirective ? form.directiveRole : null,
@@ -418,7 +421,7 @@ export function OfficialRegistrationForm() {
             setSuccessRegistration({
                 id: result.id,
                 fullName: form.fullName,
-                country: form.country,
+                country: selectedCountry,
                 chapter: normalizedChapter,
                 totalToPay: result.totalToPay ?? totalToPay,
                 participantCategory: form.participantCategory,
@@ -432,6 +435,7 @@ export function OfficialRegistrationForm() {
             });
 
             setForm(initialForm);
+            setSelectedCountry("");
         } catch (error) {
             setErrorMessage(error instanceof Error ? error.message : "Error al enviar la inscripción.");
         } finally {
@@ -643,8 +647,12 @@ export function OfficialRegistrationForm() {
                                     País
                                     <select
                                         required
-                                        value={form.country}
-                                        onChange={(event) => updateField("country", event.target.value)}
+                                        value={selectedCountry}
+                                        onChange={(event) => {
+                                            const country = event.target.value;
+                                            setSelectedCountry(country);
+                                            updateField("country", country);
+                                        }}
                                         className="rounded-lg border border-zinc-700 bg-zinc-900/70 px-3 py-2 text-zinc-100 outline-none ring-orange-400/40 transition focus:ring"
                                     >
                                         <option value="">Selecciona tu país</option>
@@ -654,33 +662,33 @@ export function OfficialRegistrationForm() {
                                     </select>
                                 </label>
 
-                                <label className="sm:col-span-2 flex flex-col gap-2 text-sm text-zinc-300">
-                                    Capítulo
-                                    <select
-                                        required
-                                        value={form.chapter}
-                                        onChange={(event) => updateField("chapter", event.target.value)}
-                                        className="rounded-lg border border-zinc-700 bg-zinc-900/70 px-3 py-2 text-zinc-100 outline-none ring-orange-400/40 transition focus:ring"
-                                    >
-                                        <option value="">Selecciona tu capítulo</option>
-                                        {SORTED_CHAPTERS.map((chapter) => (
-                                            <option key={chapter} value={chapter}>{chapter}</option>
-                                        ))}
-                                    </select>
-                                </label>
-
-                                {form.chapter === "Otros" && (
+                                {selectedCountry === "Colombia" ? (
+                                    <label className="sm:col-span-2 flex flex-col gap-2 text-sm text-zinc-300">
+                                        Capítulo
+                                        <select
+                                            required
+                                            value={form.chapter}
+                                            onChange={(event) => updateField("chapter", event.target.value)}
+                                            className="rounded-lg border border-zinc-700 bg-zinc-900/70 px-3 py-2 text-zinc-100 outline-none ring-orange-400/40 transition focus:ring"
+                                        >
+                                            <option value="">Selecciona tu capítulo</option>
+                                            {SORTED_COLOMBIAN_CHAPTERS.map((chapter) => (
+                                                <option key={chapter} value={chapter}>{chapter}</option>
+                                            ))}
+                                        </select>
+                                    </label>
+                                ) : selectedCountry ? (
                                     <label className="sm:col-span-2 flex flex-col gap-2 text-sm text-zinc-300">
                                         Especifica tu capítulo
                                         <input
                                             required
-                                            value={form.otherChapter}
-                                            onChange={(event) => updateField("otherChapter", event.target.value)}
+                                            value={form.specifiedChapter}
+                                            onChange={(event) => updateField("specifiedChapter", event.target.value)}
                                             placeholder="Escribe el nombre de tu capítulo"
                                             className="rounded-lg border border-zinc-700 bg-zinc-900/70 px-3 py-2 text-zinc-100 outline-none ring-orange-400/40 transition focus:ring"
                                         />
                                     </label>
-                                )}
+                                ) : null}
 
                                 <label className="sm:col-span-2 flex items-center justify-between rounded-lg border border-zinc-700 bg-zinc-900/50 px-4 py-3 text-sm text-zinc-200">
                                     <span>Es Directivo?</span>

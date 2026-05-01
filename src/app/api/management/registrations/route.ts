@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 const COUNTRY_TO_ISO_A3: Record<string, string> = {
     argentina: "ARG",
     bolivia: "BOL",
+    aruba: "ABW",
     brasil: "BRA",
     brazil: "BRA",
     canada: "CAN",
@@ -10,6 +11,7 @@ const COUNTRY_TO_ISO_A3: Record<string, string> = {
     colombia: "COL",
     "costa rica": "CRI",
     cuba: "CUB",
+    curazao: "CUW",
     ecuador: "ECU",
     "el salvador": "SLV",
     espana: "ESP",
@@ -26,6 +28,7 @@ const COUNTRY_TO_ISO_A3: Record<string, string> = {
     peru: "PER",
     "puerto rico": "PRI",
     "republica dominicana": "DOM",
+    "trinidad y tobago": "TTO",
     uruguay: "URY",
     venezuela: "VEN",
 };
