@@ -1,6 +1,17 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import {
+    Bar,
+    BarChart,
+    Cell,
+    Pie,
+    PieChart,
+    ResponsiveContainer,
+    Tooltip,
+    XAxis,
+    YAxis,
+} from "recharts";
 
 const SESSION_PASSWORD_KEY = "lama-admin-access-password";
 
@@ -31,7 +42,13 @@ type ClubAdminRecord = {
 type AdminPayload = {
     officials: OfficialAdminRecord[];
     clubs: ClubAdminRecord[];
+    analytics: {
+        registrationsByCountry: Array<{ country: string; totalPeople: number }>;
+        registrationsByChapter: Array<{ chapter: string; totalPeople: number }>;
+    };
 };
+
+const DONUT_COLORS = ["#f97316", "#ea580c", "#c2410c", "#a16207", "#0f172a", "#1f2937", "#334155", "#52525b"];
 
 function downloadCsvFile(filename: string, rows: string[][]) {
     // Agregar BOM para UTF-8 — obliga a Excel a reconocer acentos y ñ
@@ -56,6 +73,8 @@ export default function AdminPage() {
     const [loading, setLoading] = useState(true);
     const [errorMessage, setErrorMessage] = useState("");
     const [pendingKeys, setPendingKeys] = useState<Record<string, boolean>>({});
+    const [registrationsByCountry, setRegistrationsByCountry] = useState<Array<{ country: string; totalPeople: number }>>([]);
+    const [registrationsByChapter, setRegistrationsByChapter] = useState<Array<{ chapter: string; totalPeople: number }>>([]);
     const [passwordInput, setPasswordInput] = useState("");
     const [accessPassword, setAccessPassword] = useState("");
     const [isAuthorized, setIsAuthorized] = useState(false);
@@ -109,6 +128,8 @@ export default function AdminPage() {
 
                 setOfficials(data.officials);
                 setClubs(data.clubs);
+                setRegistrationsByCountry(data.analytics?.registrationsByCountry ?? []);
+                setRegistrationsByChapter(data.analytics?.registrationsByChapter ?? []);
             } catch (error) {
                 setErrorMessage(error instanceof Error ? error.message : "No fue posible cargar el panel.");
             } finally {
@@ -128,6 +149,17 @@ export default function AdminPage() {
         () => officials.length + clubs.length,
         [officials.length, clubs.length],
     );
+
+    const chapterDonutData = useMemo(() => {
+        if (registrationsByChapter.length <= 8) return registrationsByChapter;
+
+        const top = registrationsByChapter.slice(0, 7);
+        const othersTotal = registrationsByChapter
+            .slice(7)
+            .reduce((sum, item) => sum + item.totalPeople, 0);
+
+        return [...top, { chapter: "Otras delegaciones", totalPeople: othersTotal }];
+    }, [registrationsByChapter]);
 
     const handleTogglePayment = async (id: string, type: "official" | "club") => {
         const key = `${type}:${id}`;
@@ -190,6 +222,8 @@ export default function AdminPage() {
         setIsAuthorized(false);
         setOfficials([]);
         setClubs([]);
+        setRegistrationsByCountry([]);
+        setRegistrationsByChapter([]);
     };
 
     const handleExportCsv = () => {
@@ -324,6 +358,85 @@ export default function AdminPage() {
                         <p className="text-xs uppercase tracking-[0.2em] text-zinc-400">Total Inscritos</p>
                         <p className="mt-3 font-display text-4xl font-bold text-zinc-100">{totalRecordsCount}</p>
                         <p className="mt-2 text-sm text-zinc-400">Registros oficiales y clubes consolidados.</p>
+                    </article>
+                </section>
+
+                <section className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+                    <article className="rounded-2xl border border-white/10 bg-black/35 p-6">
+                        <h2 className="font-display text-2xl font-bold text-zinc-100">Inscritos por País</h2>
+                        <p className="mt-1 text-sm text-zinc-400">
+                            Total de personas por origen, incluyendo acompañantes y asistentes estimados.
+                        </p>
+                        <div className="mt-5 h-80 w-full">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={registrationsByCountry} margin={{ top: 8, right: 12, left: 0, bottom: 32 }}>
+                                    <XAxis
+                                        dataKey="country"
+                                        stroke="#a1a1aa"
+                                        tick={{ fill: "#a1a1aa", fontSize: 12 }}
+                                        angle={-20}
+                                        textAnchor="end"
+                                        interval={0}
+                                        height={52}
+                                    />
+                                    <YAxis stroke="#a1a1aa" tick={{ fill: "#a1a1aa", fontSize: 12 }} allowDecimals={false} />
+                                    <Tooltip
+                                        cursor={{ fill: "rgba(255,255,255,0.04)" }}
+                                        contentStyle={{ background: "#09090b", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "12px" }}
+                                        labelStyle={{ color: "#e4e4e7" }}
+                                    />
+                                    <Bar dataKey="totalPeople" fill="#f97316" radius={[8, 8, 0, 0]} />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </article>
+
+                    <article className="rounded-2xl border border-white/10 bg-black/35 p-6">
+                        <h2 className="font-display text-2xl font-bold text-zinc-100">Distribución por Capítulo</h2>
+                        <p className="mt-1 text-sm text-zinc-400">
+                            Presencia de capítulos y delegaciones según personas registradas.
+                        </p>
+                        <div className="mt-5 grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,220px)]">
+                            <div className="h-72 w-full">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <PieChart>
+                                        <Pie
+                                            data={chapterDonutData}
+                                            dataKey="totalPeople"
+                                            nameKey="chapter"
+                                            cx="50%"
+                                            cy="50%"
+                                            innerRadius={62}
+                                            outerRadius={102}
+                                            paddingAngle={2}
+                                        >
+                                            {chapterDonutData.map((item, index) => (
+                                                <Cell key={`${item.chapter}-${index}`} fill={DONUT_COLORS[index % DONUT_COLORS.length]} />
+                                            ))}
+                                        </Pie>
+                                        <Tooltip
+                                            contentStyle={{ background: "#09090b", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "12px" }}
+                                            labelStyle={{ color: "#e4e4e7" }}
+                                        />
+                                    </PieChart>
+                                </ResponsiveContainer>
+                            </div>
+
+                            <div className="max-h-72 space-y-2 overflow-auto pr-1 text-xs text-zinc-300">
+                                {chapterDonutData.map((item, index) => (
+                                    <div key={`${item.chapter}-legend`} className="flex items-center justify-between gap-3 rounded-lg border border-white/5 bg-zinc-900/50 px-3 py-2">
+                                        <span className="inline-flex items-center gap-2">
+                                            <span
+                                                className="h-2.5 w-2.5 rounded-full"
+                                                style={{ backgroundColor: DONUT_COLORS[index % DONUT_COLORS.length] }}
+                                            />
+                                            <span className="max-w-[130px] truncate">{item.chapter}</span>
+                                        </span>
+                                        <span className="font-semibold text-zinc-100">{item.totalPeople}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
                     </article>
                 </section>
 

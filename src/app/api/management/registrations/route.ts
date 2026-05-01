@@ -80,6 +80,49 @@ export async function GET(request: Request) {
             `),
         ]);
 
+        const [countryAnalyticsResult, chapterAnalyticsResult] = await Promise.all([
+            pool.request().query(`
+                SELECT
+                    country,
+                    SUM(totalPeople) AS totalPeople
+                FROM (
+                    SELECT
+                        CASE WHEN chapter = 'Internacional' THEN 'Internacional' ELSE 'Colombia' END AS country,
+                        (ISNULL(companionsCount, 0) + 1) AS totalPeople
+                    FROM OfficialRegistration
+
+                    UNION ALL
+
+                    SELECT
+                        ISNULL(originCity, 'Sin dato') AS country,
+                        ISNULL(estimatedAttendees, 0) AS totalPeople
+                    FROM ClubRegistration
+                ) AS countryTotals
+                GROUP BY country
+                ORDER BY totalPeople DESC
+            `),
+            pool.request().query(`
+                SELECT
+                    chapterName,
+                    SUM(totalPeople) AS totalPeople
+                FROM (
+                    SELECT
+                        ISNULL(chapter, 'Sin capítulo') AS chapterName,
+                        (ISNULL(companionsCount, 0) + 1) AS totalPeople
+                    FROM OfficialRegistration
+
+                    UNION ALL
+
+                    SELECT
+                        CONCAT('Delegación ', ISNULL(clubName, 'Sin nombre')) AS chapterName,
+                        ISNULL(estimatedAttendees, 0) AS totalPeople
+                    FROM ClubRegistration
+                ) AS chapterTotals
+                GROUP BY chapterName
+                ORDER BY totalPeople DESC
+            `),
+        ]);
+
         await pool.close();
 
         const officialRegistrations = officialResult.recordset as Array<{
@@ -103,6 +146,22 @@ export async function GET(request: Request) {
             isPaid: boolean;
             createdAt: string;
         }>;
+
+        const registrationsByCountry = (countryAnalyticsResult.recordset as Array<{
+            country: string;
+            totalPeople: number;
+        }>).map((item) => ({
+            country: item.country,
+            totalPeople: Number(item.totalPeople) || 0,
+        }));
+
+        const registrationsByChapter = (chapterAnalyticsResult.recordset as Array<{
+            chapterName: string;
+            totalPeople: number;
+        }>).map((item) => ({
+            chapter: item.chapterName,
+            totalPeople: Number(item.totalPeople) || 0,
+        }));
 
         const officials = officialRegistrations.map((registration) => ({
             id: registration.id,
@@ -132,6 +191,10 @@ export async function GET(request: Request) {
             {
                 officials,
                 clubs,
+                analytics: {
+                    registrationsByCountry,
+                    registrationsByChapter,
+                },
             },
             {
                 status: 200,
