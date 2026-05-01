@@ -34,7 +34,9 @@ type AdminPayload = {
 };
 
 function downloadCsvFile(filename: string, rows: string[][]) {
-    const csvContent = rows
+    // Agregar BOM para UTF-8 — obliga a Excel a reconocer acentos y ñ
+    const BOM = '\uFEFF';
+    const csvContent = BOM + rows
         .map((row) => row.map((cell) => `"${String(cell).replaceAll('"', '""')}"`).join(","))
         .join("\n");
 
@@ -191,18 +193,29 @@ export default function AdminPage() {
     };
 
     const handleExportCsv = () => {
+        // Función helper para formatear fechas
+        const formatDate = (dateString: string): string => {
+            const date = new Date(dateString);
+            const day = String(date.getDate()).padStart(2, "0");
+            const month = String(date.getMonth() + 1).padStart(2, "0");
+            const year = date.getFullYear();
+            const hours = String(date.getHours()).padStart(2, "0");
+            const minutes = String(date.getMinutes()).padStart(2, "0");
+            return `${day}/${month}/${year} ${hours}:${minutes}`;
+        };
+
         const rows: string[][] = [
-            ["Tipo", "Nombre", "Capitulo/Delegado", "Pais", "Telefono", "Correo", "Acompanantes", "Pagado", "Fecha"],
+            ["Tipo", "Nombre", "Capítulo/Delegado", "País", "Teléfono", "Correo", "Acompañantes", "Pagado", "Fecha"],
             ...officials.map((item) => [
                 "Inscrito Oficial",
                 item.name,
                 item.chapter,
                 item.country,
                 item.phone,
-                item.email,
+                "-",
                 item.companions,
                 item.isPaid ? "Pagado" : "Pendiente",
-                new Date(item.createdAt).toLocaleString("es-CO"),
+                formatDate(item.createdAt),
             ]),
             ...clubs.map((item) => [
                 "Club",
@@ -210,10 +223,10 @@ export default function AdminPage() {
                 item.delegate,
                 item.country,
                 item.phone,
-                "No registrado",
+                "-",
                 `${item.attendees} asistentes estimados`,
                 item.isPaid ? "Pagado" : "Pendiente",
-                new Date(item.createdAt).toLocaleString("es-CO"),
+                formatDate(item.createdAt),
             ]),
         ];
 
