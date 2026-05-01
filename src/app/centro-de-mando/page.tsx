@@ -347,8 +347,8 @@ export default function AdminPage() {
         const formattedRevenue = formatCopCurrency(totalRevenueAmount);
 
         const revenueLine = presentationMode
-            ? "💰 *Recaudación Total:* *** COP"
-            : `💰 *Recaudación Total:* ${formattedRevenue} COP`;
+            ? "💰 *Recaudación Total:* ***"
+            : `💰 *Recaudación Total:* ${formattedRevenue}`;
 
         const report = `📊 *REPORTE DIARIO: XIII ANIVERSARIO L.A.M.A. MEDELLÍN* 🏍️
 📅 Fecha: ${formattedDate}
@@ -516,7 +516,7 @@ export default function AdminPage() {
                         <p className="text-xs uppercase tracking-[0.2em] text-zinc-400">Total Recaudado</p>
                         <p className="mt-3 font-display text-4xl font-bold text-orange-300">
                             <span className={presentationMode ? "blur-sm select-none" : ""}>
-                                {formatCopCurrency(totalRevenueAmount)} COP
+                                {formatCopCurrency(totalRevenueAmount)}
                             </span>
                         </p>
                         <p className="mt-2 text-sm text-zinc-400">Pagos confirmados en el sistema.</p>

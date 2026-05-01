@@ -133,11 +133,7 @@ const initialForm: FormValues = {
 };
 
 function formatCop(value: number): string {
-    return new Intl.NumberFormat("es-CO", {
-        style: "currency",
-        currency: "COP",
-        maximumFractionDigits: 0,
-    }).format(value);
+    return `$ ${Math.round(value).toLocaleString("es-CO")}`;
 }
 
 async function loadImageAsDataUrl(imagePath: string): Promise<string | null> {
@@ -348,7 +344,6 @@ export function OfficialRegistrationForm() {
             const pageW = doc.internal.pageSize.getWidth();
             const pageH = doc.internal.pageSize.getHeight();
             const left = 20;
-            const right = pageW - left;
             let y = 18;
 
             const [logoDataUrl, qrDataUrl] = await Promise.all([
@@ -365,7 +360,7 @@ export function OfficialRegistrationForm() {
             doc.text("L.A.M.A. Medellín | Registro Oficial", left, 5.6);
             doc.setTextColor(0, 0, 0);
 
-            y = 14;
+            y = 15;
 
             let logoBottomY = y;
 
@@ -378,12 +373,12 @@ export function OfficialRegistrationForm() {
                 logoBottomY = y + logoHeight;
             }
 
-            const tableTitleY = logoBottomY + 12;
+            const tableTitleY = Math.max(45, logoBottomY + 4);
             doc.setFont("helvetica", "bold");
             doc.setFontSize(15);
             doc.text("Resumen Oficial de Inscripción", pageW / 2, tableTitleY, { align: "center" });
 
-            y = tableTitleY + 6;
+            y = Math.max(52, tableTitleY + 7);
 
             const tableRows: Array<[string, string]> = [
                 ["ID de Registro", successRegistration.id],
@@ -404,7 +399,8 @@ export function OfficialRegistrationForm() {
 
             autoTable(doc, {
                 startY: y,
-                margin: { left, right: pageW - right },
+                margin: { left: pageW * 0.05, right: pageW * 0.05 },
+                tableWidth: pageW * 0.9,
                 head: [["Campo", "Detalle"]],
                 body: tableRows,
                 theme: "grid",
@@ -412,13 +408,13 @@ export function OfficialRegistrationForm() {
                     fillColor: [249, 115, 22],
                     textColor: [255, 255, 255],
                     fontStyle: "bold",
-                    fontSize: 11,
+                    fontSize: 10,
                     lineColor: [233, 236, 239],
                     lineWidth: 0.1,
                 },
                 bodyStyles: {
-                    fontSize: 10,
-                    cellPadding: 5,
+                    fontSize: 9,
+                    cellPadding: 3,
                     lineColor: [233, 236, 239],
                     lineWidth: 0.1,
                     textColor: [40, 40, 40],
@@ -431,41 +427,40 @@ export function OfficialRegistrationForm() {
                     font: "helvetica",
                 },
                 columnStyles: {
-                    0: { cellWidth: 62, fontStyle: "bold" },
+                    0: { cellWidth: 64, fontStyle: "bold" },
                     1: { cellWidth: "auto" },
                 },
             });
 
             const tableEndY = (doc as jsPDF & { lastAutoTable?: { finalY?: number } }).lastAutoTable?.finalY || y;
 
-            doc.setFont("helvetica", "bold");
-            doc.setFontSize(11);
-            y = tableEndY + 7;
-            doc.text("Instrucciones de Pago", left, y);
-            y += 6;
-            doc.setFont("helvetica", "normal");
-            doc.setFontSize(10);
-            doc.text("Bancolombia Ahorros: 23000013774", left, y);
-            y += 5;
-            doc.text("Titular: Fundación L.A.M.A. Medellín", left, y);
-            y += 8;
-
             if (qrDataUrl) {
                 const qrWidth = 45;
                 const qrHeight = (qrWidth * 753) / 423;
                 const qrX = (pageW - qrWidth) / 2;
-                let qrTitleY = Math.max(tableEndY + 15, y + 12);
-                let qrY = qrTitleY + 4;
+                const blockSpacingFromTable = 10;
+                const blockInnerGap = 4;
+                const accountLinesHeight = 12;
+                const captionGap = 6;
+                const bottomSafeMargin = 12;
 
-                if (qrY + qrHeight + 10 > pageH) {
-                    doc.addPage();
-                    qrTitleY = 30;
-                    qrY = qrTitleY + 4;
-                }
+                const blockHeight = 6 + blockInnerGap + accountLinesHeight + blockInnerGap + qrHeight + captionGap + 5;
+                const minBlockStartY = tableEndY + blockSpacingFromTable;
+                const maxBlockStartY = pageH - bottomSafeMargin - blockHeight;
+                const blockStartY = Math.min(minBlockStartY, maxBlockStartY);
+
+                const qrTitleY = blockStartY + 6;
+                const accountY = qrTitleY + blockInnerGap;
+                const qrY = accountY + accountLinesHeight + blockInnerGap;
 
                 doc.setFont("helvetica", "bold");
                 doc.setFontSize(12);
                 doc.text("PASO FINAL: REALIZA TU PAGO", pageW / 2, qrTitleY, { align: "center" });
+
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(10);
+                doc.text("Bancolombia Ahorros: 23000013774", pageW / 2, accountY + 4, { align: "center" });
+                doc.text("Titular: Fundación L.A.M.A. Medellín", pageW / 2, accountY + 9, { align: "center" });
 
                 doc.setDrawColor(230, 230, 230);
                 doc.roundedRect(qrX - 3, qrY - 3, qrWidth + 6, qrHeight + 6, 2, 2);
