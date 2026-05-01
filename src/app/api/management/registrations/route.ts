@@ -104,7 +104,7 @@ export async function GET(request: Request) {
             IF COL_LENGTH('ClubRegistration', 'country') IS NULL ALTER TABLE ClubRegistration ADD country NVARCHAR(255) NULL;
         `);
 
-        const [officialResult, clubResult] = await Promise.all([
+        const [officialResult, companionResult, clubResult] = await Promise.all([
             pool.request().query(`
                 SELECT
                     id,
@@ -113,11 +113,22 @@ export async function GET(request: Request) {
                     chapter,
                     emergencyPhone,
                     companionsCount,
+                    wantsJersey,
+                    jerseySize,
                     isPaid,
                     totalToPay,
                     createdAt
                 FROM OfficialRegistration
                 ORDER BY createdAt DESC
+            `),
+            pool.request().query(`
+                SELECT
+                    registrationId,
+                    fullName,
+                    category,
+                    wantsJersey,
+                    jerseySize
+                FROM Companion
             `),
             pool.request().query(`
                 SELECT
@@ -144,10 +155,26 @@ export async function GET(request: Request) {
             chapter: string;
             emergencyPhone: string;
             companionsCount: number;
+            wantsJersey: boolean;
+            jerseySize: string | null;
             isPaid: boolean;
             totalToPay: number;
             createdAt: string;
         }>;
+
+        const companionRows = companionResult.recordset as Array<{
+            registrationId: string;
+            fullName: string;
+            category: string;
+            wantsJersey: boolean;
+            jerseySize: string | null;
+        }>;
+
+        const companionsByReg = new Map<string, typeof companionRows>();
+        for (const c of companionRows) {
+            if (!companionsByReg.has(c.registrationId)) companionsByReg.set(c.registrationId, []);
+            companionsByReg.get(c.registrationId)!.push(c);
+        }
 
         const clubRegistrations = clubResult.recordset as Array<{
             id: string;
@@ -225,6 +252,13 @@ export async function GET(request: Request) {
             phone: registration.emergencyPhone,
             email: "No registrado",
             companions: registration.companionsCount > 0 ? `${registration.companionsCount} acompanante(s)` : "No",
+            companionNames: (companionsByReg.get(registration.id) ?? [])
+                .map((c) => `${c.fullName} (${c.category})`)
+                .join(" | ") || "-",
+            pilotJersey: registration.wantsJersey ? (registration.jerseySize ?? "Sin talla") : "No",
+            companionJerseys: (companionsByReg.get(registration.id) ?? [])
+                .map((c) => `${c.fullName}: ${c.wantsJersey ? (c.jerseySize ?? "Sin talla") : "No"}`)
+                .join(" | ") || "-",
             isPaid: registration.isPaid,
             totalToPay: registration.totalToPay,
             createdAt: registration.createdAt,

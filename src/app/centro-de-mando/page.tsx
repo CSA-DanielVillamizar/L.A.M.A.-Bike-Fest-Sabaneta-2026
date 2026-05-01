@@ -28,6 +28,9 @@ type OfficialAdminRecord = {
     phone: string;
     email: string;
     companions: string;
+    companionNames: string;
+    pilotJersey: string;
+    companionJerseys: string;
     isPaid: boolean;
     totalToPay: number;
     createdAt: string;
@@ -308,16 +311,22 @@ export default function AdminPage() {
         };
 
         const rows: string[][] = [
-            ["Tipo", "Nombre", "Capítulo/Delegado", "País", "Teléfono", "Correo", "Acompañantes", "Pagado", "Fecha"],
+            [
+                "Tipo", "Nombre", "Capítulo/Delegado", "País", "Teléfono",
+                "Nombres Acompañantes", "Camiseta Piloto", "Camisetas Acompañantes",
+                "Pagado", "Total a Pagar", "Fecha",
+            ],
             ...officials.map((item) => [
                 "Inscrito Oficial",
                 item.name,
                 item.chapter,
                 item.country,
                 item.phone,
-                "-",
-                item.companions,
+                item.companionNames ?? "-",
+                item.pilotJersey ?? "No",
+                item.companionJerseys ?? "-",
                 item.isPaid ? "Pagado" : "Pendiente",
+                formatCopCurrency(item.totalToPay),
                 formatDate(item.createdAt),
             ]),
             ...clubs.map((item) => [
@@ -326,9 +335,11 @@ export default function AdminPage() {
                 item.delegate,
                 item.country,
                 item.phone,
-                "-",
                 `${item.attendees} asistentes estimados`,
+                "-",
+                "-",
                 item.isPaid ? "Pagado" : "Pendiente",
+                "-",
                 formatDate(item.createdAt),
             ]),
         ];
