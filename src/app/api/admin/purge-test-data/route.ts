@@ -15,13 +15,6 @@ function isAuthorized(request: NextRequest): boolean {
 
 export async function POST(request: NextRequest) {
     try {
-        if (process.env.NODE_ENV === "production") {
-            return NextResponse.json(
-                { error: "Endpoint de limpieza deshabilitado en producción." },
-                { status: 403 },
-            );
-        }
-
         if (!isAuthorized(request)) {
             return NextResponse.json({ error: "Acceso no autorizado." }, { status: 401 });
         }

@@ -440,7 +440,7 @@ export function OfficialRegistrationForm() {
 
             if (qrDataUrl) {
                 const qrWidth = 30;
-                const qrHeight = 53;
+                const qrHeight = (qrWidth * 753) / 423;
                 const qrX = (pageW - qrWidth) / 2;
                 const blockSpacingFromTable = 5;
                 const blockInnerGap = 3;
