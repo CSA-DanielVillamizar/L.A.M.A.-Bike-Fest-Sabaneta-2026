@@ -44,6 +44,8 @@ const COLOMBIA_CITY_HINTS = [
     "cundinamarca",
 ];
 
+const GLOBAL_COUNTRY_GOAL = 26;
+
 function normalizeText(value: string | null | undefined) {
     return String(value || "")
         .toLowerCase()
@@ -85,6 +87,25 @@ function toTitleCase(value: string) {
 
 function countryToIsoA3(country: string) {
     return COUNTRY_TO_ISO_A3[normalizeText(country)] || null;
+}
+
+function getDistinctCountries(
+    officialRegistrations: Array<{ chapter: string }>,
+    clubRegistrations: Array<{ originCity: string }>,
+) {
+    const countries = new Set<string>();
+
+    for (const registration of officialRegistrations) {
+        const country = getOfficialCountry(registration.chapter);
+        if (country) countries.add(country);
+    }
+
+    for (const registration of clubRegistrations) {
+        const country = getClubCountry(registration.originCity);
+        if (country) countries.add(country);
+    }
+
+    return Array.from(countries.values()).sort((a, b) => a.localeCompare(b, "es"));
 }
 
 function parseSqlServerUrl(rawUrl: string | undefined) {
@@ -237,6 +258,10 @@ export async function GET(request: Request) {
             .map(([chapter, totalPeople]) => ({ chapter, totalPeople }))
             .sort((a, b) => b.totalPeople - a.totalPeople);
 
+        const distinctCountries = getDistinctCountries(officialRegistrations, clubRegistrations);
+        const activeCountries = distinctCountries.length;
+        const percentage = Math.min(100, Math.round((activeCountries / GLOBAL_COUNTRY_GOAL) * 100));
+
         const officials = officialRegistrations.map((registration) => ({
             id: registration.id,
             name: registration.fullName,
@@ -269,6 +294,12 @@ export async function GET(request: Request) {
                     registrationsByCountry,
                     registrationsByCountryIso,
                     registrationsByChapter,
+                    globalCountryProgress: {
+                        activeCountries,
+                        goalCountries: GLOBAL_COUNTRY_GOAL,
+                        percentage,
+                        countries: distinctCountries,
+                    },
                 },
             },
             {

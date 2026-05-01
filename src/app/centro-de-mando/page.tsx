@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
 import { scaleLinear } from "d3-scale";
+import { useEffect, useMemo, useState } from "react";
 import { ComposableMap, Geographies, Geography } from "react-simple-maps";
 import {
     Bar,
@@ -49,6 +49,12 @@ type AdminPayload = {
         registrationsByCountry: Array<{ country: string; totalPeople: number }>;
         registrationsByCountryIso: Array<{ country: string; isoA3: string; totalPeople: number }>;
         registrationsByChapter: Array<{ chapter: string; totalPeople: number }>;
+        globalCountryProgress: {
+            activeCountries: number;
+            goalCountries: number;
+            percentage: number;
+            countries: string[];
+        };
     };
 };
 
@@ -80,6 +86,11 @@ export default function AdminPage() {
     const [registrationsByCountry, setRegistrationsByCountry] = useState<Array<{ country: string; totalPeople: number }>>([]);
     const [registrationsByCountryIso, setRegistrationsByCountryIso] = useState<Array<{ country: string; isoA3: string; totalPeople: number }>>([]);
     const [registrationsByChapter, setRegistrationsByChapter] = useState<Array<{ chapter: string; totalPeople: number }>>([]);
+    const [globalCountryProgress, setGlobalCountryProgress] = useState({
+        activeCountries: 0,
+        goalCountries: 26,
+        percentage: 0,
+    });
     const [mapTooltip, setMapTooltip] = useState<{ country: string; totalPeople: number } | null>(null);
     const [passwordInput, setPasswordInput] = useState("");
     const [accessPassword, setAccessPassword] = useState("");
@@ -137,6 +148,7 @@ export default function AdminPage() {
                 setRegistrationsByCountry(data.analytics?.registrationsByCountry ?? []);
                 setRegistrationsByCountryIso(data.analytics?.registrationsByCountryIso ?? []);
                 setRegistrationsByChapter(data.analytics?.registrationsByChapter ?? []);
+                setGlobalCountryProgress(data.analytics?.globalCountryProgress ?? { activeCountries: 0, goalCountries: 26, percentage: 0 });
             } catch (error) {
                 setErrorMessage(error instanceof Error ? error.message : "No fue posible cargar el panel.");
             } finally {
@@ -232,6 +244,7 @@ export default function AdminPage() {
         setRegistrationsByCountry([]);
         setRegistrationsByCountryIso([]);
         setRegistrationsByChapter([]);
+        setGlobalCountryProgress({ activeCountries: 0, goalCountries: 26, percentage: 0 });
         setMapTooltip(null);
     };
 
@@ -353,6 +366,24 @@ export default function AdminPage() {
                         <p className="mt-2 max-w-3xl text-sm text-zinc-400 sm:text-base">
                             Gestiona inscritos, clubes confirmados y estados de pago desde un solo panel operativo.
                         </p>
+
+                        <div className="mt-5 w-full max-w-3xl rounded-xl border border-orange-500/30 bg-zinc-900/75 p-4">
+                            <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                                <p className="font-display text-lg font-bold leading-tight text-zinc-100 sm:text-2xl">
+                                    Llevamos {globalCountryProgress.activeCountries} de {globalCountryProgress.goalCountries} países confirmados
+                                </p>
+                                <p className="text-sm font-semibold text-orange-300 sm:text-base">
+                                    {globalCountryProgress.percentage}% de la meta global
+                                </p>
+                            </div>
+
+                            <div className="mt-3 h-3 w-full overflow-hidden rounded-full bg-[#1a1a1a]">
+                                <div
+                                    className="h-full rounded-full bg-[#f97316] transition-all duration-500"
+                                    style={{ width: `${globalCountryProgress.percentage}%` }}
+                                />
+                            </div>
+                        </div>
                     </div>
 
                     <button
