@@ -8,7 +8,7 @@ export function HeroSection() {
                 loop
                 muted
                 playsInline
-                poster="/images/hero-bg-poster.jpg"
+                poster="/images/hero-bg.jpg.png"
                 className="absolute inset-0 h-full w-full object-cover -z-10"
             >
                 <source src="/images/hero-bg.mp4" type="video/mp4" />

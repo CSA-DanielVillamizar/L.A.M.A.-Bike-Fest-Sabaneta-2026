@@ -38,12 +38,13 @@ export function RegistrationForms() {
 
     const handleClubSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
+        const form = event.currentTarget;
         setClubLoading(true);
         setClubSuccess(false);
         setClubMessage("");
 
         try {
-            const formData = new FormData(event.currentTarget);
+            const formData = new FormData(form);
             const data = Object.fromEntries(formData.entries());
 
             const response = await fetch("/api/register/club", {
@@ -60,7 +61,7 @@ export function RegistrationForms() {
 
             setClubSuccess(true);
             setClubMessage(result.message || "¡Club registrado correctamente! Te contactaremos pronto.");
-            event.currentTarget.reset();
+            form.reset();
             setTimeout(() => setClubSuccess(false), 5000);
         } catch (error) {
             setClubMessage(error instanceof Error ? error.message : "Error al registrar el club. Intenta nuevamente.");
@@ -72,12 +73,13 @@ export function RegistrationForms() {
 
     const handleSponsorSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
+        const form = event.currentTarget;
         setSponsorLoading(true);
         setSponsorSuccess(false);
         setSponsorMessage("");
 
         try {
-            const formData = new FormData(event.currentTarget);
+            const formData = new FormData(form);
             const intereses = formData.getAll("intereses");
             const data = {
                 ...Object.fromEntries(formData.entries()),
@@ -98,7 +100,7 @@ export function RegistrationForms() {
 
             setSponsorSuccess(true);
             setSponsorMessage(result.message || "¡Solicitud enviada! Pronto recibirás el dossier comercial.");
-            event.currentTarget.reset();
+            form.reset();
             setTimeout(() => setSponsorSuccess(false), 5000);
         } catch (error) {
             setSponsorMessage(error instanceof Error ? error.message : "Error al enviar la solicitud. Intenta nuevamente.");
