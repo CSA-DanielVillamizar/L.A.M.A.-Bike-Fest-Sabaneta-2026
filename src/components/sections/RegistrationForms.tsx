@@ -20,6 +20,8 @@ const sponsorInterests = [
     "Activación de marca",
 ];
 
+const OFFICIAL_WHATSAPP_GROUP_URL = "https://chat.whatsapp.com/KnwJ31J2ddBJsbc0Jr3Ufl";
+
 export function RegistrationForms() {
     const [activeTab, setActiveTab] = useState<ActiveTab>("clubs");
     const [clubLoading, setClubLoading] = useState(false);
@@ -133,8 +135,19 @@ export function RegistrationForms() {
                     </div>
 
                     {clubSuccess && activeTab === "clubs" && (
-                        <div className="mt-4 rounded-lg border border-green-500/50 bg-green-500/15 px-4 py-3 text-sm text-green-300">
-                            {clubMessage}
+                        <div className="mt-4 rounded-lg border border-green-500/50 bg-green-500/15 px-4 py-4 text-sm text-green-300">
+                            <p>{clubMessage}</p>
+                            <div className="mt-4 flex justify-center">
+                                <a
+                                    href={OFFICIAL_WHATSAPP_GROUP_URL}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center justify-center gap-2 rounded-full bg-[#25D366] px-6 py-3 text-center text-xs font-bold uppercase tracking-[0.08em] text-white transition hover:brightness-110 sm:text-sm"
+                                >
+                                    <span aria-hidden="true">💬</span>
+                                    UNIRME AL GRUPO OFICIAL DE WHATSAPP
+                                </a>
+                            </div>
                         </div>
                     )}
 

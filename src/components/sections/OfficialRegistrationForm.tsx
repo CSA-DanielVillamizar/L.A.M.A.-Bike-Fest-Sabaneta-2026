@@ -61,6 +61,7 @@ const BASE_COST = 100000;
 const SATURDAY_PASS_COST = 85000;
 const COMPANION_COST = 100000;
 const JERSEY_COST = 65000;
+const OFFICIAL_WHATSAPP_GROUP_URL = "https://chat.whatsapp.com/KnwJ31J2ddBJsbc0Jr3Ufl";
 
 function getParticipantBaseCost(category: string): number {
     return category === "CLUB HERMANO / INVITADO (Solo Sábado)" ? SATURDAY_PASS_COST : BASE_COST;
@@ -456,6 +457,18 @@ export function OfficialRegistrationForm() {
                                 <p className="mt-2 text-sm text-zinc-300">
                                     Ya puedes realizar el pago y enviar el soporte por WhatsApp para finalizar tu proceso.
                                 </p>
+
+                                <div className="mt-5 flex justify-center">
+                                    <a
+                                        href={OFFICIAL_WHATSAPP_GROUP_URL}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="inline-flex items-center justify-center gap-2 rounded-full bg-[#25D366] px-6 py-3 text-center text-sm font-bold uppercase tracking-[0.08em] text-white transition hover:brightness-110"
+                                    >
+                                        <span aria-hidden="true">💬</span>
+                                        UNIRME AL GRUPO OFICIAL DE WHATSAPP
+                                    </a>
+                                </div>
 
                                 <div className="mt-6 grid gap-4 sm:grid-cols-2">
                                     <div className="rounded-xl border border-zinc-700 bg-zinc-900/70 p-4">
