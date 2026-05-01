@@ -6,6 +6,7 @@ import { ComposableMap, Geographies, Geography } from "react-simple-maps";
 import {
     Bar,
     BarChart,
+    CartesianGrid,
     Cell,
     Pie,
     PieChart,
@@ -368,7 +369,7 @@ export default function AdminPage() {
 
     if (!isAuthorized) {
         return (
-            <div className="min-h-screen bg-zinc-950 px-4 py-10 text-zinc-100 sm:px-6">
+            <div className="min-h-screen bg-zinc-950 px-4 py-10 text-zinc-100 transition-colors duration-500 sm:px-6">
                 <div className="mx-auto flex w-full max-w-md flex-col gap-6 rounded-2xl border border-white/10 bg-black/40 p-6 sm:p-8">
                     <div>
                         <p className="text-xs font-bold uppercase tracking-[0.2em] text-orange-300">
@@ -414,7 +415,10 @@ export default function AdminPage() {
     }
 
     return (
-        <div className="min-h-screen bg-zinc-950 px-4 py-10 text-zinc-100 sm:px-6">
+        <div
+            className={`min-h-screen px-4 py-10 text-zinc-100 transition-colors duration-500 sm:px-6 ${presentationMode ? "bg-black" : "bg-zinc-950"
+                }`}
+        >
             <div className="mx-auto flex w-full max-w-7xl flex-col gap-8">
                 <header className="flex flex-col gap-4 rounded-2xl border border-white/10 bg-black/40 p-6 sm:flex-row sm:items-end sm:justify-between">
                     <div>
@@ -433,7 +437,7 @@ export default function AdminPage() {
                                 <p className="font-display text-lg font-bold leading-tight text-zinc-100 sm:text-2xl">
                                     Llevamos {globalCountryProgress.activeCountries} de {globalCountryProgress.goalCountries} países confirmados
                                 </p>
-                                <p className="text-sm font-semibold text-orange-300 sm:text-base">
+                                <p className="text-sm font-bold text-orange-300 sm:text-base">
                                     {globalCountryProgress.percentage}% de la meta global
                                 </p>
                             </div>
@@ -566,16 +570,25 @@ export default function AdminPage() {
                                                         stroke: "#27272a",
                                                         strokeWidth: 0.5,
                                                         outline: "none",
+                                                        filter: presentationMode && totalPeople > 0
+                                                            ? "brightness(1.2) drop-shadow(0 0 2px rgba(249,115,22,0.9))"
+                                                            : "none",
                                                     },
                                                     hover: {
                                                         fill: totalPeople > 0 ? "#fb923c" : "#262626",
                                                         stroke: "#3f3f46",
                                                         strokeWidth: 0.7,
                                                         outline: "none",
+                                                        filter: presentationMode && totalPeople > 0
+                                                            ? "brightness(1.25) drop-shadow(0 0 3px rgba(249,115,22,1))"
+                                                            : "none",
                                                     },
                                                     pressed: {
                                                         fill: fillColor,
                                                         outline: "none",
+                                                        filter: presentationMode && totalPeople > 0
+                                                            ? "brightness(1.2) drop-shadow(0 0 2px rgba(249,115,22,0.9))"
+                                                            : "none",
                                                     },
                                                 }}
                                             />
@@ -612,16 +625,21 @@ export default function AdminPage() {
                         <div className="mt-5 h-80 w-full">
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart data={registrationsByCountry} margin={{ top: 8, right: 12, left: 0, bottom: 32 }}>
+                                    <CartesianGrid stroke={presentationMode ? "#222" : "#27272a"} strokeDasharray="3 3" vertical={false} />
                                     <XAxis
                                         dataKey="country"
-                                        stroke="#a1a1aa"
-                                        tick={{ fill: "#a1a1aa", fontSize: 12 }}
+                                        stroke={presentationMode ? "#ffffff" : "#a1a1aa"}
+                                        tick={{ fill: presentationMode ? "#ffffff" : "#a1a1aa", fontSize: 12, fontWeight: presentationMode ? 700 : 500 }}
                                         angle={-20}
                                         textAnchor="end"
                                         interval={0}
                                         height={52}
                                     />
-                                    <YAxis stroke="#a1a1aa" tick={{ fill: "#a1a1aa", fontSize: 12 }} allowDecimals={false} />
+                                    <YAxis
+                                        stroke={presentationMode ? "#ffffff" : "#a1a1aa"}
+                                        tick={{ fill: presentationMode ? "#ffffff" : "#a1a1aa", fontSize: 12, fontWeight: presentationMode ? 700 : 500 }}
+                                        allowDecimals={false}
+                                    />
                                     <Tooltip
                                         cursor={{ fill: "rgba(255,255,255,0.04)" }}
                                         contentStyle={{ background: "#09090b", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "12px" }}
@@ -674,7 +692,7 @@ export default function AdminPage() {
                                             />
                                             <span className="max-w-[130px] truncate">{item.chapter}</span>
                                         </span>
-                                        <span className="font-semibold text-zinc-100">{item.totalPeople}</span>
+                                        <span className="font-bold text-zinc-100">{item.totalPeople}</span>
                                     </div>
                                 ))}
                             </div>
