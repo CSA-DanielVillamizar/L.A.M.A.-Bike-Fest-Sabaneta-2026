@@ -28,21 +28,21 @@ type OfficialRegistrationPayload = {
     hasCompanions?: boolean;
     companionsCount?: number;
     companions?: CompanionPayload[];
+    totalToPay?: number;
 };
 
-const BASE_REGISTRATION_COST = 100000;
+const MEMBER_PRICE = 100000;
+const SHIRT_PRICE = 65000;
 const SATURDAY_PASS_COST = 85000;
-const COMPANION_COST = 100000;
-const JERSEY_COST = 65000;
 
 const ALLOWED_COMPANION_CATEGORIES = new Set(["PAREJA", "INVITADO", "HIJO/A", "CLUB HERMANO (Solo Sábado)"]);
 
 function getParticipantBaseCost(category: string): number {
-    return category === "CLUB HERMANO / INVITADO (Solo Sábado)" ? SATURDAY_PASS_COST : BASE_REGISTRATION_COST;
+    return category === "CLUB HERMANO / INVITADO (Solo Sábado)" ? SATURDAY_PASS_COST : MEMBER_PRICE;
 }
 
 function getCompanionBaseCost(category: string): number {
-    return category === "CLUB HERMANO (Solo Sábado)" ? SATURDAY_PASS_COST : COMPANION_COST;
+    return category === "CLUB HERMANO (Solo Sábado)" ? SATURDAY_PASS_COST : MEMBER_PRICE;
 }
 
 function sanitizeText(value: unknown): string {
@@ -112,6 +112,7 @@ export async function POST(request: NextRequest) {
         const directiveRole = sanitizeText(body.directiveRole);
         const jerseySize = sanitizeText(body.jerseySize);
         const medicalCondition = sanitizeText(body.medicalCondition);
+        const totalSent = Number(body.totalToPay);
 
         if (
             !participantCategory ||
@@ -196,8 +197,15 @@ export async function POST(request: NextRequest) {
         const calculatedTotal =
             participantBaseCost +
             companionsBaseCost +
-            (wantsJersey ? JERSEY_COST : 0) +
-            companionsJerseyCount * JERSEY_COST;
+            (wantsJersey ? SHIRT_PRICE : 0) +
+            companionsJerseyCount * SHIRT_PRICE;
+
+        if (!Number.isFinite(totalSent) || Math.round(totalSent) !== Math.round(calculatedTotal)) {
+            return NextResponse.json(
+                { error: "Inconsistencia en el cálculo de valores" },
+                { status: 400 },
+            );
+        }
 
         const config = parseSqlServerUrl(databaseUrl);
         const sql: any = (await import("mssql")).default;

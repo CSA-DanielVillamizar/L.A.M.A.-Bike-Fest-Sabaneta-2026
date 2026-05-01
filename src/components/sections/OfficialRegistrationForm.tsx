@@ -139,6 +139,25 @@ function formatCop(value: number): string {
     }).format(value);
 }
 
+async function loadImageAsDataUrl(imagePath: string): Promise<string | null> {
+    try {
+        const response = await fetch(imagePath);
+        if (!response.ok) {
+            return null;
+        }
+
+        const blob = await response.blob();
+        return await new Promise<string | null>((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(typeof reader.result === "string" ? reader.result : null);
+            reader.onerror = () => resolve(null);
+            reader.readAsDataURL(blob);
+        });
+    } catch {
+        return null;
+    }
+}
+
 export function OfficialRegistrationForm() {
     const [form, setForm] = useState<FormValues>(initialForm);
     const [selectedCountry, setSelectedCountry] = useState("");
@@ -208,7 +227,10 @@ export function OfficialRegistrationForm() {
     const goToStep = (step: WizardStep) => {
         setCurrentStep(step);
         if (typeof window !== "undefined") {
-            window.scrollTo({ top: 0, behavior: "smooth" });
+            requestAnimationFrame(() => {
+                const section = document.getElementById("registro-oficial");
+                section?.scrollIntoView({ behavior: "smooth", block: "start" });
+            });
         }
     };
 
@@ -311,7 +333,7 @@ export function OfficialRegistrationForm() {
         window.open(buildWhatsappUrl(successRegistration), "_blank", "noopener,noreferrer");
     };
 
-    const generatePDF = () => {
+    const generatePDF = async () => {
         if (!successRegistration) {
             return;
         }
@@ -321,75 +343,80 @@ export function OfficialRegistrationForm() {
             const pageW = doc.internal.pageSize.getWidth();
             const left = 20;
             const right = pageW - left;
-            const lineH = 7;
-            let y = 20;
+            let y = 18;
 
-            const addLine = (label: string, value: string) => {
-                doc.setFont("helvetica", "bold");
-                doc.setFontSize(10);
-                doc.text(label, left, y);
-                doc.setFont("helvetica", "normal");
-                doc.text(value, left + 50, y, { maxWidth: right - (left + 50) });
-                y += lineH;
-            };
+            const [logoDataUrl, qrDataUrl] = await Promise.all([
+                loadImageAsDataUrl("/images/Logotipo-LM-vertical-transp.png"),
+                loadImageAsDataUrl("/images/QRBancolombia.jpeg"),
+            ]);
+
+            if (logoDataUrl) {
+                doc.addImage(logoDataUrl, "PNG", left, y - 2, 20, 28);
+            }
 
             doc.setFont("helvetica", "bold");
             doc.setFontSize(16);
-            doc.text("XIII Aniversario L.A.M.A. Medellín", pageW / 2, y, { align: "center" });
-            y += 8;
+            doc.text("XIII Aniversario L.A.M.A. Medellín", pageW / 2 + 10, y + 6, { align: "center" });
             doc.setFont("helvetica", "normal");
             doc.setFontSize(11);
-            doc.text("Resumen Oficial de Inscripción", pageW / 2, y, { align: "center" });
-            y += 9;
+            doc.text("Resumen Oficial de Inscripción", pageW / 2 + 10, y + 13, { align: "center" });
+            y += 30;
 
             doc.setDrawColor(180);
             doc.line(left, y, right, y);
-            y += 8;
+            y += 6;
 
-            addLine("ID de Registro:", successRegistration.id);
-            addLine("Nombre:", successRegistration.fullName);
-            addLine("País:", successRegistration.country);
-            addLine("Capítulo:", successRegistration.chapter);
-            addLine("Categoría:", successRegistration.participantCategory);
-            addLine(getParticipantBaseLabel(successRegistration.participantCategory) + ":", formatCop(getParticipantBaseCost(successRegistration.participantCategory)));
-            addLine(
-                "Camiseta titular:",
-                successRegistration.wantsJersey ? `Sí - Talla ${successRegistration.jerseySize || "por definir"} (${formatCop(JERSEY_COST)})` : "No",
-            );
+            const tableRows: Array<[string, string]> = [
+                ["ID de Registro", successRegistration.id],
+                ["Nombre", successRegistration.fullName],
+                ["País", successRegistration.country],
+                ["Capítulo", successRegistration.chapter],
+                ["Categoría", successRegistration.participantCategory],
+                ["Inscripción titular", formatCop(getParticipantBaseCost(successRegistration.participantCategory))],
+                [
+                    "Camiseta titular",
+                    successRegistration.wantsJersey
+                        ? `Sí - Talla ${successRegistration.jerseySize || "por definir"} (${formatCop(JERSEY_COST)})`
+                        : "No",
+                ],
+                ["Acompañantes", successRegistration.companions.length ? String(successRegistration.companions.length) : "Sin acompañantes"],
+                ["Total a pagar", formatCop(successRegistration.totalToPay)],
+            ];
 
-            y += 2;
-            doc.setFont("helvetica", "bold");
-            doc.text("Acompañantes:", left, y);
-            y += lineH;
-            doc.setFont("helvetica", "normal");
+            const rowH = 8;
+            tableRows.forEach(([label, value], index) => {
+                const rowTop = y + index * rowH;
+                if (index % 2 === 0) {
+                    doc.setFillColor(246, 246, 246);
+                    doc.rect(left, rowTop, right - left, rowH, "F");
+                }
 
-            if (successRegistration.companions.length === 0) {
-                doc.text("Sin acompañantes", left + 4, y);
-                y += lineH;
-            } else {
-                successRegistration.companions.forEach((companion, index) => {
-                    const companionText = `${index + 1}. ${companion.fullName} - Doc: ${companion.documentId} - ${companion.category} - ${formatCop(getCompanionBaseCost(companion.category))}${companion.wantsJersey ? ` + Camiseta ${companion.jerseySize} (${formatCop(JERSEY_COST)})` : " - Sin camiseta"}`;
-                    doc.text(companionText, left + 2, y, { maxWidth: right - left - 2 });
-                    y += lineH;
-                });
-            }
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(10);
+                doc.text(label, left + 2, rowTop + 5.4);
 
-            y += 2;
-            addLine("Total a pagar:", formatCop(successRegistration.totalToPay));
+                doc.setFont("helvetica", "normal");
+                doc.text(value, left + 58, rowTop + 5.4, { maxWidth: right - left - 60 });
+            });
 
-            y += 2;
-            doc.line(left, y, right, y);
-            y += 8;
+            y += tableRows.length * rowH + 7;
 
             doc.setFont("helvetica", "bold");
             doc.setFontSize(11);
-            doc.text("Datos bancarios para el pago", left, y);
-            y += lineH;
+            doc.text("Instrucciones de Pago", left, y);
+            y += 6;
             doc.setFont("helvetica", "normal");
             doc.setFontSize(10);
             doc.text("Bancolombia Ahorros: 23000013774", left, y);
-            y += lineH;
+            y += 5;
             doc.text("Titular: Fundación L.A.M.A. Medellín", left, y);
+            y += 8;
+
+            if (qrDataUrl) {
+                doc.addImage(qrDataUrl, "JPEG", left, y, 36, 36);
+                doc.setFont("helvetica", "bold");
+                doc.text("Escanea para pagar desde tu App Bancaria", left + 42, y + 16);
+            }
 
             doc.save("Inscripcion-LAMA-Medellin.pdf");
         } catch (error) {
@@ -454,6 +481,7 @@ export function OfficialRegistrationForm() {
                 ...form,
                 country: selectedCountry,
                 chapter: normalizedChapter,
+                totalToPay,
                 directiveScope: form.isDirective ? form.directiveScope : null,
                 directiveRole: form.isDirective ? form.directiveRole : null,
                 jerseySize: form.wantsJersey ? form.jerseySize : null,
@@ -538,108 +566,103 @@ export function OfficialRegistrationForm() {
                     )}
 
                     {successRegistration ? (
-                        <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-                            <div className="rounded-2xl border border-green-500/40 bg-zinc-950/80 p-6">
-                                <p className="text-xs uppercase tracking-[0.2em] text-green-300">Registro completado</p>
-                                <h3 className="mt-2 text-3xl font-black text-zinc-50">Registro completado con éxito</h3>
-                                <p className="mt-2 text-sm text-zinc-300">
-                                    Ya puedes realizar el pago y enviar el soporte por WhatsApp para finalizar tu proceso.
-                                </p>
+                        <div className="mx-auto grid max-w-4xl gap-6">
+                            <motion.div
+                                initial={{ opacity: 0, y: 12 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.35, ease: "easeOut" }}
+                                className="rounded-2xl border border-green-500/40 bg-zinc-950/80 p-6"
+                            >
+                                <div className="flex flex-col items-center text-center">
+                                    <motion.div
+                                        initial={{ scale: 0.6, opacity: 0 }}
+                                        animate={{ scale: 1, opacity: 1 }}
+                                        transition={{ type: "spring", stiffness: 240, damping: 14 }}
+                                        className="relative mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-500/20"
+                                    >
+                                        <motion.span
+                                            animate={{ scale: [1, 1.08, 1] }}
+                                            transition={{ duration: 1.4, repeat: Infinity, repeatType: "loop" }}
+                                            className="absolute h-16 w-16 rounded-full border border-green-400/40"
+                                        />
+                                        <span className="text-3xl font-black text-green-300">✓</span>
+                                    </motion.div>
+
+                                    <p className="text-xs uppercase tracking-[0.2em] text-green-300">Registro completado</p>
+                                    <h3 className="mt-2 text-3xl font-black text-zinc-50">¡Inscripción exitosa!</h3>
+                                    <p className="mt-3 text-sm text-zinc-300">
+                                        Tu ID de registro es <span className="font-black text-zinc-100">{successRegistration.id}</span>
+                                    </p>
+                                </div>
+
+                                <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                                    <div className="rounded-xl border border-zinc-700 bg-zinc-900/70 p-4">
+                                        <p className="text-xs uppercase tracking-[0.12em] text-zinc-400">Nombre</p>
+                                        <p className="mt-2 text-base font-semibold text-zinc-100">{successRegistration.fullName}</p>
+                                    </div>
+                                    <div className="rounded-xl border border-zinc-700 bg-zinc-900/70 p-4">
+                                        <p className="text-xs uppercase tracking-[0.12em] text-zinc-400">Total a pagar</p>
+                                        <p className="mt-2 text-2xl font-black text-orange-300">{formatCop(successRegistration.totalToPay)}</p>
+                                    </div>
+                                </div>
+
+                                <div className="mt-6 grid gap-3 sm:grid-cols-2">
+                                    <button
+                                        type="button"
+                                        onClick={generatePDF}
+                                        className="inline-flex w-full items-center justify-center rounded-full bg-orange-500 px-6 py-3 text-sm font-black uppercase tracking-[0.12em] text-zinc-950 transition hover:bg-orange-400"
+                                    >
+                                        Descargar Resumen PDF
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        onClick={handleWhatsappRedirect}
+                                        className="inline-flex w-full items-center justify-center rounded-full bg-[#25D366] px-6 py-3 text-sm font-bold uppercase tracking-[0.12em] text-white transition hover:brightness-110"
+                                    >
+                                        Enviar Comprobante por WhatsApp
+                                    </button>
+                                </div>
+                            </motion.div>
+
+                            <div className="rounded-2xl border border-orange-500/40 bg-zinc-950/80 p-6">
+                                <h4 className="text-lg font-bold uppercase tracking-[0.12em] text-orange-200">Instrucciones de Pago</h4>
+                                <div className="mt-4 grid gap-5 sm:grid-cols-[1fr_auto] sm:items-center">
+                                    <div className="space-y-2 text-sm text-zinc-300">
+                                        <p><span className="font-semibold text-zinc-100">Banco:</span> Bancolombia</p>
+                                        <p><span className="font-semibold text-zinc-100">Cuenta de Ahorros:</span> 23000013774</p>
+                                        <p><span className="font-semibold text-zinc-100">Titular:</span> Fundación L.A.M.A. Medellín</p>
+                                        <p><span className="font-semibold text-zinc-100">Referencia:</span> Usa tu ID <span className="font-black text-zinc-100">{successRegistration.id}</span></p>
+                                    </div>
+                                    <img
+                                        src="/images/Logotipo-LM-vertical-transp.png"
+                                        alt="Logotipo oficial L.A.M.A. Medellín"
+                                        className="mx-auto h-28 w-auto object-contain sm:mx-0"
+                                    />
+                                </div>
 
                                 <div className="mt-5 flex justify-center">
                                     <a
                                         href={OFFICIAL_WHATSAPP_GROUP_URL}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="inline-flex items-center justify-center gap-2 rounded-full bg-[#25D366] px-6 py-3 text-center text-sm font-bold uppercase tracking-[0.08em] text-white transition hover:brightness-110"
+                                        className="inline-flex items-center justify-center gap-2 rounded-full border border-zinc-600 px-6 py-3 text-center text-sm font-semibold uppercase tracking-[0.08em] text-zinc-100 transition hover:border-orange-300 hover:text-orange-200"
                                     >
-                                        <span aria-hidden="true">💬</span>
-                                        UNIRME AL GRUPO OFICIAL DE WHATSAPP
+                                        Unirme al Grupo Oficial de WhatsApp
                                     </a>
-                                </div>
-
-                                <div className="mt-6 grid gap-4 sm:grid-cols-2">
-                                    <div className="rounded-xl border border-zinc-700 bg-zinc-900/70 p-4">
-                                        <p className="text-xs uppercase tracking-[0.12em] text-zinc-400">ID de registro</p>
-                                        <p className="mt-2 break-all text-lg font-bold text-zinc-100">{successRegistration.id}</p>
-                                    </div>
-                                    <div className="rounded-xl border border-zinc-700 bg-zinc-900/70 p-4">
-                                        <p className="text-xs uppercase tracking-[0.12em] text-zinc-400">Total a pagar</p>
-                                        <p className="mt-2 text-2xl font-black text-orange-300">
-                                            {formatCop(successRegistration.totalToPay)}
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <div className="mt-6 rounded-xl border border-zinc-700 bg-zinc-900/70 p-4 text-sm text-zinc-200">
-                                    <p><span className="font-semibold text-zinc-100">Nombre:</span> {successRegistration.fullName}</p>
-                                    <p className="mt-2"><span className="font-semibold text-zinc-100">País:</span> {successRegistration.country}</p>
-                                    <p className="mt-2"><span className="font-semibold text-zinc-100">Capítulo:</span> {successRegistration.chapter}</p>
-                                    <p className="mt-2"><span className="font-semibold text-zinc-100">Categoría:</span> {successRegistration.participantCategory}</p>
-                                    <p className="mt-2"><span className="font-semibold text-zinc-100">{getParticipantBaseLabel(successRegistration.participantCategory)}:</span> {formatCop(getParticipantBaseCost(successRegistration.participantCategory))}</p>
-                                    <p className="mt-2">
-                                        <span className="font-semibold text-zinc-100">Camiseta titular:</span>{" "}
-                                        {successRegistration.wantsJersey ? `Sí - ${successRegistration.jerseySize} (${formatCop(JERSEY_COST)})` : "No"}
-                                    </p>
-                                    <div className="mt-3">
-                                        <p><span className="font-semibold text-zinc-100">Acompañantes:</span> {successRegistration.companions.length}</p>
-                                        {successRegistration.companions.map((companion, i) => (
-                                            <p key={`${companion.documentId}-${i}`} className="mt-1 pl-3 text-zinc-300">
-                                                • {companion.fullName} - {companion.category} - {formatCop(getCompanionBaseCost(companion.category))} - Doc: {companion.documentId} - {companion.wantsJersey ? `Camiseta ${companion.jerseySize} (${formatCop(JERSEY_COST)})` : "Sin camiseta"}
-                                            </p>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                <div className="mt-6 rounded-xl border border-zinc-700 bg-zinc-900/70 p-4 text-sm text-zinc-300">
-                                    <p className="font-semibold text-zinc-100">Datos bancarios para el pago</p>
-                                    <p className="mt-2">Bancolombia Ahorros: 23000013774</p>
-                                    <p>Titular: Fundación L.A.M.A. Medellín</p>
-                                    <div className="mt-4 flex justify-center">
-                                        <img
-                                            src="/images/QRBancolombia.jpeg"
-                                            alt="QR Bancolombia para transferencia"
-                                            className="h-44 w-44 rounded-lg object-contain"
-                                        />
-                                    </div>
                                 </div>
                             </div>
 
-                            <aside className="h-fit rounded-2xl border border-white/10 bg-black/30 p-6">
-                                <h4 className="text-lg font-bold text-zinc-50">Siguiente paso</h4>
-                                <p className="mt-3 text-sm text-zinc-300">
-                                    Realiza el pago por el valor indicado y luego comparte el comprobante por WhatsApp junto con tu ID de registro.
-                                </p>
-
-                                <div className="mt-6 grid gap-3">
-                                    <button
-                                        type="button"
-                                        onClick={handleWhatsappRedirect}
-                                        className="inline-flex w-full items-center justify-center rounded-full bg-green-500 px-6 py-3 text-sm font-bold uppercase tracking-[0.12em] text-zinc-950 transition hover:bg-green-400"
-                                    >
-                                        Enviar Comprobante por WhatsApp
-                                    </button>
-
-                                    <button
-                                        type="button"
-                                        onClick={generatePDF}
-                                        className="inline-flex w-full items-center justify-center rounded-full border border-zinc-500 px-6 py-3 text-sm font-bold uppercase tracking-[0.12em] text-zinc-100 transition hover:border-orange-300 hover:text-orange-200"
-                                    >
-                                        Descargar Resumen (PDF)
-                                    </button>
-
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            setSuccessRegistration(null);
-                                            setErrorMessage("");
-                                        }}
-                                        className="inline-flex w-full items-center justify-center rounded-full border border-transparent px-6 py-3 text-sm font-semibold text-zinc-400 transition hover:text-zinc-200"
-                                    >
-                                        Registrar otra persona
-                                    </button>
-                                </div>
-                            </aside>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setSuccessRegistration(null);
+                                    setErrorMessage("");
+                                }}
+                                className="inline-flex items-center justify-center rounded-full border border-transparent px-6 py-2 text-sm font-semibold text-zinc-400 transition hover:text-zinc-200"
+                            >
+                                Registrar otra persona
+                            </button>
                         </div>
                     ) : (
                         <>
