@@ -1,5 +1,3 @@
-import Image from "next/image";
-
 const galleryImages = [
     {
         src: "/images/galeria/caravana1.jpg",
@@ -69,13 +67,11 @@ export function GallerySection() {
                             className="group relative overflow-hidden rounded-lg border border-white/10 bg-zinc-900/40"
                         >
                             <div className={`relative overflow-hidden ${cardHeights[index] ?? "aspect-[5/4]"}`}>
-                                <Image
+                                <img
                                     src={item.src}
                                     alt={item.title}
-                                    fill
-                                    priority={index < 3}
-                                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                                    className="object-cover transition duration-500 ease-out group-hover:scale-105 group-hover:brightness-110"
+                                    loading={index < 3 ? "eager" : "lazy"}
+                                    className="h-full w-full object-cover transition duration-500 ease-out group-hover:scale-105 group-hover:brightness-110"
                                 />
                             </div>
 
