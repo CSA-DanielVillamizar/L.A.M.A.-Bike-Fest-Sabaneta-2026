@@ -10,7 +10,7 @@ const galleryImages = [
         desc: "Miles de máquinas rodando bajo un esquema de orden ejemplar.",
     },
     {
-        src: "/images/galeria/abrazo1.jpg",
+        src: "/images/galeria/abrazo1.jpg?v=20260501-1",
         title: "Hermandad sin Fronteras",
         desc: "Lazos inquebrantables entre moteros de América y Europa.",
     },
