@@ -612,7 +612,11 @@ export function OfficialRegistrationForm() {
                             Formulario Oficial de Inscripción
                         </h2>
                         <p className="mt-2 text-sm text-zinc-300">
-                            Inscripción L.A.M.A. ({formatCop(BASE_COST)}) incluye cena de gala. Pase Club Hermano Solo Sábado ({formatCop(SATURDAY_PASS_COST)}) incluye almuerzo y concierto en La Molienda.
+                            <span className="font-semibold text-zinc-100">Detalles de su inversión:</span>
+                            <br />
+                            Miembros L.A.M.A. ({formatCop(BASE_COST)}): Acceso total al aniversario + Cena de Gala Internacional.
+                            <br />
+                            Invitados Clubes Hermanos ({formatCop(SATURDAY_PASS_COST)}): Pase exclusivo Sábado 27. Incluye Almuerzo Parrilla y Concierto en La Molienda.
                         </p>
                     </div>
 

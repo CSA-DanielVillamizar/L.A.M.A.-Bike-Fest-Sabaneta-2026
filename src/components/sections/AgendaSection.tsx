@@ -19,7 +19,7 @@ const agendaDays: AgendaDay[] = [
         day: "Viernes 26 de Junio",
         events: [
             {
-                time: "Tarde",
+                time: "02:00 PM",
                 title: "Check-in y Recibimiento de Delegaciones",
                 description:
                     "Llegada y registro oficial de los capítulos invitados en el Hotel Sede.",
@@ -42,12 +42,12 @@ const agendaDays: AgendaDay[] = [
                     "El gran desfile motorizado que recorrerá las calles de Sabaneta con delegaciones de 26 países.",
             },
             {
-                time: "01:00 PM – 06:00 PM",
+                time: "01:00 PM – 06:00 PM | Fonda La Molienda",
                 title: "Clausura L.A.M.A. Bike Fest Sabaneta 2026",
                 description:
-                    "Exhibición de motos de alta gama, zona comercial y stands de marcas patrocinadoras. Esto se celebrará en la Fonda La Molienda y contará con cantante en vivo, Almuerzo (Parrilla Mixta) + Cerveza o Gaseosa.",
+                    "Exhibición de alta gama, zona comercial y música en vivo. Pase de Almuerzo (Invitados y Clubes Hermanos): $85.000 COP. (Incluye Parrilla Mixta + Cerveza o Gaseosa).",
                 note:
-                    "Valor para invitados no L.A.M.A. / clubes hermanos: $85.000 COP. Para miembros L.A.M.A. está incluido con la inscripción al XIII Aniversario.",
+                    "Nota: Para miembros L.A.M.A. activos, este evento y el almuerzo ya están incluidos en su inscripción al XIII Aniversario.",
             },
             {
                 time: "04:00 PM",
