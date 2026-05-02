@@ -1,5 +1,6 @@
 import { AgendaSection } from "@/components/sections/AgendaSection";
 import { ContactSection } from "@/components/sections/ContactSection";
+import { GallerySection } from "@/components/sections/GallerySection";
 import { HeroSection } from "@/components/sections/HeroSection";
 import { HotelSection } from "@/components/sections/HotelSection";
 import { InfoSections } from "@/components/sections/InfoSections";
@@ -15,6 +16,7 @@ export default function Home() {
       <LiveStatsSection />
       <InfoSections />
       <HotelSection />
+      <GallerySection />
       <AgendaSection />
       <SponsorsSection />
       <RegistrationForms />
