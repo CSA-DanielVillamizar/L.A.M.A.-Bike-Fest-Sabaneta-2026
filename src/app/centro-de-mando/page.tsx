@@ -3,6 +3,7 @@
 import { scaleLinear } from "d3-scale";
 import { useEffect, useMemo, useState } from "react";
 import { ComposableMap, Geographies, Geography } from "react-simple-maps";
+import * as XLSX from "xlsx";
 import {
     Bar,
     BarChart,
@@ -22,15 +23,31 @@ const WORLD_GEO_URL = "https://raw.githubusercontent.com/holtzy/D3-graph-gallery
 
 type OfficialAdminRecord = {
     id: string;
+    participantCategory: string;
     name: string;
+    fullName: string;
+    documentId: string;
+    eps: string;
+    emergencyName: string;
+    emergencyPhone: string;
     chapter: string;
     country: string;
     phone: string;
     email: string;
+    isDirective: boolean;
+    directiveScope: string | null;
+    directiveRole: string | null;
+    arrivalDate: string;
+    medicalCondition: string | null;
+    hasCompanions: boolean;
     companions: string;
+    companionsCount: number;
+    wantsJersey: boolean;
     companionNames: string;
     pilotJersey: string;
+    jerseySize: string | null;
     companionJerseys: string;
+    paymentStatus: string;
     isPaid: boolean;
     totalToPay: number;
     createdAt: string;
@@ -39,10 +56,16 @@ type OfficialAdminRecord = {
 type ClubAdminRecord = {
     id: string;
     name: string;
+    clubName: string;
     delegate: string;
+    presidentName: string;
+    motorcycleType: string;
     country: string;
     phone: string;
+    contactPhone: string;
+    originCity: string;
     attendees: number;
+    estimatedAttendees: number;
     isPaid: boolean;
     createdAt: string;
 };
@@ -71,20 +94,29 @@ const formatCopCurrency = (value: number) => new Intl.NumberFormat("es-CO", {
     maximumFractionDigits: 0,
 }).format(value);
 
-function downloadCsvFile(filename: string, rows: string[][]) {
-    // Agregar BOM para UTF-8 — obliga a Excel a reconocer acentos y ñ
-    const BOM = '\uFEFF';
-    const csvContent = BOM + rows
-        .map((row) => row.map((cell) => `"${String(cell).replaceAll('"', '""')}"`).join(","))
-        .join("\n");
+function formatDateOnly(dateString: string): string {
+    const date = new Date(dateString);
+    if (Number.isNaN(date.getTime())) return "";
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+}
 
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = filename;
-    link.click();
-    URL.revokeObjectURL(url);
+function yesNo(value: boolean): string {
+    return value ? "SÍ" : "NO";
+}
+
+function autoFitColumns(rows: Array<Record<string, string | number>>) {
+    if (!rows.length) return [] as Array<{ wch: number }>;
+    const headers = Object.keys(rows[0]);
+    return headers.map((header) => {
+        const maxDataLength = rows.reduce((max, row) => {
+            const cell = row[header] ?? "";
+            return Math.max(max, String(cell).length);
+        }, header.length);
+        return { wch: Math.min(60, Math.max(14, maxDataLength + 2)) };
+    });
 }
 
 export default function AdminPage() {
@@ -298,53 +330,56 @@ export default function AdminPage() {
             .range(["#fdba74", "#f97316"]);
     }, [maxCountryPeople]);
 
-    const handleExportCsv = () => {
-        // Función helper para formatear fechas
-        const formatDate = (dateString: string): string => {
-            const date = new Date(dateString);
-            const day = String(date.getDate()).padStart(2, "0");
-            const month = String(date.getMonth() + 1).padStart(2, "0");
-            const year = date.getFullYear();
-            const hours = String(date.getHours()).padStart(2, "0");
-            const minutes = String(date.getMinutes()).padStart(2, "0");
-            return `${day}/${month}/${year} ${hours}:${minutes}`;
-        };
+    const handleExportExcel = () => {
+        const officialRows = officials.map((reg) => ({
+            "ID": reg.id,
+            "Categoría de Participante": reg.participantCategory || "",
+            "Nombre Completo": reg.fullName || reg.name || "",
+            "Documento": reg.documentId || "",
+            "EPS": reg.eps || "",
+            "Contacto de Emergencia": reg.emergencyName || "",
+            "Teléfono de Emergencia": reg.emergencyPhone || reg.phone || "",
+            "País": reg.country || "",
+            "Capítulo L.A.M.A.": reg.chapter || "",
+            "Es Directivo": yesNo(Boolean(reg.isDirective)),
+            "Ámbito Directivo": reg.directiveScope || "",
+            "Rol Directivo": reg.directiveRole || "",
+            "Fecha de Llegada": reg.arrivalDate || "",
+            "Condición Médica": reg.medicalCondition || "",
+            "Solicita Camiseta": yesNo(Boolean(reg.wantsJersey)),
+            "Talla Camiseta": reg.jerseySize || "",
+            "Tiene Acompañantes": yesNo(Boolean(reg.hasCompanions)),
+            "Cantidad Acompañantes": Number(reg.companionsCount || 0),
+            "Total a Pagar": Number(reg.totalToPay || 0),
+            "Estado de Pago (Sistema)": reg.paymentStatus || "",
+            "Pagado": yesNo(Boolean(reg.isPaid)),
+            "Fecha de Registro": formatDateOnly(reg.createdAt),
+        }));
 
-        const rows: string[][] = [
-            [
-                "Tipo", "Nombre", "Capítulo/Delegado", "País", "Teléfono",
-                "Nombres Acompañantes", "Camiseta Piloto", "Camisetas Acompañantes",
-                "Pagado", "Total a Pagar", "Fecha",
-            ],
-            ...officials.map((item) => [
-                "Inscrito Oficial",
-                item.name,
-                item.chapter,
-                item.country,
-                item.phone,
-                item.companionNames ?? "-",
-                item.pilotJersey ?? "No",
-                item.companionJerseys ?? "-",
-                item.isPaid ? "Pagado" : "Pendiente",
-                formatCopCurrency(item.totalToPay),
-                formatDate(item.createdAt),
-            ]),
-            ...clubs.map((item) => [
-                "Club",
-                item.name,
-                item.delegate,
-                item.country,
-                item.phone,
-                `${item.attendees} asistentes estimados`,
-                "-",
-                "-",
-                item.isPaid ? "Pagado" : "Pendiente",
-                "-",
-                formatDate(item.createdAt),
-            ]),
-        ];
+        const clubRows = clubs.map((reg) => ({
+            "ID": reg.id,
+            "Nombre del Club": reg.clubName || reg.name || "",
+            "Nombre del Presidente": reg.presidentName || reg.delegate || "",
+            "Tipo de Motocicleta": reg.motorcycleType || "",
+            "Asistentes Estimados": Number(reg.estimatedAttendees ?? reg.attendees ?? 0),
+            "Ciudad de Origen": reg.originCity || "",
+            "País": reg.country || "",
+            "Teléfono de Contacto": reg.contactPhone || reg.phone || "",
+            "Pagado": yesNo(Boolean(reg.isPaid)),
+            "Fecha de Registro": formatDateOnly(reg.createdAt),
+        }));
 
-        downloadCsvFile("centro-de-mando-xiii-aniversario.csv", rows);
+        const workbook = XLSX.utils.book_new();
+
+        const officialsSheet = XLSX.utils.json_to_sheet(officialRows);
+        officialsSheet["!cols"] = autoFitColumns(officialRows);
+        XLSX.utils.book_append_sheet(workbook, officialsSheet, "Participantes Oficiales");
+
+        const clubsSheet = XLSX.utils.json_to_sheet(clubRows);
+        clubsSheet["!cols"] = autoFitColumns(clubRows);
+        XLSX.utils.book_append_sheet(workbook, clubsSheet, "Clubes Hermanos");
+
+        XLSX.writeFile(workbook, "Reporte_General_LAMA_BikeFest_2026.xlsx");
     };
 
     const handleCopyDailyReport = async () => {
@@ -488,10 +523,10 @@ export default function AdminPage() {
 
                             <button
                                 type="button"
-                                onClick={handleExportCsv}
+                                onClick={handleExportExcel}
                                 className="inline-flex items-center justify-center rounded-full border border-orange-400 px-5 py-3 text-sm font-bold uppercase tracking-[0.12em] text-orange-300 transition hover:bg-orange-500/10"
                             >
-                                Exportar CSV
+                                Exportar Excel
                             </button>
 
                             <button

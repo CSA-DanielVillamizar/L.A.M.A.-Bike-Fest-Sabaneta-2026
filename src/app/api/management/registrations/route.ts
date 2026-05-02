@@ -108,13 +108,24 @@ export async function GET(request: Request) {
             pool.request().query(`
                 SELECT
                     id,
+                    participantCategory,
                     fullName,
+                    documentId,
+                    eps,
+                    emergencyName,
+                    emergencyPhone,
                     country,
                     chapter,
-                    emergencyPhone,
+                    isDirective,
+                    directiveScope,
+                    directiveRole,
+                    arrivalDate,
+                    medicalCondition,
                     companionsCount,
+                    hasCompanions,
                     wantsJersey,
                     jerseySize,
+                    paymentStatus,
                     isPaid,
                     totalToPay,
                     createdAt
@@ -135,6 +146,7 @@ export async function GET(request: Request) {
                     id,
                     clubName,
                     presidentName,
+                    motorcycleType,
                     contactPhone,
                     country,
                     originCity,
@@ -150,13 +162,24 @@ export async function GET(request: Request) {
 
         const officialRegistrations = officialResult.recordset as Array<{
             id: string;
+            participantCategory: string;
             fullName: string;
+            documentId: string;
+            eps: string;
+            emergencyName: string;
+            emergencyPhone: string;
             country: string | null;
             chapter: string;
-            emergencyPhone: string;
+            isDirective: boolean;
+            directiveScope: string | null;
+            directiveRole: string | null;
+            arrivalDate: string;
+            medicalCondition: string | null;
             companionsCount: number;
+            hasCompanions: boolean;
             wantsJersey: boolean;
             jerseySize: string | null;
+            paymentStatus: string;
             isPaid: boolean;
             totalToPay: number;
             createdAt: string;
@@ -180,6 +203,7 @@ export async function GET(request: Request) {
             id: string;
             clubName: string;
             presidentName: string;
+            motorcycleType: string;
             contactPhone: string;
             country: string | null;
             originCity: string;
@@ -246,19 +270,35 @@ export async function GET(request: Request) {
 
         const officials = officialRegistrations.map((registration) => ({
             id: registration.id,
+            participantCategory: registration.participantCategory,
             name: registration.fullName,
+            fullName: registration.fullName,
+            documentId: registration.documentId,
+            eps: registration.eps,
+            emergencyName: registration.emergencyName,
+            emergencyPhone: registration.emergencyPhone,
             chapter: registration.chapter,
             country: (registration.country || "").trim() || "No registrado",
             phone: registration.emergencyPhone,
             email: "No registrado",
+            isDirective: registration.isDirective,
+            directiveScope: registration.directiveScope,
+            directiveRole: registration.directiveRole,
+            arrivalDate: registration.arrivalDate,
+            medicalCondition: registration.medicalCondition,
+            hasCompanions: registration.hasCompanions,
             companions: registration.companionsCount > 0 ? `${registration.companionsCount} acompanante(s)` : "No",
+            companionsCount: registration.companionsCount,
+            wantsJersey: registration.wantsJersey,
             companionNames: (companionsByReg.get(registration.id) ?? [])
                 .map((c) => `${c.fullName} (${c.category})`)
                 .join(" | ") || "-",
             pilotJersey: registration.wantsJersey ? (registration.jerseySize ?? "Sin talla") : "No",
+            jerseySize: registration.jerseySize,
             companionJerseys: (companionsByReg.get(registration.id) ?? [])
                 .map((c) => `${c.fullName}: ${c.wantsJersey ? (c.jerseySize ?? "Sin talla") : "No"}`)
                 .join(" | ") || "-",
+            paymentStatus: registration.paymentStatus,
             isPaid: registration.isPaid,
             totalToPay: registration.totalToPay,
             createdAt: registration.createdAt,
@@ -267,10 +307,16 @@ export async function GET(request: Request) {
         const clubs = clubRegistrations.map((registration) => ({
             id: registration.id,
             name: registration.clubName,
+            clubName: registration.clubName,
             delegate: registration.presidentName,
+            presidentName: registration.presidentName,
+            motorcycleType: registration.motorcycleType,
             country: (registration.country || "").trim() || "No registrado",
             phone: registration.contactPhone,
+            contactPhone: registration.contactPhone,
+            originCity: registration.originCity,
             attendees: registration.estimatedAttendees,
+            estimatedAttendees: registration.estimatedAttendees,
             isPaid: registration.isPaid,
             createdAt: registration.createdAt,
         }));
