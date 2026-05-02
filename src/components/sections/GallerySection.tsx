@@ -2,12 +2,12 @@ const galleryImages = [
     {
         src: "/images/galeria/caravana1.jpg",
         title: "Logística de Clase Mundial",
-        desc: "Ejecución vial perfecta y coordinada para garantizar la seguridad de cada participante.",
+        desc: "Ejecución vial perfecta y coordinada para garantizar la seguridad.",
     },
     {
         src: "/images/galeria/caravana2.jpg",
         title: "El Poder de la Convocatoria",
-        desc: "Miles de máquinas rodando bajo un esquema de orden ejemplar, replicable en Sabaneta.",
+        desc: "Miles de máquinas rodando bajo un esquema de orden ejemplar.",
     },
     {
         src: "/images/galeria/abrazo1.jpg",
@@ -22,28 +22,28 @@ const galleryImages = [
     {
         src: "/images/galeria/AlianzaPais.jpg",
         title: "Respaldo Institucional",
-        desc: "Eventos certificados y apoyados por ministerios, garantizando éxito y seguridad legal.",
+        desc: "Eventos certificados y apoyados por ministerios, garantizando seguridad legal.",
     },
     {
         src: "/images/galeria/concierto1.jpg",
         title: "Celebración de Leyenda",
-        desc: "La pasión motera unida con el folclor y la fiesta internacional de Sabaneta.",
+        desc: "La pasión motera unida con el folclor y la fiesta internacional.",
     },
     {
         src: "/images/galeria/concierto2.jpg",
         title: "Vitrina de Alto Impacto",
-        desc: "Posicionamiento estratégico de marca ante una audiencia internacional masiva.",
+        desc: "Posicionamiento estratégico de marca ante una audiencia masiva.",
     },
-] as const;
-
-const cardHeights = [
-    "aspect-[5/4] lg:aspect-[4/5]",
-    "aspect-[5/4]",
-    "aspect-[5/4] lg:aspect-[4/5]",
-    "aspect-[5/4]",
-    "aspect-[5/4] lg:aspect-[4/5]",
-    "aspect-[5/4]",
-    "aspect-[5/4] lg:col-span-2",
+    {
+        src: "/images/galeria/Usuhia.jpg",
+        title: "Aventura sin Límites",
+        desc: "Desde el fin del mundo hasta Sabaneta, nuestra pasión recorre el continente.",
+    },
+    {
+        src: "/images/galeria/Abrazo10.jpg",
+        title: "La Familia que se Elige",
+        desc: "Más que un club, somos una red de hermandad y apoyo que trasciende fronteras.",
+    },
 ] as const;
 
 export function GallerySection() {
@@ -60,13 +60,13 @@ export function GallerySection() {
                     Revive la magnitud y la hermandad de nuestros encuentros internacionales.
                 </p>
 
-                <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-3">
                     {galleryImages.map((item, index) => (
                         <article
                             key={item.src}
                             className="group relative overflow-hidden rounded-lg border border-white/10 bg-zinc-900/40"
                         >
-                            <div className={`relative overflow-hidden ${cardHeights[index] ?? "aspect-[5/4]"}`}>
+                            <div className="relative aspect-[5/4] overflow-hidden">
                                 <img
                                     src={item.src}
                                     alt={item.title}
