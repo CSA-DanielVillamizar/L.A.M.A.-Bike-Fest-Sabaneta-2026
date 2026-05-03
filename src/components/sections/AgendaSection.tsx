@@ -7,6 +7,7 @@ type AgendaEvent = {
     title: string;
     description: string;
     note?: string;
+    tags?: string[];
 };
 
 type AgendaDay = {
@@ -59,7 +60,8 @@ const agendaDays: AgendaDay[] = [
                 time: "06:30 PM",
                 title: "Partido Colombia vs Portugal",
                 description:
-                    "Transmisión en vivo del emocionante encuentro deportivo.",
+                    "¡La fiebre de la Copa Mundial 2026 se toma La Molienda! Únete a la gran familia L.A.M.A. frente a la pantalla gigante para vibrar con este choque titánico entre Colombia y Portugal. Adrenalina, hermandad y fútbol de clase mundial.",
+                tags: ["Mundial 2026", "Pantalla Gigante", "Integración"],
             },
             {
                 time: "08:00 PM",
@@ -169,6 +171,18 @@ export function AgendaSection() {
                                                         {event.title}
                                                     </h3>
                                                     <p className="mt-2 text-zinc-300">{event.description}</p>
+                                                    {event.tags && event.tags.length > 0 && (
+                                                        <div className="mt-3 flex flex-wrap gap-2">
+                                                            {event.tags.map((tag) => (
+                                                                <span
+                                                                    key={tag}
+                                                                    className="rounded-full border border-orange-500/40 bg-orange-500/10 px-3 py-1 text-xs font-semibold tracking-[0.08em] text-orange-200"
+                                                                >
+                                                                    {tag}
+                                                                </span>
+                                                            ))}
+                                                        </div>
+                                                    )}
                                                     {event.note && (
                                                         <p className="mt-3 rounded-lg border border-orange-500/30 bg-orange-500/10 px-3 py-2 text-sm italic text-orange-200">
                                                             {event.note}
