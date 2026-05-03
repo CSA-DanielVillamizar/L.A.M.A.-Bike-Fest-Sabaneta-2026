@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { YouTubeEmbed } from '@next/third-parties/google';
 
 const hotelRates = [
     { roomType: "Habitación Sencilla", price: "$160.000 COP" },
@@ -37,51 +38,63 @@ export function HotelSection() {
         <section className="py-16 sm:py-20">
             <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">
                 <div className="rounded-2xl border border-orange-500/25 bg-gradient-to-br from-black/55 via-zinc-950/70 to-orange-950/30 p-6 sm:p-8">
-                    <p className="text-xs font-bold uppercase tracking-[0.2em] text-orange-300">
-                        Hotel Sede Oficial
-                    </p>
-                    <h2 className="mt-3 font-display text-2xl font-bold text-zinc-100 sm:text-3xl">
-                        Hacienda Hotel La Extremadura
-                    </h2>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+                        {/* Columna Izquierda: contenido informativo */}
+                        <div>
+                            <p className="text-xs font-bold uppercase tracking-[0.2em] text-orange-300">
+                                Hotel Sede Oficial
+                            </p>
+                            <h2 className="mt-3 font-display text-2xl font-bold text-zinc-100 sm:text-3xl">
+                                Hacienda Hotel La Extremadura
+                            </h2>
 
-                    <div className="mt-5 flex items-start gap-3 rounded-xl border border-white/10 bg-white/[0.03] p-4">
-                        <LocationIcon />
-                        <p className="text-sm text-zinc-200 sm:text-base">
-                            Cra. 32 #71 sur 220, interior 127 - Sabaneta, Antioquia.
-                        </p>
-                    </div>
+                            <div className="mt-5 flex items-start gap-3 rounded-xl border border-white/10 bg-white/[0.03] p-4">
+                                <LocationIcon />
+                                <p className="text-sm text-zinc-200 sm:text-base">
+                                    Cra. 32 #71 sur 220, interior 127 - Sabaneta, Antioquia.
+                                </p>
+                            </div>
 
-                    <p className="mt-5 text-sm text-zinc-300 sm:text-base">
-                        Beneficios incluidos: Desayuno, seguro hotelero y zonas húmedas.
-                    </p>
+                            <p className="mt-5 text-sm text-zinc-300 sm:text-base">
+                                Beneficios incluidos: Desayuno, seguro hotelero y zonas húmedas.
+                            </p>
 
-                    <div className="mt-8">
-                        <p className="text-xs font-bold uppercase tracking-[0.2em] text-orange-200">
-                            Tarifas Especiales (Código L.A.M.A.)
-                        </p>
-                        <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                            {hotelRates.map((rate) => (
-                                <article
-                                    key={rate.roomType}
-                                    className="rounded-xl border border-white/10 bg-black/45 p-4"
+                            <div className="mt-8">
+                                <p className="text-xs font-bold uppercase tracking-[0.2em] text-orange-200">
+                                    Tarifas Especiales (Código L.A.M.A.)
+                                </p>
+                                <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                                    {hotelRates.map((rate) => (
+                                        <article
+                                            key={rate.roomType}
+                                            className="rounded-xl border border-white/10 bg-black/45 p-4"
+                                        >
+                                            <p className="text-sm text-zinc-300">{rate.roomType}</p>
+                                            <p className="mt-2 text-xl font-bold text-orange-300">{rate.price}</p>
+                                        </article>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="mt-8">
+                                <Link
+                                    href="https://wa.me/573183352439?text=Hola,%20quiero%20hacer%20una%20reserva%20para%20el%20XIII%20Aniversario%20usando%20el%20c%C3%B3digo%20L.A.M.A."
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="inline-flex items-center gap-2 rounded-full bg-orange-500 px-6 py-3 text-sm font-bold uppercase tracking-[0.12em] text-zinc-950 transition hover:bg-orange-400"
                                 >
-                                    <p className="text-sm text-zinc-300">{rate.roomType}</p>
-                                    <p className="mt-2 text-xl font-bold text-orange-300">{rate.price}</p>
-                                </article>
-                            ))}
+                                    <WhatsAppIcon />
+                                    Reservar con Código L.A.M.A.
+                                </Link>
+                            </div>
                         </div>
-                    </div>
 
-                    <div className="mt-8">
-                        <Link
-                            href="https://wa.me/573183352439?text=Hola,%20quiero%20hacer%20una%20reserva%20para%20el%20XIII%20Aniversario%20usando%20el%20c%C3%B3digo%20L.A.M.A."
-                            target="_blank"
-                            rel="noreferrer"
-                            className="inline-flex items-center gap-2 rounded-full bg-orange-500 px-6 py-3 text-sm font-bold uppercase tracking-[0.12em] text-zinc-950 transition hover:bg-orange-400"
-                        >
-                            <WhatsAppIcon />
-                            Reservar con Código L.A.M.A.
-                        </Link>
+                        {/* Columna Derecha: video promocional */}
+                        <div>
+                            <div className="relative w-full rounded-xl overflow-hidden shadow-2xl border border-white/10 [&>div]:!max-w-full">
+                                <YouTubeEmbed videoid="pX3eM3RiyOE" params="rel=0" />
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
