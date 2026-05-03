@@ -3,7 +3,6 @@
 import { scaleLinear } from "d3-scale";
 import { useEffect, useMemo, useState } from "react";
 import { ComposableMap, Geographies, Geography } from "react-simple-maps";
-import * as XLSX from "xlsx";
 import {
     Bar,
     BarChart,
@@ -16,6 +15,7 @@ import {
     XAxis,
     YAxis,
 } from "recharts";
+import * as XLSX from "xlsx";
 
 const SESSION_PASSWORD_KEY = "lama-admin-access-password";
 const PRESENTATION_MODE_KEY = "lama-presentation-mode";
