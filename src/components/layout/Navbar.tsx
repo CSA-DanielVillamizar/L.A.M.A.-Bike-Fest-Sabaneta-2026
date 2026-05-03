@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -40,13 +41,23 @@ export function Navbar() {
             >
                 <nav className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
                     {/* Logo */}
-                    <Link href="#inicio" className="shrink-0" onClick={closeMenu}>
-                        <p className="font-display text-xs leading-tight tracking-[0.22em] text-white sm:text-base">
-                            L.A.M.A. BIKE FEST
-                        </p>
-                        <p className="text-[9px] tracking-[0.2em] text-orange-400 sm:text-xs">
-                            SABANETA 2026
-                        </p>
+                    <Link href="#inicio" className="flex shrink-0 items-center gap-3" onClick={closeMenu}>
+                        <Image
+                            src="/images/LogoBikeFestSabaneta2026.png"
+                            alt="Logo L.A.M.A. Bike Fest Sabaneta 2026"
+                            width={40}
+                            height={40}
+                            className="h-9 w-9 rounded-full object-cover sm:h-10 sm:w-10"
+                            priority
+                        />
+                        <div>
+                            <p className="font-display text-[10px] leading-tight tracking-[0.18em] text-white sm:text-base sm:tracking-[0.22em]">
+                                L.A.M.A. BIKE FEST
+                            </p>
+                            <p className="text-[9px] tracking-[0.16em] text-orange-400 sm:text-xs sm:tracking-[0.2em]">
+                                SABANETA 2026
+                            </p>
+                        </div>
                     </Link>
 
                     {/* Desktop nav */}
