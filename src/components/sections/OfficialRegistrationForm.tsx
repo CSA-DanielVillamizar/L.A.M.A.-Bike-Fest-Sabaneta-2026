@@ -12,7 +12,7 @@ const PARTICIPANT_CATEGORIES = [
     "ROCKET PROSPECT",
     "PROSPECT",
     "ESPOSA",
-    "PAREJA",
+    "ASOCIADO",
     "INVITADO",
     "CLUB HERMANO / INVITADO (Solo Sábado)",
 ] as const;
@@ -30,7 +30,7 @@ const DIRECTIVE_ROLES = [
 ] as const;
 
 const JERSEY_SIZES = ["S", "M", "L", "XL", "XXL"] as const;
-const COMPANION_CATEGORIES = ["PAREJA", "INVITADO", "HIJO/A", "CLUB HERMANO (Solo Sábado)"] as const;
+const COMPANION_CATEGORIES = ["ESPOSA", "INVITADO", "HIJO/A", "CLUB HERMANO (Solo Sábado)"] as const;
 
 const BASE_COST = 100000;
 const SATURDAY_PASS_COST = 85000;

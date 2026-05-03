@@ -35,7 +35,18 @@ const MEMBER_PRICE = 100000;
 const SHIRT_PRICE = 65000;
 const SATURDAY_PASS_COST = 85000;
 
-const ALLOWED_COMPANION_CATEGORIES = new Set(["PAREJA", "INVITADO", "HIJO/A", "CLUB HERMANO (Solo Sábado)"]);
+const ALLOWED_PARTICIPANT_CATEGORIES = new Set([
+    "DAMA L.A.M.A.",
+    "FULL COLOR MEMBER",
+    "ROCKET PROSPECT",
+    "PROSPECT",
+    "ESPOSA",
+    "ASOCIADO",
+    "INVITADO",
+    "CLUB HERMANO / INVITADO (Solo Sábado)",
+]);
+
+const ALLOWED_COMPANION_CATEGORIES = new Set(["ESPOSA", "INVITADO", "HIJO/A", "CLUB HERMANO (Solo Sábado)"]);
 
 function getParticipantBaseCost(category: string): number {
     return category === "CLUB HERMANO / INVITADO (Solo Sábado)" ? SATURDAY_PASS_COST : MEMBER_PRICE;
@@ -127,6 +138,13 @@ export async function POST(request: NextRequest) {
         ) {
             return NextResponse.json(
                 { error: "Faltan campos obligatorios del formulario oficial." },
+                { status: 400 },
+            );
+        }
+
+        if (!ALLOWED_PARTICIPANT_CATEGORIES.has(participantCategory)) {
+            return NextResponse.json(
+                { error: "Categoria de participante no valida." },
                 { status: 400 },
             );
         }
