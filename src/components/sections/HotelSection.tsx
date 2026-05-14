@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { YouTubeEmbed } from '@next/third-parties/google';
+import Link from "next/link";
 
 const hotelRates = [
     { roomType: "Habitación Sencilla", price: "$160.000 COP" },

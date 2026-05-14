@@ -84,7 +84,7 @@ export function LiveStatsSection() {
     return (
         <section className="py-10 sm:py-12">
             <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
                     <article className="rounded-xl border border-white/10 bg-black/35 p-5 text-center">
                         <p className="text-xs uppercase tracking-[0.18em] text-zinc-400">Países Invitados</p>
                         <p className="mt-3 font-display text-3xl font-bold text-orange-300 sm:text-4xl">
@@ -104,6 +104,14 @@ export function LiveStatsSection() {
                         <p className="mt-3 font-display text-3xl font-bold text-orange-300 sm:text-4xl">
                             <AnimatedCounter value={stats.totalClubs} />
                         </p>
+                    </article>
+
+                    <article className="rounded-xl border border-fuchsia-300/35 bg-gradient-to-br from-fuchsia-500/20 via-pink-500/15 to-orange-500/15 p-5 text-center">
+                        <p className="text-xs uppercase tracking-[0.18em] text-fuchsia-100">Impacto Digital Estimado</p>
+                        <p className="mt-3 font-display text-3xl font-extrabold text-fuchsia-300 sm:text-4xl">
+                            +500K
+                        </p>
+                        <p className="mt-2 text-xs text-zinc-200">Alcance proyectado en canales oficiales y aliados</p>
                     </article>
                 </div>
                 <p className="mt-5 text-center text-sm text-zinc-300 sm:text-base">
