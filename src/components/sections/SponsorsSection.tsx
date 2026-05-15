@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Check } from "lucide-react";
+import { Check, Gift, Medal, Zap } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -85,7 +85,7 @@ function TierCard({ tier }: { tier: SponsorshipTier }) {
             </ul>
 
             <Link
-                href="#contacto"
+                href="#registro-patrocinadores"
                 className={`mt-7 inline-flex w-full items-center justify-center rounded-full px-5 py-3 text-center text-sm font-bold uppercase tracking-[0.12em] transition ${tier.featured
                     ? "bg-yellow-300 text-zinc-950 hover:bg-yellow-200"
                     : "bg-orange-500 text-zinc-950 hover:bg-orange-400"
@@ -135,6 +135,17 @@ export function SponsorsSection() {
                         Este no es un anuncio más. Es tu oportunidad de entrar al corazón de una comunidad
                         internacional con poder de decisión, afinidad de marca y alcance real en territorio.
                     </p>
+
+                    <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        <div className="rounded-2xl border border-emerald-300/30 bg-emerald-500/10 px-4 py-3">
+                            <p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-200">Confianza Operativa</p>
+                            <p className="mt-1 text-xl font-bold text-emerald-100">0 Incidentes Reportados</p>
+                        </div>
+                        <div className="rounded-2xl border border-sky-300/30 bg-sky-500/10 px-4 py-3">
+                            <p className="text-xs font-bold uppercase tracking-[0.18em] text-sky-200">Alcance Internacional</p>
+                            <p className="mt-1 text-xl font-bold text-sky-100">+26 Naciones Confirmadas</p>
+                        </div>
+                    </div>
 
                     <div className="mt-7 grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <div className="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-md">
@@ -205,17 +216,98 @@ export function SponsorsSection() {
                         <h3 className="mt-2 font-display text-2xl font-bold text-zinc-100">
                             Patrocinio de Impacto Emocional
                         </h3>
-                        <p className="mt-3 max-w-4xl text-zinc-200">
-                            Apadrina los almuerzos de la hermandad y conviértete en la marca que hará posible
-                            uno de los momentos más memorables del evento: fraternidad real en la mesa, entre
-                            capítulos de 26 países, con gratitud y recordación duradera.
+                        <p className="mt-2 text-sm font-semibold uppercase tracking-[0.14em] text-yellow-200">
+                            Inversión: $850.000 COP
                         </p>
+                        <p className="mt-3 max-w-4xl text-zinc-200">
+                            Apadrina 10 almuerzos de alto nivel y pon tu marca en el plato de un hermano motero.
+                            Lleva tu nombre al momento más humano del festival y vincúlate desde la fraternidad real.
+                        </p>
+                        <p className="mt-3 rounded-xl border border-white/15 bg-black/20 px-4 py-3 text-sm text-zinc-100">
+                            El 100% de este aporte va directo a la alimentación de nuestros hermanos locales e internacionales.
+                        </p>
+                        <ul className="mt-4 space-y-2 text-sm text-zinc-200">
+                            <li className="flex items-start gap-2">
+                                <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-yellow-300" />
+                                <span>Branding en individuales de mesa.</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                                <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-yellow-300" />
+                                <span>Mención de honor en la clausura.</span>
+                            </li>
+                        </ul>
                         <Link
-                            href="#contacto"
+                            href="#registro-patrocinadores"
                             className="mt-5 inline-flex rounded-full border border-orange-200/70 bg-orange-200/15 px-5 py-2 text-sm font-bold uppercase tracking-[0.12em] text-orange-100 transition hover:bg-orange-200/25"
                         >
                             Quiero activar Mesa Fraterna
                         </Link>
+                    </div>
+
+                    <div className="mt-8 grid grid-cols-1 gap-4 lg:grid-cols-2">
+                        <article className="rounded-3xl border border-white/10 bg-white/[0.04] p-5 backdrop-blur-md">
+                            <p className="text-xs font-bold uppercase tracking-[0.2em] text-orange-200">
+                                Formas de Vinculación Flexibles
+                            </p>
+                            <h3 className="mt-2 font-display text-xl font-bold text-zinc-100">
+                                También sumamos marcas por valor en especie y experiencias
+                            </h3>
+                            <div className="mt-4 space-y-3">
+                                <div className="rounded-xl border border-white/10 bg-black/20 p-4">
+                                    <p className="flex items-center gap-2 text-sm font-semibold text-zinc-100">
+                                        <Gift className="h-4 w-4 text-yellow-300" /> Donaciones en Especie
+                                    </p>
+                                    <p className="mt-2 text-sm text-zinc-300">
+                                        Souvenirs, herramientas, accesorios o tecnología para fortalecer los kits oficiales.
+                                    </p>
+                                </div>
+                                <div className="rounded-xl border border-white/10 bg-black/20 p-4">
+                                    <p className="flex items-center gap-2 text-sm font-semibold text-zinc-100">
+                                        <Zap className="h-4 w-4 text-yellow-300" /> Experiencias de Marca
+                                    </p>
+                                    <p className="mt-2 text-sm text-zinc-300">
+                                        Activaciones en vivo y rifas especiales en La Molienda para crear recuerdo y tracción comercial.
+                                    </p>
+                                </div>
+                            </div>
+                            <Link
+                                href="#registro-patrocinadores"
+                                className="mt-5 inline-flex rounded-full border border-yellow-300/60 bg-yellow-300/15 px-5 py-2 text-sm font-bold uppercase tracking-[0.12em] text-yellow-100 transition hover:bg-yellow-300/25"
+                            >
+                                Quiero ser Patrocinador
+                            </Link>
+                        </article>
+
+                        <article className="relative overflow-hidden rounded-3xl border border-yellow-300/40 bg-gradient-to-br from-yellow-500/15 via-amber-300/10 to-black/30 p-5">
+                            <div className="absolute inset-0 opacity-15">
+                                <Image
+                                    src="/images/bandera.png"
+                                    alt="Bandera oficial de la hermandad"
+                                    fill
+                                    className="object-cover"
+                                    sizes="(max-width: 1024px) 100vw, 50vw"
+                                />
+                            </div>
+                            <div className="relative">
+                                <p className="inline-flex items-center gap-2 rounded-full border border-yellow-300/60 bg-yellow-200/20 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-yellow-100">
+                                    <Medal className="h-3.5 w-3.5" /> Tu marca en la Bandera de la Hermandad
+                                </p>
+                                <h3 className="mt-3 font-display text-xl font-bold text-yellow-100">
+                                    Un trofeo de visibilidad premium para tu marca
+                                </h3>
+                                <ol className="mt-4 space-y-2 text-sm text-zinc-100">
+                                    <li>1. Tablados de las Fiestas del Plátano.</li>
+                                    <li>2. Lobby del Hotel Sede.</li>
+                                    <li>3. Escenario principal de La Molienda.</li>
+                                </ol>
+                                <Link
+                                    href="#registro-patrocinadores"
+                                    className="mt-5 inline-flex rounded-full bg-yellow-300 px-5 py-2 text-sm font-bold uppercase tracking-[0.12em] text-zinc-900 transition hover:bg-yellow-200"
+                                >
+                                    Quiero ser Patrocinador
+                                </Link>
+                            </div>
+                        </article>
                     </div>
                 </motion.div>
             </div>
