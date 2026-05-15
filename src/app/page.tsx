@@ -6,6 +6,7 @@ import { HotelSection } from "@/components/sections/HotelSection";
 import { InfoSections } from "@/components/sections/InfoSections";
 import { LiveStatsSection } from "@/components/sections/LiveStatsSection";
 import { OfficialRegistrationForm } from "@/components/sections/OfficialRegistrationForm";
+import { PresidentLetterSection } from "@/components/sections/PresidentLetterSection";
 import { RegistrationForms } from "@/components/sections/RegistrationForms";
 import { SponsorsSection } from "@/components/sections/SponsorsSection";
 
@@ -14,6 +15,7 @@ export default function Home() {
     <>
       <HeroSection />
       <LiveStatsSection />
+      <PresidentLetterSection />
       <InfoSections />
       <HotelSection />
       <GallerySection />

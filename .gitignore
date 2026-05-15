@@ -41,6 +41,7 @@ yarn-error.log*
 # Archivos temporales / duplicados de imágenes
 AZURE_DEPLOYMENT.md
 VISUAL_POLISH.md
+build-output.log
 
 # vercel
 .vercel
