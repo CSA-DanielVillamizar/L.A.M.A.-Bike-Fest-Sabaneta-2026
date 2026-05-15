@@ -70,9 +70,22 @@ type ClubAdminRecord = {
     createdAt: string;
 };
 
+type SponsorAdminRecord = {
+    id: string;
+    companyName: string;
+    category: string;
+    country: string;
+    interests: string;
+    contactEmail: string;
+    contactPhone: string;
+    isContacted: boolean;
+    createdAt: string;
+};
+
 type AdminPayload = {
     officials: OfficialAdminRecord[];
     clubs: ClubAdminRecord[];
+    sponsors: SponsorAdminRecord[];
     analytics: {
         registrationsByCountry: Array<{ country: string; totalPeople: number }>;
         registrationsByCountryIso: Array<{ country: string; isoA3: string; totalPeople: number }>;
@@ -119,13 +132,29 @@ function autoFitColumns(rows: Array<Record<string, string | number>>) {
     });
 }
 
+function formatSponsorCategory(category: string): string {
+    if (!category) return "";
+    const match = category.match(/Patrocinio\s+([^$]+)/i);
+    if (match?.[1]) {
+        return match[1].trim();
+    }
+    return category.replace(/\s*\(.*\)$/, "").trim();
+}
+
+function buildWhatsAppLink(phone: string): string {
+    const digits = String(phone || "").replace(/\D/g, "");
+    return digits ? `https://wa.me/${digits}` : "#";
+}
+
 export default function AdminPage() {
     const expectedPassword = process.env.NEXT_PUBLIC_ADMIN_ACCESS_PASSWORD ?? "";
     const [officials, setOfficials] = useState<OfficialAdminRecord[]>([]);
     const [clubs, setClubs] = useState<ClubAdminRecord[]>([]);
+    const [sponsors, setSponsors] = useState<SponsorAdminRecord[]>([]);
     const [loading, setLoading] = useState(true);
     const [errorMessage, setErrorMessage] = useState("");
     const [pendingKeys, setPendingKeys] = useState<Record<string, boolean>>({});
+    const [registrationTab, setRegistrationTab] = useState<"clubs" | "sponsors">("clubs");
     const [registrationsByCountry, setRegistrationsByCountry] = useState<Array<{ country: string; totalPeople: number }>>([]);
     const [registrationsByCountryIso, setRegistrationsByCountryIso] = useState<Array<{ country: string; isoA3: string; totalPeople: number }>>([]);
     const [registrationsByChapter, setRegistrationsByChapter] = useState<Array<{ chapter: string; totalPeople: number }>>([]);
@@ -201,6 +230,7 @@ export default function AdminPage() {
 
                 setOfficials(data.officials);
                 setClubs(data.clubs);
+                setSponsors(data.sponsors ?? []);
                 setRegistrationsByCountry(data.analytics?.registrationsByCountry ?? []);
                 setRegistrationsByCountryIso(data.analytics?.registrationsByCountryIso ?? []);
                 setRegistrationsByChapter(data.analytics?.registrationsByChapter ?? []);
@@ -221,13 +251,18 @@ export default function AdminPage() {
     );
 
     const totalRecordsCount = useMemo(
-        () => officials.length + clubs.length,
-        [officials.length, clubs.length],
+        () => officials.length + clubs.length + sponsors.length,
+        [officials.length, clubs.length, sponsors.length],
     );
 
     const totalConfirmedPeople = useMemo(
         () => registrationsByCountry.reduce((sum, item) => sum + item.totalPeople, 0),
         [registrationsByCountry],
+    );
+
+    const totalPeopleByClubs = useMemo(
+        () => clubs.reduce((sum, item) => sum + Number(item.estimatedAttendees ?? item.attendees ?? 0), 0),
+        [clubs],
     );
 
     const totalRevenueAmount = useMemo(
@@ -281,6 +316,35 @@ export default function AdminPage() {
         }
     };
 
+    const handleToggleSponsorContact = async (id: string) => {
+        const key = `sponsor:${id}`;
+        setPendingKeys((current) => ({ ...current, [key]: true }));
+
+        try {
+            const response = await fetch("/api/management/toggle-sponsor-contact", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-admin-access-password": accessPassword,
+                },
+                body: JSON.stringify({ id }),
+            });
+
+            const data = (await response.json()) as { id?: string; isContacted?: boolean; error?: string };
+            if (!response.ok || typeof data.isContacted !== "boolean") {
+                throw new Error(data.error || "No fue posible actualizar el contacto.");
+            }
+
+            setSponsors((current) =>
+                current.map((item) => (item.id === id ? { ...item, isContacted: data.isContacted as boolean } : item)),
+            );
+        } catch (error) {
+            setErrorMessage(error instanceof Error ? error.message : "No fue posible actualizar el contacto.");
+        } finally {
+            setPendingKeys((current) => ({ ...current, [key]: false }));
+        }
+    };
+
     const handleLogin = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
@@ -307,6 +371,8 @@ export default function AdminPage() {
         setIsAuthorized(false);
         setOfficials([]);
         setClubs([]);
+        setSponsors([]);
+        setRegistrationTab("clubs");
         setRegistrationsByCountry([]);
         setRegistrationsByCountryIso([]);
         setRegistrationsByChapter([]);
@@ -359,13 +425,24 @@ export default function AdminPage() {
         const clubRows = clubs.map((reg) => ({
             "ID": reg.id,
             "Nombre del Club": reg.clubName || reg.name || "",
-            "Nombre del Presidente": reg.presidentName || reg.delegate || "",
-            "Tipo de Motocicleta": reg.motorcycleType || "",
-            "Asistentes Estimados": Number(reg.estimatedAttendees ?? reg.attendees ?? 0),
+            "Representante": reg.presidentName || reg.delegate || "",
+            "Celular": reg.contactPhone || reg.phone || "",
+            "Cantidad de Participantes": Number(reg.estimatedAttendees ?? reg.attendees ?? 0),
             "Ciudad de Origen": reg.originCity || "",
             "País": reg.country || "",
-            "Teléfono de Contacto": reg.contactPhone || reg.phone || "",
             "Pagado": yesNo(Boolean(reg.isPaid)),
+            "Fecha de Registro": formatDateOnly(reg.createdAt),
+        }));
+
+        const sponsorRows = sponsors.map((reg) => ({
+            "ID": reg.id,
+            "Empresa": reg.companyName || "",
+            "Contacto": reg.contactEmail || "",
+            "Celular": reg.contactPhone || "",
+            "Categoría": formatSponsorCategory(reg.category),
+            "País": reg.country || "",
+            "Intereses": reg.interests || "",
+            "Contactado": yesNo(Boolean(reg.isContacted)),
             "Fecha de Registro": formatDateOnly(reg.createdAt),
         }));
 
@@ -377,7 +454,11 @@ export default function AdminPage() {
 
         const clubsSheet = XLSX.utils.json_to_sheet(clubRows);
         clubsSheet["!cols"] = autoFitColumns(clubRows);
-        XLSX.utils.book_append_sheet(workbook, clubsSheet, "Clubes Hermanos");
+        XLSX.utils.book_append_sheet(workbook, clubsSheet, "Clubes Invitados");
+
+        const sponsorsSheet = XLSX.utils.json_to_sheet(sponsorRows);
+        sponsorsSheet["!cols"] = autoFitColumns(sponsorRows);
+        XLSX.utils.book_append_sheet(workbook, sponsorsSheet, "Patrocinadores");
 
         XLSX.writeFile(workbook, "Reporte_General_LAMA_BikeFest_2026.xlsx");
     };
@@ -823,66 +904,173 @@ export default function AdminPage() {
                 </section>
 
                 <section className="rounded-2xl border border-white/10 bg-black/35 p-6">
-                    <div className="mb-4">
-                        <h2 className="font-display text-2xl font-bold text-zinc-100">Clubes Confirmados</h2>
-                        <p className="mt-1 text-sm text-zinc-400">
-                            La base actual guarda ciudad de origen; se muestra en la columna de país como referencia operativa.
-                        </p>
+                    <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                        <div>
+                            <h2 className="font-display text-2xl font-bold text-zinc-100">Trazabilidad de Formularios</h2>
+                            <p className="mt-1 text-sm text-zinc-400">
+                                Consulta los clubes invitados y los patrocinadores registrados desde una sola vista operativa.
+                            </p>
+                        </div>
+
+                        <div className="inline-flex rounded-full border border-white/10 bg-zinc-900/80 p-1">
+                            <button
+                                type="button"
+                                onClick={() => setRegistrationTab("clubs")}
+                                className={`rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] transition sm:text-sm ${registrationTab === "clubs"
+                                    ? "bg-orange-500 text-zinc-950"
+                                    : "text-zinc-300 hover:text-zinc-100"
+                                    }`}
+                            >
+                                Clubes Invitados
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setRegistrationTab("sponsors")}
+                                className={`rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] transition sm:text-sm ${registrationTab === "sponsors"
+                                    ? "bg-orange-500 text-zinc-950"
+                                    : "text-zinc-300 hover:text-zinc-100"
+                                    }`}
+                            >
+                                Patrocinadores
+                            </button>
+                        </div>
                     </div>
 
-                    <div className="overflow-x-auto">
-                        <table className="min-w-full text-left text-sm">
-                            <thead className="text-xs uppercase tracking-[0.14em] text-zinc-400">
-                                <tr className="border-b border-white/10">
-                                    <th className="px-3 py-3">Nombre</th>
-                                    <th className="px-3 py-3">Delegado</th>
-                                    <th className="px-3 py-3">País</th>
-                                    <th className="px-3 py-3">Teléfono</th>
-                                    <th className="px-3 py-3">Pago</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {loading ? (
-                                    <tr>
-                                        <td colSpan={5} className="px-3 py-6 text-center text-zinc-400">
-                                            Cargando clubes...
-                                        </td>
+                    {registrationTab === "clubs" ? (
+                        <div className="overflow-x-auto">
+                            <table className="min-w-full text-left text-sm">
+                                <thead className="text-xs uppercase tracking-[0.14em] text-zinc-400">
+                                    <tr className="border-b border-white/10">
+                                        <th className="px-3 py-3">Nombre del Club</th>
+                                        <th className="px-3 py-3">Representante</th>
+                                        <th className="px-3 py-3">Celular</th>
+                                        <th className="px-3 py-3">Cantidad de Participantes</th>
                                     </tr>
-                                ) : clubs.length === 0 ? (
-                                    <tr>
-                                        <td colSpan={5} className="px-3 py-6 text-center text-zinc-400">
-                                            No hay clubes registrados.
+                                </thead>
+                                <tbody>
+                                    {loading ? (
+                                        <tr>
+                                            <td colSpan={4} className="px-3 py-6 text-center text-zinc-400">
+                                                Cargando clubes...
+                                            </td>
+                                        </tr>
+                                    ) : clubs.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={4} className="px-3 py-6 text-center text-zinc-400">
+                                                No hay clubes registrados.
+                                            </td>
+                                        </tr>
+                                    ) : (
+                                        clubs.map((item) => {
+                                            const clubPhone = item.contactPhone || item.phone || "";
+                                            return (
+                                                <tr key={item.id} className="border-b border-white/5 align-top">
+                                                    <td className="px-3 py-3 font-medium text-zinc-100">{item.clubName || item.name}</td>
+                                                    <td className="px-3 py-3 text-zinc-300">{item.presidentName || item.delegate}</td>
+                                                    <td className="px-3 py-3 text-zinc-300">
+                                                        {clubPhone ? (
+                                                            <a
+                                                                href={buildWhatsAppLink(clubPhone)}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="font-medium text-emerald-300 transition hover:text-emerald-200"
+                                                            >
+                                                                {clubPhone}
+                                                            </a>
+                                                        ) : (
+                                                            "-"
+                                                        )}
+                                                    </td>
+                                                    <td className="px-3 py-3 text-zinc-300">{Number(item.estimatedAttendees ?? item.attendees ?? 0)}</td>
+                                                </tr>
+                                            );
+                                        })
+                                    )}
+                                </tbody>
+                                <tfoot>
+                                    <tr className="border-t border-white/10 bg-white/5">
+                                        <td colSpan={3} className="px-3 py-3 text-sm font-semibold uppercase tracking-[0.12em] text-zinc-300">
+                                            Total de Personas por Clubes
                                         </td>
+                                        <td className="px-3 py-3 text-sm font-bold text-orange-300">{totalPeopleByClubs}</td>
                                     </tr>
-                                ) : (
-                                    clubs.map((item) => {
-                                        const pendingKey = `club:${item.id}`;
-                                        return (
-                                            <tr key={item.id} className="border-b border-white/5 align-top">
-                                                <td className="px-3 py-3 font-medium text-zinc-100">{item.name}</td>
-                                                <td className="px-3 py-3 text-zinc-300">{item.delegate}</td>
-                                                <td className="px-3 py-3 text-zinc-300">{item.country}</td>
-                                                <td className="px-3 py-3 text-zinc-300">{item.phone}</td>
-                                                <td className="px-3 py-3">
-                                                    <button
-                                                        type="button"
-                                                        disabled={Boolean(pendingKeys[pendingKey])}
-                                                        onClick={() => handleTogglePayment(item.id, "club")}
-                                                        className={`rounded-full px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] transition disabled:opacity-60 ${item.isPaid
-                                                            ? "bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30"
-                                                            : "bg-red-500/20 text-red-300 hover:bg-red-500/30"
-                                                            }`}
-                                                    >
-                                                        {presentationMode ? "Oculto" : pendingKeys[pendingKey] ? "Actualizando..." : item.isPaid ? "Pagado" : "Pendiente"}
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        );
-                                    })
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
+                                </tfoot>
+                            </table>
+                        </div>
+                    ) : (
+                        <div className="overflow-x-auto">
+                            <table className="min-w-full text-left text-sm">
+                                <thead className="text-xs uppercase tracking-[0.14em] text-zinc-400">
+                                    <tr className="border-b border-white/10">
+                                        <th className="px-3 py-3">Empresa</th>
+                                        <th className="px-3 py-3">Contacto</th>
+                                        <th className="px-3 py-3">Categoría</th>
+                                        <th className="px-3 py-3">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {loading ? (
+                                        <tr>
+                                            <td colSpan={4} className="px-3 py-6 text-center text-zinc-400">
+                                                Cargando patrocinadores...
+                                            </td>
+                                        </tr>
+                                    ) : sponsors.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={4} className="px-3 py-6 text-center text-zinc-400">
+                                                No hay patrocinadores registrados.
+                                            </td>
+                                        </tr>
+                                    ) : (
+                                        sponsors.map((item) => {
+                                            const pendingKey = `sponsor:${item.id}`;
+                                            const sponsorPhone = item.contactPhone || "";
+                                            return (
+                                                <tr key={item.id} className="border-b border-white/5 align-top">
+                                                    <td className="px-3 py-3 font-medium text-zinc-100">{item.companyName}</td>
+                                                    <td className="px-3 py-3 text-zinc-300">
+                                                        <div className="flex flex-col gap-1">
+                                                            <span className="text-zinc-100">{item.contactEmail || "-"}</span>
+                                                            {sponsorPhone ? (
+                                                                <a
+                                                                    href={buildWhatsAppLink(sponsorPhone)}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    className="text-emerald-300 transition hover:text-emerald-200"
+                                                                >
+                                                                    {sponsorPhone}
+                                                                </a>
+                                                            ) : (
+                                                                <span>-</span>
+                                                            )}
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-3 py-3 text-zinc-300">{formatSponsorCategory(item.category)}</td>
+                                                    <td className="px-3 py-3">
+                                                        <button
+                                                            type="button"
+                                                            disabled={Boolean(pendingKeys[pendingKey])}
+                                                            onClick={() => handleToggleSponsorContact(item.id)}
+                                                            className={`rounded-full px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] transition disabled:opacity-60 ${item.isContacted
+                                                                ? "bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30"
+                                                                : "bg-orange-500/20 text-orange-300 hover:bg-orange-500/30"
+                                                                }`}
+                                                        >
+                                                            {pendingKeys[pendingKey]
+                                                                ? "Actualizando..."
+                                                                : item.isContacted
+                                                                    ? "Contactado"
+                                                                    : "Marcar como contactado"}
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
                 </section>
             </div>
         </div>

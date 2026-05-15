@@ -27,6 +27,7 @@ model SponsorRegistration {
   interests    String
   contactEmail String
   contactPhone String
+  isContacted  Boolean  @default(false)
   createdAt    DateTime @default(now())
 }
 

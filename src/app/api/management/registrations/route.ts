@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
 
 const COUNTRY_TO_ISO_A3: Record<string, string> = {
     argentina: "ARG",
@@ -102,9 +103,10 @@ export async function GET(request: Request) {
         await pool.request().query(`
             IF COL_LENGTH('OfficialRegistration', 'country') IS NULL ALTER TABLE OfficialRegistration ADD country NVARCHAR(255) NULL;
             IF COL_LENGTH('ClubRegistration', 'country') IS NULL ALTER TABLE ClubRegistration ADD country NVARCHAR(255) NULL;
+            IF COL_LENGTH('SponsorRegistration', 'isContacted') IS NULL ALTER TABLE SponsorRegistration ADD isContacted BIT NOT NULL CONSTRAINT DF_SponsorRegistration_isContacted DEFAULT 0;
         `);
 
-        const [officialResult, companionResult, clubResult] = await Promise.all([
+        const [officialResult, companionResult, clubRegistrationsRaw, sponsorRegistrationsRaw] = await Promise.all([
             pool.request().query(`
                 SELECT
                     id,
@@ -141,21 +143,12 @@ export async function GET(request: Request) {
                     jerseySize
                 FROM Companion
             `),
-            pool.request().query(`
-                SELECT
-                    id,
-                    clubName,
-                    presidentName,
-                    motorcycleType,
-                    contactPhone,
-                    country,
-                    originCity,
-                    estimatedAttendees,
-                    isPaid,
-                    createdAt
-                FROM ClubRegistration
-                ORDER BY createdAt DESC
-            `),
+            prisma.clubRegistration.findMany({
+                orderBy: { createdAt: "desc" },
+            }),
+            prisma.sponsorRegistration.findMany({
+                orderBy: { createdAt: "desc" },
+            }),
         ]);
 
         await pool.close();
@@ -199,7 +192,7 @@ export async function GET(request: Request) {
             companionsByReg.get(c.registrationId)!.push(c);
         }
 
-        const clubRegistrations = clubResult.recordset as Array<{
+        const clubRegistrations = clubRegistrationsRaw as Array<{
             id: string;
             clubName: string;
             presidentName: string;
@@ -209,7 +202,19 @@ export async function GET(request: Request) {
             originCity: string;
             estimatedAttendees: number;
             isPaid: boolean;
-            createdAt: string;
+            createdAt: Date;
+        }>;
+
+        const sponsorRegistrations = sponsorRegistrationsRaw as Array<{
+            id: string;
+            companyName: string;
+            category: string;
+            country: string | null;
+            interests: string;
+            contactEmail: string;
+            contactPhone: string;
+            isContacted: boolean;
+            createdAt: Date;
         }>;
 
         const countryTotals = new Map<string, number>();
@@ -257,6 +262,31 @@ export async function GET(request: Request) {
         const registrationsByChapter = Array.from(chapterTotals.entries())
             .map(([chapter, totalPeople]) => ({ chapter, totalPeople }))
             .sort((a, b) => b.totalPeople - a.totalPeople);
+
+        const clubRegistrationsJson = clubRegistrations.map((registration) => ({
+            id: registration.id,
+            clubName: registration.clubName,
+            presidentName: registration.presidentName,
+            motorcycleType: registration.motorcycleType,
+            contactPhone: registration.contactPhone,
+            country: (registration.country || "").trim() || "No registrado",
+            originCity: registration.originCity,
+            estimatedAttendees: registration.estimatedAttendees,
+            isPaid: registration.isPaid,
+            createdAt: registration.createdAt.toISOString(),
+        }));
+
+        const sponsorRegistrationsJson = sponsorRegistrations.map((registration) => ({
+            id: registration.id,
+            companyName: registration.companyName,
+            category: registration.category,
+            country: (registration.country || "").trim() || "No registrado",
+            interests: registration.interests,
+            contactEmail: registration.contactEmail,
+            contactPhone: registration.contactPhone,
+            isContacted: registration.isContacted,
+            createdAt: registration.createdAt.toISOString(),
+        }));
 
         const distinctCountries = Array.from(
             new Set(
@@ -324,7 +354,8 @@ export async function GET(request: Request) {
         return NextResponse.json(
             {
                 officials,
-                clubs,
+                clubs: clubRegistrationsJson,
+                sponsors: sponsorRegistrationsJson,
                 analytics: {
                     registrationsByCountry,
                     registrationsByCountryIso,
