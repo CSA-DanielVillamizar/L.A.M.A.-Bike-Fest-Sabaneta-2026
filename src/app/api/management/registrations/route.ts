@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
+export const dynamic = "force-dynamic";
+
 const COUNTRY_TO_ISO_A3: Record<string, string> = {
     argentina: "ARG",
     bolivia: "BOL",
@@ -49,6 +51,26 @@ function countryToIsoA3(country: string) {
     return COUNTRY_TO_ISO_A3[normalizeText(country)] || null;
 }
 
+function safeString(value: unknown, fallback = ""): string {
+    if (value === null || value === undefined) return fallback;
+    return String(value);
+}
+
+function safeDate(value: unknown): string {
+    if (value instanceof Date) return value.toISOString();
+    if (typeof value === "string") return value;
+    return "";
+}
+
+async function runQuery<T>(name: string, query: () => Promise<T>): Promise<T> {
+    try {
+        return await query();
+    } catch (error) {
+        console.error(`Error en consulta Prisma (${name}):`, error);
+        throw new Error(`Fallo en consulta ${name}: ${error instanceof Error ? error.message : String(error)}`);
+    }
+}
+
 export async function GET(request: Request) {
     try {
         const expectedPassword = process.env.NEXT_PUBLIC_ADMIN_ACCESS_PASSWORD?.trim();
@@ -64,25 +86,31 @@ export async function GET(request: Request) {
         }
 
         const [officialRegistrations, clubRegistrations, sponsorRegistrations] = await Promise.all([
-            prisma.officialRegistration.findMany({
-                orderBy: { createdAt: "desc" },
-                include: {
-                    companions: {
-                        select: {
-                            fullName: true,
-                            category: true,
-                            wantsJersey: true,
-                            jerseySize: true,
+            runQuery("officialRegistration.findMany", () =>
+                prisma.officialRegistration.findMany({
+                    orderBy: { createdAt: "desc" },
+                    include: {
+                        companions: {
+                            select: {
+                                fullName: true,
+                                category: true,
+                                wantsJersey: true,
+                                jerseySize: true,
+                            },
                         },
                     },
-                },
-            }),
-            prisma.clubRegistration.findMany({
-                orderBy: { createdAt: "desc" },
-            }),
-            prisma.sponsorRegistration.findMany({
-                orderBy: { createdAt: "desc" },
-            }),
+                }),
+            ),
+            runQuery("clubRegistration.findMany", () =>
+                prisma.clubRegistration.findMany({
+                    orderBy: { createdAt: "desc" },
+                }),
+            ),
+            runQuery("sponsorRegistration.findMany", () =>
+                prisma.sponsorRegistration.findMany({
+                    orderBy: { createdAt: "desc" },
+                }),
+            ),
         ]);
 
         const countryTotals = new Map<string, number>();
@@ -132,28 +160,28 @@ export async function GET(request: Request) {
             .sort((a, b) => b.totalPeople - a.totalPeople);
 
         const clubRegistrationsJson = clubRegistrations.map((registration) => ({
-            id: registration.id,
-            clubName: registration.clubName,
-            presidentName: registration.presidentName,
-            motorcycleType: registration.motorcycleType,
-            contactPhone: registration.contactPhone,
+            id: safeString(registration.id),
+            clubName: safeString(registration.clubName),
+            presidentName: safeString(registration.presidentName),
+            motorcycleType: safeString(registration.motorcycleType),
+            contactPhone: safeString(registration.contactPhone),
             country: (registration.country || "").trim() || "No registrado",
-            originCity: registration.originCity,
-            estimatedAttendees: registration.estimatedAttendees,
-            isPaid: registration.isPaid,
-            createdAt: registration.createdAt.toISOString(),
+            originCity: safeString(registration.originCity),
+            estimatedAttendees: Number(registration.estimatedAttendees || 0),
+            isPaid: Boolean(registration.isPaid),
+            createdAt: safeDate(registration.createdAt),
         }));
 
         const sponsorRegistrationsJson = sponsorRegistrations.map((registration) => ({
-            id: registration.id,
-            companyName: registration.companyName,
-            category: registration.category,
+            id: safeString(registration.id),
+            companyName: safeString(registration.companyName),
+            category: safeString(registration.category),
             country: (registration.country || "").trim() || "No registrado",
-            interests: registration.interests,
-            contactEmail: registration.contactEmail,
-            contactPhone: registration.contactPhone,
-            isContacted: registration.isContacted,
-            createdAt: registration.createdAt.toISOString(),
+            interests: safeString(registration.interests),
+            contactEmail: safeString(registration.contactEmail),
+            contactPhone: safeString(registration.contactPhone),
+            isContacted: Boolean(registration.isContacted),
+            createdAt: safeDate(registration.createdAt),
         }));
 
         const distinctCountries = Array.from(
@@ -167,39 +195,39 @@ export async function GET(request: Request) {
         const percentage = Math.min(100, Math.round((activeCountries / GLOBAL_COUNTRY_GOAL) * 100));
 
         const officials = officialRegistrations.map((registration) => ({
-            id: registration.id,
-            participantCategory: registration.participantCategory,
-            name: registration.fullName,
-            fullName: registration.fullName,
-            documentId: registration.documentId,
-            eps: registration.eps,
-            emergencyName: registration.emergencyName,
-            emergencyPhone: registration.emergencyPhone,
-            chapter: registration.chapter,
+            id: safeString(registration.id),
+            participantCategory: safeString(registration.participantCategory),
+            name: safeString(registration.fullName),
+            fullName: safeString(registration.fullName),
+            documentId: safeString(registration.documentId),
+            eps: safeString(registration.eps),
+            emergencyName: safeString(registration.emergencyName),
+            emergencyPhone: safeString(registration.emergencyPhone),
+            chapter: safeString(registration.chapter),
             country: (registration.country || "").trim() || "No registrado",
-            phone: registration.emergencyPhone,
+            phone: safeString(registration.emergencyPhone),
             email: "No registrado",
-            isDirective: registration.isDirective,
-            directiveScope: registration.directiveScope,
-            directiveRole: registration.directiveRole,
-            arrivalDate: registration.arrivalDate,
-            medicalCondition: registration.medicalCondition,
-            hasCompanions: registration.hasCompanions,
+            isDirective: Boolean(registration.isDirective),
+            directiveScope: safeString(registration.directiveScope),
+            directiveRole: safeString(registration.directiveRole),
+            arrivalDate: safeString(registration.arrivalDate),
+            medicalCondition: safeString(registration.medicalCondition),
+            hasCompanions: Boolean(registration.hasCompanions),
             companions: registration.companionsCount > 0 ? `${registration.companionsCount} acompanante(s)` : "No",
-            companionsCount: registration.companionsCount,
-            wantsJersey: registration.wantsJersey,
+            companionsCount: Number(registration.companionsCount || 0),
+            wantsJersey: Boolean(registration.wantsJersey),
             companionNames: (registration.companions ?? [])
                 .map((c) => `${c.fullName} (${c.category})`)
                 .join(" | ") || "-",
             pilotJersey: registration.wantsJersey ? (registration.jerseySize ?? "Sin talla") : "No",
-            jerseySize: registration.jerseySize,
+            jerseySize: safeString(registration.jerseySize),
             companionJerseys: (registration.companions ?? [])
                 .map((c) => `${c.fullName}: ${c.wantsJersey ? (c.jerseySize ?? "Sin talla") : "No"}`)
                 .join(" | ") || "-",
-            paymentStatus: registration.paymentStatus,
-            isPaid: registration.isPaid,
-            totalToPay: registration.totalToPay,
-            createdAt: registration.createdAt,
+            paymentStatus: safeString(registration.paymentStatus),
+            isPaid: Boolean(registration.isPaid),
+            totalToPay: Number(registration.totalToPay || 0),
+            createdAt: safeDate(registration.createdAt),
         }));
 
         return NextResponse.json(
