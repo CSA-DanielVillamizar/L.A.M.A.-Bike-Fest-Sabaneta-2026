@@ -1,9 +1,9 @@
 "use client";
 
+import { motion } from "framer-motion";
+import { Check, Download, Gift, Mail, MapPin, Medal, Phone, Shield, TrendingUp, Users, Zap } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { Check, Download, MapPin, Shield, TrendingUp, Users, Gift, Zap, Medal, Phone, Mail } from "lucide-react";
-import { motion } from "framer-motion";
 
 export default function DosierPage() {
     const handleDownloadPDF = () => {
@@ -19,28 +19,37 @@ export default function DosierPage() {
     };
 
     return (
-        <div className="min-h-screen bg-zinc-950" id="dosier-content">
+        <div className="dosier-print-root min-h-screen bg-zinc-950" id="dosier-content">
             {/* Navbar */}
-            <nav className="sticky top-0 z-50 border-b border-white/10 bg-zinc-950/95 backdrop-blur-md">
+            <nav className="print-hide sticky top-0 z-50 border-b border-white/10 bg-zinc-950/95 backdrop-blur-md">
                 <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 flex items-center justify-between">
                     <h1 className="text-xl font-bold text-white">L.A.M.A. BIKE FEST 2026</h1>
-                    <button
-                        onClick={handleDownloadPDF}
-                        className="inline-flex items-center gap-2 rounded-full bg-yellow-300 px-4 py-2 text-sm font-bold text-zinc-950 transition hover:bg-yellow-200"
-                    >
-                        <Download className="h-4 w-4" /> Descargar PDF
-                    </button>
+                    <div className="print-hide flex items-center gap-2">
+                        <Link
+                            href="/dosier/print"
+                            className="inline-flex items-center gap-2 rounded-full border border-yellow-300/70 bg-yellow-300/10 px-4 py-2 text-sm font-bold text-yellow-200 transition hover:bg-yellow-300/20"
+                        >
+                            Version Print
+                        </Link>
+                        <button
+                            onClick={handleDownloadPDF}
+                            className="inline-flex items-center gap-2 rounded-full bg-yellow-300 px-4 py-2 text-sm font-bold text-zinc-950 transition hover:bg-yellow-200"
+                        >
+                            <Download className="h-4 w-4" /> Descargar PDF
+                        </button>
+                    </div>
                 </div>
             </nav>
 
             {/* PORTADA */}
-            <section className="relative min-h-screen overflow-hidden bg-gradient-to-br from-zinc-900 via-zinc-950 to-black px-4 py-20 sm:px-6 flex items-center justify-center">
+            <section className="print-page print-page-first relative min-h-screen overflow-hidden bg-gradient-to-br from-zinc-900 via-zinc-950 to-black px-4 py-20 sm:px-6 flex items-center justify-center">
                 <div className="absolute inset-0 opacity-20">
                     <Image
-                        src="/images/hero-bg.jpg.png"
-                        alt="Background"
+                        src="/images/Rodada 1.jpg"
+                        alt="Rodada L.A.M.A. Medellín"
                         fill
                         className="object-cover"
+                        priority
                     />
                 </div>
                 <motion.div
@@ -56,7 +65,7 @@ export default function DosierPage() {
                     <p className="mt-6 text-lg text-zinc-300 sm:text-xl">
                         Gran Caravana Internacional - Sabaneta 2026
                     </p>
-                    <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:justify-center">
+                    <div className="print-hide mt-10 flex flex-col gap-4 sm:flex-row sm:justify-center">
                         <button
                             onClick={handleWhatsApp}
                             className="inline-flex items-center justify-center gap-2 rounded-full bg-yellow-300 px-6 py-4 text-sm font-bold uppercase tracking-[0.12em] text-zinc-950 transition hover:bg-yellow-200"
@@ -74,7 +83,7 @@ export default function DosierPage() {
             </section>
 
             {/* RESUMEN EJECUTIVO */}
-            <section className="bg-zinc-950 px-4 py-16 sm:px-6 sm:py-24">
+            <section className="print-page bg-zinc-950 px-4 py-16 sm:px-6 sm:py-24">
                 <div className="mx-auto max-w-6xl">
                     <motion.div
                         initial={{ opacity: 0, y: 30 }}
@@ -96,7 +105,7 @@ export default function DosierPage() {
             </section>
 
             {/* MÉTRICAS DE CONFIANZA */}
-            <section className="bg-zinc-900/50 px-4 py-16 sm:px-6 sm:py-24">
+            <section className="print-page bg-zinc-900/50 px-4 py-16 sm:px-6 sm:py-24">
                 <div className="mx-auto max-w-6xl">
                     <motion.h2
                         initial={{ opacity: 0 }}
@@ -107,7 +116,7 @@ export default function DosierPage() {
                     >
                         Métricas de Valor Probadas
                     </motion.h2>
-                    <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                    <div className="print-grid-2 mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
                         {[
                             { icon: Users, label: "Naciones", value: "+26", color: "sky" },
                             { icon: Shield, label: "Incidentes", value: "0", color: "emerald" },
@@ -129,7 +138,7 @@ export default function DosierPage() {
                                     whileInView={{ opacity: 1, y: 0 }}
                                     transition={{ duration: 0.5, delay: idx * 0.1 }}
                                     viewport={{ once: true }}
-                                    className={`rounded-2xl border p-6 ${colorClass}`}
+                                    className={`print-avoid-break rounded-2xl border p-6 ${colorClass}`}
                                 >
                                     <Icon className="h-8 w-8" />
                                     <p className="mt-3 text-4xl font-bold">{metric.value}</p>
@@ -142,7 +151,7 @@ export default function DosierPage() {
             </section>
 
             {/* PLANES DE PATROCINIO */}
-            <section className="bg-zinc-950 px-4 py-16 sm:px-6 sm:py-24">
+            <section className="print-page bg-zinc-950 px-4 py-16 sm:px-6 sm:py-24">
                 <div className="mx-auto max-w-6xl">
                     <motion.div
                         initial={{ opacity: 0 }}
@@ -156,7 +165,7 @@ export default function DosierPage() {
                         </h2>
                     </motion.div>
 
-                    <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-3">
+                    <div className="print-grid-3 mt-12 grid grid-cols-1 gap-6 sm:grid-cols-3">
                         {[
                             {
                                 name: "PLATA",
@@ -202,11 +211,10 @@ export default function DosierPage() {
                                 whileInView={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.5, delay: idx * 0.1 }}
                                 viewport={{ once: true }}
-                                className={`rounded-3xl border p-6 backdrop-blur-md ${
-                                    plan.featured
-                                        ? "relative border-yellow-300/40 bg-yellow-500/15 shadow-[0_0_40px_rgba(234,179,8,0.2)]"
-                                        : "border-white/10 bg-white/5"
-                                }`}
+                                className={`print-avoid-break rounded-3xl border p-6 backdrop-blur-md ${plan.featured
+                                    ? "relative border-yellow-300/40 bg-yellow-500/15 shadow-[0_0_40px_rgba(234,179,8,0.2)]"
+                                    : "border-white/10 bg-white/5"
+                                    }`}
                             >
                                 {plan.featured && (
                                     <span className="absolute -top-3 right-5 rounded-full border border-yellow-300/70 bg-yellow-300/20 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-yellow-100">
@@ -226,11 +234,10 @@ export default function DosierPage() {
                                 </ul>
                                 <button
                                     onClick={handleWhatsApp}
-                                    className={`mt-7 w-full rounded-full px-5 py-3 text-center text-sm font-bold uppercase tracking-[0.12em] transition ${
-                                        plan.featured
-                                            ? "bg-yellow-300 text-zinc-950 hover:bg-yellow-200"
-                                            : "bg-orange-500 text-zinc-950 hover:bg-orange-400"
-                                    }`}
+                                    className={`print-hide mt-7 w-full rounded-full px-5 py-3 text-center text-sm font-bold uppercase tracking-[0.12em] transition ${plan.featured
+                                        ? "bg-yellow-300 text-zinc-950 hover:bg-yellow-200"
+                                        : "bg-orange-500 text-zinc-950 hover:bg-orange-400"
+                                        }`}
                                 >
                                     Quiero este plan
                                 </button>
@@ -241,14 +248,14 @@ export default function DosierPage() {
             </section>
 
             {/* MESA FRATERNA */}
-            <section className="bg-zinc-900/50 px-4 py-16 sm:px-6 sm:py-24">
+            <section className="print-page bg-zinc-900/50 px-4 py-16 sm:px-6 sm:py-24">
                 <div className="mx-auto max-w-6xl">
                     <motion.div
                         initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6 }}
                         viewport={{ once: true }}
-                        className="rounded-3xl border border-orange-300/45 bg-gradient-to-r from-orange-500/20 via-amber-400/15 to-yellow-300/20 p-8 sm:p-12"
+                        className="print-avoid-break rounded-3xl border border-orange-300/45 bg-gradient-to-r from-orange-500/20 via-amber-400/15 to-yellow-300/20 p-8 sm:p-12"
                     >
                         <p className="text-xs font-bold uppercase tracking-[0.2em] text-orange-200">Mesa Fraterna</p>
                         <h2 className="mt-3 font-display text-3xl font-bold text-zinc-100">
@@ -277,7 +284,7 @@ export default function DosierPage() {
                         </ul>
                         <button
                             onClick={handleWhatsApp}
-                            className="mt-6 inline-flex rounded-full border border-orange-200/70 bg-orange-200/15 px-5 py-2 text-sm font-bold uppercase tracking-[0.12em] text-orange-100 transition hover:bg-orange-200/25"
+                            className="print-hide mt-6 inline-flex rounded-full border border-orange-200/70 bg-orange-200/15 px-5 py-2 text-sm font-bold uppercase tracking-[0.12em] text-orange-100 transition hover:bg-orange-200/25"
                         >
                             Activar Mesa Fraterna
                         </button>
@@ -286,7 +293,7 @@ export default function DosierPage() {
             </section>
 
             {/* FORMAS DE VINCULACIÓN FLEXIBLES */}
-            <section className="bg-zinc-950 px-4 py-16 sm:px-6 sm:py-24">
+            <section className="print-page bg-zinc-950 px-4 py-16 sm:px-6 sm:py-24">
                 <div className="mx-auto max-w-6xl">
                     <motion.h2
                         initial={{ opacity: 0 }}
@@ -298,7 +305,7 @@ export default function DosierPage() {
                         Formas de Vinculación Flexibles
                     </motion.h2>
 
-                    <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-3">
+                    <div className="print-grid-3 mt-12 grid grid-cols-1 gap-6 sm:grid-cols-3">
                         {[
                             {
                                 icon: Gift,
@@ -324,7 +331,7 @@ export default function DosierPage() {
                                     whileInView={{ opacity: 1, y: 0 }}
                                     transition={{ duration: 0.5, delay: idx * 0.1 }}
                                     viewport={{ once: true }}
-                                    className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 backdrop-blur-md"
+                                    className="print-avoid-break rounded-3xl border border-white/10 bg-white/[0.04] p-6 backdrop-blur-md"
                                 >
                                     <Icon className="h-8 w-8 text-yellow-300" />
                                     <h3 className="mt-4 font-display text-xl font-bold text-white">{item.title}</h3>
@@ -337,14 +344,14 @@ export default function DosierPage() {
             </section>
 
             {/* BANDERA OFICIAL */}
-            <section className="bg-zinc-900/50 px-4 py-16 sm:px-6 sm:py-24">
+            <section className="print-page bg-zinc-900/50 px-4 py-16 sm:px-6 sm:py-24">
                 <div className="mx-auto max-w-6xl">
                     <motion.div
                         initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6 }}
                         viewport={{ once: true }}
-                        className="grid items-center gap-8 lg:grid-cols-2"
+                        className="print-grid-2 grid items-center gap-8 lg:grid-cols-2"
                     >
                         <div>
                             <p className="inline-flex items-center gap-2 rounded-full border border-yellow-300/60 bg-yellow-200/20 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-yellow-100">
@@ -376,7 +383,7 @@ export default function DosierPage() {
                             whileInView={{ opacity: 1, scale: 1 }}
                             transition={{ duration: 0.6 }}
                             viewport={{ once: true }}
-                            className="relative overflow-hidden rounded-3xl border border-yellow-300/40 bg-gradient-to-br from-yellow-500/15 via-amber-300/10 to-black/30 p-6"
+                            className="print-avoid-break relative overflow-hidden rounded-3xl border border-yellow-300/40 bg-gradient-to-br from-yellow-500/15 via-amber-300/10 to-black/30 p-6"
                         >
                             <div className="relative h-64 overflow-hidden rounded-2xl">
                                 <Image
@@ -393,7 +400,7 @@ export default function DosierPage() {
             </section>
 
             {/* CASOS DE ÉXITO */}
-            <section className="bg-zinc-950 px-4 py-16 sm:px-6 sm:py-24">
+            <section className="print-page bg-zinc-950 px-4 py-16 sm:px-6 sm:py-24">
                 <div className="mx-auto max-w-6xl">
                     <motion.div
                         initial={{ opacity: 0 }}
@@ -410,7 +417,7 @@ export default function DosierPage() {
                         </p>
                     </motion.div>
 
-                    <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2">
+                    <div className="print-grid-2 mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2">
                         {[
                             {
                                 stat: "24+",
@@ -439,7 +446,7 @@ export default function DosierPage() {
                                 whileInView={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.5, delay: idx * 0.1 }}
                                 viewport={{ once: true }}
-                                className="rounded-2xl border border-white/10 bg-white/5 p-6 text-center"
+                                className="print-avoid-break rounded-2xl border border-white/10 bg-white/5 p-6 text-center"
                             >
                                 <p className="font-display text-4xl font-bold text-yellow-300">{item.stat}</p>
                                 <p className="mt-2 font-semibold text-white">{item.label}</p>
@@ -451,14 +458,14 @@ export default function DosierPage() {
             </section>
 
             {/* CTA FINAL */}
-            <section className="bg-zinc-900/50 px-4 py-16 sm:px-6 sm:py-24">
+            <section className="print-page bg-zinc-900/50 px-4 py-16 sm:px-6 sm:py-24">
                 <div className="mx-auto max-w-4xl">
                     <motion.div
                         initial={{ opacity: 0, scale: 0.95 }}
                         whileInView={{ opacity: 1, scale: 1 }}
                         transition={{ duration: 0.6 }}
                         viewport={{ once: true }}
-                        className="rounded-3xl border border-yellow-300/40 bg-gradient-to-br from-yellow-500/15 via-amber-300/10 to-black/30 p-8 text-center sm:p-12"
+                        className="print-avoid-break rounded-3xl border border-yellow-300/40 bg-gradient-to-br from-yellow-500/15 via-amber-300/10 to-black/30 p-8 text-center sm:p-12"
                     >
                         <p className="text-xs font-bold uppercase tracking-[0.2em] text-yellow-200">Último Paso</p>
                         <h2 className="mt-4 font-display text-3xl font-bold text-white sm:text-4xl">
@@ -467,7 +474,7 @@ export default function DosierPage() {
                         <p className="mt-6 text-lg text-zinc-300">
                             Solo quedan <span className="font-bold text-yellow-300">3 spots Diamante</span> disponibles. Contacta hoy mismo y asegura el reconocimiento de marca a nivel continental.
                         </p>
-                        <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:justify-center">
+                        <div className="print-hide mt-8 flex flex-col gap-4 sm:flex-row sm:justify-center">
                             <button
                                 onClick={handleWhatsApp}
                                 className="inline-flex items-center justify-center gap-2 rounded-full bg-yellow-300 px-6 py-3 text-sm font-bold uppercase tracking-[0.12em] text-zinc-950 transition hover:bg-yellow-200"
@@ -486,7 +493,7 @@ export default function DosierPage() {
             </section>
 
             {/* FOOTER */}
-            <footer className="border-t border-white/10 bg-zinc-950 px-4 py-12 sm:px-6">
+            <footer className="print-page border-t border-white/10 bg-zinc-950 px-4 py-12 sm:px-6">
                 <div className="mx-auto max-w-6xl">
                     <div className="grid grid-cols-1 gap-8 sm:grid-cols-3">
                         <div>
@@ -519,6 +526,71 @@ export default function DosierPage() {
                     </div>
                 </div>
             </footer>
+
+            <style jsx global>{`
+                @page {
+                    size: Letter;
+                    margin: 12mm;
+                }
+
+                @media print {
+                    html,
+                    body {
+                        background: #ffffff !important;
+                        color: #111111 !important;
+                        -webkit-print-color-adjust: exact;
+                        print-color-adjust: exact;
+                    }
+
+                    * {
+                        animation: none !important;
+                        transition: none !important;
+                    }
+
+                    .print-hide {
+                        display: none !important;
+                    }
+
+                    .dosier-print-root {
+                        background: #ffffff !important;
+                    }
+
+                    .print-page {
+                        break-before: page;
+                        page-break-before: always;
+                        break-inside: auto;
+                        padding-top: 10mm !important;
+                        padding-bottom: 10mm !important;
+                        min-height: auto !important;
+                    }
+
+                    .print-page-first {
+                        break-before: auto;
+                        page-break-before: auto;
+                    }
+
+                    .print-avoid-break {
+                        break-inside: avoid-page;
+                        page-break-inside: avoid;
+                    }
+
+                    .print-grid-2 {
+                        display: grid !important;
+                        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+                        gap: 8mm !important;
+                    }
+
+                    .print-grid-3 {
+                        display: grid !important;
+                        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+                        gap: 6mm !important;
+                    }
+
+                    a[href]::after {
+                        content: none !important;
+                    }
+                }
+            `}</style>
         </div>
     );
 }

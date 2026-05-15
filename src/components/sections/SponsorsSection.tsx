@@ -136,12 +136,13 @@ export function SponsorsSection() {
                         Conoce en detalle todos nuestros planes, métricas de confianza y formas de vinculación.
                     </p>
                     <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
-                        <Link
-                            href="/dosier"
+                        <a
+                            href="/images/XIII Aniversario L.A.M.A. Medellín & L.A.M.A. Bike Fest 2026 🇨🇴.pdf"
+                            download
                             className="inline-flex items-center justify-center gap-2 rounded-full bg-yellow-300 px-6 py-3 text-sm font-bold uppercase tracking-[0.12em] text-zinc-950 transition hover:bg-yellow-200"
                         >
                             <span>⬇</span> Descargar Dosier Oficial
-                        </Link>
+                        </a>
                         <Link
                             href="/dosier"
                             className="inline-flex items-center justify-center gap-2 rounded-full border border-yellow-300/60 bg-yellow-300/15 px-6 py-3 text-sm font-bold uppercase tracking-[0.12em] text-yellow-100 transition hover:bg-yellow-300/25"
