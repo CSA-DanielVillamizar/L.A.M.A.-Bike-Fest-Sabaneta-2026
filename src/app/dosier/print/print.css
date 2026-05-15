@@ -173,6 +173,7 @@ li {
 }
 
 @media print {
+
     html,
     body {
         -webkit-print-color-adjust: exact;
