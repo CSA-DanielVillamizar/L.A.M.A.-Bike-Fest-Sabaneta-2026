@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { NextRequest, NextResponse } from "next/server";
 
 function isAuthorized(request: NextRequest): boolean {
     const expectedPassword = process.env.NEXT_PUBLIC_ADMIN_ACCESS_PASSWORD?.trim();
@@ -24,13 +24,6 @@ export async function POST(request: NextRequest) {
         if (!id) {
             return NextResponse.json({ error: "Solicitud invalida." }, { status: 400 });
         }
-
-        await prisma.$executeRawUnsafe(`
-            IF COL_LENGTH('SponsorRegistration', 'isContacted') IS NULL
-            BEGIN
-                ALTER TABLE SponsorRegistration ADD isContacted BIT NOT NULL CONSTRAINT DF_SponsorRegistration_isContacted DEFAULT 0;
-            END
-        `);
 
         const current = await prisma.sponsorRegistration.findUnique({
             where: { id },
