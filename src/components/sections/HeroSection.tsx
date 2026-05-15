@@ -56,7 +56,7 @@ export function HeroSection() {
                         Inscribirme Ahora
                     </a>
                     <a
-                        href="#contacto"
+                        href="#recursos-disponibles"
                         className="inline-flex items-center justify-center rounded-full border border-orange-300/60 bg-black/25 px-6 py-3 text-sm font-bold uppercase tracking-wider text-zinc-100 transition hover:border-orange-300 hover:text-orange-200"
                     >
                         Conviértete en Patrocinador

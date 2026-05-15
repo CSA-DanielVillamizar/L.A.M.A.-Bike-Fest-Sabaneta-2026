@@ -13,7 +13,15 @@ const motorcycleTypes = [
     "Otro",
 ];
 
-const sponsorCategories = ["Motos", "Accesorios", "Gastronomía", "Servicios"];
+const sponsorCategories = [
+    "Patrocinio DIAMANTE ($5.500.000 COP)",
+    "Patrocinio ORO ($3.000.000 COP)",
+    "Patrocinio PLATA ($1.500.000 COP)",
+    "Mesa Fraterna ($850.000 COP)",
+    "Donación en Especie / Experiencias",
+];
+
+const inKindCategory = "Donación en Especie / Experiencias";
 
 const sponsorInterests = [
     "Stand de exhibición",
@@ -31,6 +39,7 @@ export function RegistrationForms() {
     const [sponsorSuccess, setSponsorSuccess] = useState(false);
     const [clubMessage, setClubMessage] = useState("");
     const [sponsorMessage, setSponsorMessage] = useState("");
+    const [selectedSponsorCategory, setSelectedSponsorCategory] = useState("");
 
     const handleSponsorDossierRequest = () => {
         const message = "Hola Daniel, estoy interesado en participar como patrocinador en el XIII Aniversario L.A.M.A. Medellín. Me gustaría recibir el Dossier Comercial para conocer los planes de marca.";
@@ -102,6 +111,7 @@ export function RegistrationForms() {
             setSponsorSuccess(true);
             setSponsorMessage(result.message || "¡Solicitud enviada! Pronto recibirás el dossier comercial.");
             form.reset();
+            setSelectedSponsorCategory("");
             setTimeout(() => setSponsorSuccess(false), 5000);
         } catch (error) {
             setSponsorMessage(error instanceof Error ? error.message : "Error al enviar la solicitud. Intenta nuevamente.");
@@ -260,8 +270,15 @@ export function RegistrationForms() {
                             </label>
 
                             <label className="flex flex-col gap-2 text-sm text-zinc-300">
-                                Categoría
-                                <select name="categoria" required disabled={sponsorLoading} className="rounded-lg border border-zinc-700 bg-zinc-900/70 px-3 py-2 text-zinc-100 outline-none ring-orange-400/40 transition focus:ring disabled:opacity-60">
+                                Categoría de Vinculación
+                                <select
+                                    name="categoria"
+                                    required
+                                    disabled={sponsorLoading}
+                                    value={selectedSponsorCategory}
+                                    onChange={(event) => setSelectedSponsorCategory(event.target.value)}
+                                    className="rounded-lg border border-zinc-700 bg-zinc-900/70 px-3 py-2 text-zinc-100 outline-none ring-orange-400/40 transition focus:ring disabled:opacity-60"
+                                >
                                     <option value="">Selecciona una categoría</option>
                                     {sponsorCategories.map((category) => (
                                         <option key={category} value={category}>
@@ -270,6 +287,19 @@ export function RegistrationForms() {
                                     ))}
                                 </select>
                             </label>
+
+                            {selectedSponsorCategory === inKindCategory && (
+                                <label className="flex flex-col gap-2 text-sm text-zinc-300 sm:col-span-2">
+                                    Detalles del aporte
+                                    <textarea
+                                        name="sponsor_contribution_details"
+                                        rows={3}
+                                        disabled={sponsorLoading}
+                                        placeholder="Cuéntanos brevemente qué productos, souvenirs o experiencia deseas aportar."
+                                        className="rounded-lg border border-zinc-700 bg-zinc-900/70 px-3 py-2 text-zinc-100 outline-none ring-orange-400/40 transition focus:ring disabled:opacity-60"
+                                    />
+                                </label>
+                            )}
 
                             <label className="flex flex-col gap-2 text-sm text-zinc-300">
                                 País

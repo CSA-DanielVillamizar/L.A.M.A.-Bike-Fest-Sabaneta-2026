@@ -1,6 +1,14 @@
 import { randomUUID } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 
+const allowedSponsorCategories = [
+    "Patrocinio DIAMANTE ($5.500.000 COP)",
+    "Patrocinio ORO ($3.000.000 COP)",
+    "Patrocinio PLATA ($1.500.000 COP)",
+    "Mesa Fraterna ($850.000 COP)",
+    "Donación en Especie / Experiencias",
+];
+
 function parseSqlServerUrl(rawUrl: string | undefined) {
     if (!rawUrl) throw new Error("DATABASE_URL no esta configurada.");
 
@@ -46,13 +54,28 @@ export async function POST(request: NextRequest) {
         }
 
         const body = await request.json();
-        const { empresa, email, telefono, categoria, country, intereses } = body;
+        const {
+            empresa,
+            email,
+            telefono,
+            categoria,
+            country,
+            intereses,
+            sponsor_contribution_details,
+        } = body;
 
         if (!empresa || !email || !telefono || !categoria || !country || !intereses) {
             return NextResponse.json({ error: "Faltan campos requeridos" }, { status: 400 });
         }
 
+        if (!allowedSponsorCategories.includes(String(categoria))) {
+            return NextResponse.json({ error: "Categoria de vinculacion no valida" }, { status: 400 });
+        }
+
         const interestsArray = Array.isArray(intereses) ? intereses.join(",") : String(intereses);
+        const contributionDetails = sponsor_contribution_details
+            ? String(sponsor_contribution_details).trim()
+            : null;
 
         const config = parseSqlServerUrl(databaseUrl);
         const { default: sql } = await import("mssql");
@@ -65,6 +88,10 @@ export async function POST(request: NextRequest) {
 
         await pool
             .request()
+            .query(`IF COL_LENGTH('SponsorRegistration', 'sponsorContributionDetails') IS NULL ALTER TABLE SponsorRegistration ADD sponsorContributionDetails NVARCHAR(2000) NULL;`);
+
+        await pool
+            .request()
             .input("id", sql.NVarChar(36), id)
             .input("companyName", sql.NVarChar(255), String(empresa).trim())
             .input("contactEmail", sql.NVarChar(255), String(email).trim())
@@ -72,9 +99,10 @@ export async function POST(request: NextRequest) {
             .input("category", sql.NVarChar(100), String(categoria).trim())
             .input("country", sql.NVarChar(255), String(country).trim())
             .input("interests", sql.NVarChar(1000), interestsArray)
+            .input("sponsorContributionDetails", sql.NVarChar(2000), contributionDetails)
             .query(
-                `INSERT INTO SponsorRegistration (id, companyName, contactEmail, contactPhone, category, country, interests, createdAt)
-                 VALUES (@id, @companyName, @contactEmail, @contactPhone, @category, @country, @interests, GETUTCDATE())`,
+                `INSERT INTO SponsorRegistration (id, companyName, contactEmail, contactPhone, category, country, interests, sponsorContributionDetails, createdAt)
+                 VALUES (@id, @companyName, @contactEmail, @contactPhone, @category, @country, @interests, @sponsorContributionDetails, GETUTCDATE())`,
             );
 
         await pool.close();
