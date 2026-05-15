@@ -85,13 +85,13 @@ function TierCard({ tier }: { tier: SponsorshipTier }) {
             </ul>
 
             <Link
-                href="#registro-patrocinadores"
+                href="/dosier"
                 className={`mt-7 inline-flex w-full items-center justify-center rounded-full px-5 py-3 text-center text-sm font-bold uppercase tracking-[0.12em] transition ${tier.featured
                     ? "bg-yellow-300 text-zinc-950 hover:bg-yellow-200"
                     : "bg-orange-500 text-zinc-950 hover:bg-orange-400"
                     }`}
             >
-                Quiero ser Patrocinador
+                Ver Dossier Comercial
             </Link>
         </article>
     );
@@ -120,6 +120,37 @@ export function SponsorsSection() {
     return (
         <section id="patrocinadores" className="bg-zinc-900/70 py-16 sm:py-20">
             <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">
+                {/* CTA Dosier Section */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6 }}
+                    viewport={{ once: true, margin: "-100px" }}
+                    className="mb-8 rounded-2xl border border-yellow-300/50 bg-gradient-to-r from-yellow-500/20 via-amber-400/15 to-yellow-300/20 p-6 text-center sm:p-8"
+                >
+                    <p className="text-xs font-bold uppercase tracking-[0.2em] text-yellow-200">Recursos Disponibles</p>
+                    <h3 className="mt-3 font-display text-2xl font-bold text-zinc-100">
+                        Descarga nuestro Dossier Comercial Profesional
+                    </h3>
+                    <p className="mt-3 text-zinc-300">
+                        Conoce en detalle todos nuestros planes, métricas de confianza y formas de vinculación.
+                    </p>
+                    <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
+                        <Link
+                            href="/dosier"
+                            className="inline-flex items-center justify-center gap-2 rounded-full bg-yellow-300 px-6 py-3 text-sm font-bold uppercase tracking-[0.12em] text-zinc-950 transition hover:bg-yellow-200"
+                        >
+                            <span>⬇</span> Descargar Dosier Oficial
+                        </Link>
+                        <Link
+                            href="/dosier"
+                            className="inline-flex items-center justify-center gap-2 rounded-full border border-yellow-300/60 bg-yellow-300/15 px-6 py-3 text-sm font-bold uppercase tracking-[0.12em] text-yellow-100 transition hover:bg-yellow-300/25"
+                        >
+                            <span>👁</span> Ver Presentación Interactiva
+                        </Link>
+                    </div>
+                </motion.div>
+
                 <motion.div
                     initial={{ opacity: 0, y: 50 }}
                     whileInView={{ opacity: 1, y: 0 }}
@@ -237,10 +268,10 @@ export function SponsorsSection() {
                             </li>
                         </ul>
                         <Link
-                            href="#registro-patrocinadores"
+                            href="/dosier"
                             className="mt-5 inline-flex rounded-full border border-orange-200/70 bg-orange-200/15 px-5 py-2 text-sm font-bold uppercase tracking-[0.12em] text-orange-100 transition hover:bg-orange-200/25"
                         >
-                            Quiero activar Mesa Fraterna
+                            Ver plan Mesa Fraterna
                         </Link>
                     </div>
 
@@ -271,10 +302,10 @@ export function SponsorsSection() {
                                 </div>
                             </div>
                             <Link
-                                href="#registro-patrocinadores"
+                                href="/dosier"
                                 className="mt-5 inline-flex rounded-full border border-yellow-300/60 bg-yellow-300/15 px-5 py-2 text-sm font-bold uppercase tracking-[0.12em] text-yellow-100 transition hover:bg-yellow-300/25"
                             >
-                                Quiero ser Patrocinador
+                                Ver opciones de vinculación
                             </Link>
                         </article>
 
@@ -301,10 +332,10 @@ export function SponsorsSection() {
                                     <li>3. Escenario principal de La Molienda.</li>
                                 </ol>
                                 <Link
-                                    href="#registro-patrocinadores"
+                                    href="/dosier"
                                     className="mt-5 inline-flex rounded-full bg-yellow-300 px-5 py-2 text-sm font-bold uppercase tracking-[0.12em] text-zinc-900 transition hover:bg-yellow-200"
                                 >
-                                    Quiero ser Patrocinador
+                                    Ver tu marca en la bandera
                                 </Link>
                             </div>
                         </article>
