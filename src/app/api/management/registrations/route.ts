@@ -229,9 +229,12 @@ export async function GET(request: Request) {
             },
         );
     } catch (error) {
-        console.error("Error obteniendo registros administrativos:", error);
+        console.error("Error detallado en GET /registrations:", error);
         return NextResponse.json(
-            { error: "No fue posible obtener los registros administrativos." },
+            {
+                error: "Falló la consulta",
+                details: error instanceof Error ? error.message : String(error),
+            },
             {
                 status: 500,
                 headers: {
