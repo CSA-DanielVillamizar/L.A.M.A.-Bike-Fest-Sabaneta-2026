@@ -229,17 +229,14 @@ export async function GET(request: Request) {
             },
         );
     } catch (error) {
-        console.error("Error detallado en GET /registrations:", error);
+        console.error("ERROR CRÍTICO EN GET /registrations:", error);
         return NextResponse.json(
             {
-                error: "Falló la consulta",
+                error: "Error interno del servidor",
                 details: error instanceof Error ? error.message : String(error),
             },
             {
                 status: 500,
-                headers: {
-                    'Cache-Control': 'no-store, max-age=0',
-                },
             },
         );
     }
