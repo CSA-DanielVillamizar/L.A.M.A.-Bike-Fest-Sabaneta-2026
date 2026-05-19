@@ -73,7 +73,9 @@ async function runQuery<T>(name: string, query: () => Promise<T>): Promise<T> {
 
 export async function GET(request: Request) {
     try {
-        const expectedPassword = process.env.NEXT_PUBLIC_ADMIN_ACCESS_PASSWORD?.trim();
+        const expectedPassword = (
+            process.env.ADMIN_ACCESS_PASSWORD ?? process.env.NEXT_PUBLIC_ADMIN_ACCESS_PASSWORD ?? ""
+        ).trim();
         const providedPassword = request.headers.get("x-admin-access-password")?.trim();
         const databaseUrl = process.env.DATABASE_URL;
 

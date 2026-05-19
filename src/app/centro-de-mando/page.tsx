@@ -234,7 +234,6 @@ function buildWhatsAppLink(phone: string): string {
 }
 
 export default function AdminPage() {
-    const expectedPassword = process.env.NEXT_PUBLIC_ADMIN_ACCESS_PASSWORD ?? "";
     const [officials, setOfficials] = useState<OfficialAdminRecord[]>([]);
     const [clubs, setClubs] = useState<ClubAdminRecord[]>([]);
     const [sponsors, setSponsors] = useState<SponsorAdminRecord[]>([]);
@@ -274,13 +273,13 @@ export default function AdminPage() {
 
     useEffect(() => {
         const storedPassword = window.sessionStorage.getItem(SESSION_PASSWORD_KEY) ?? "";
-        if (expectedPassword && storedPassword === expectedPassword) {
+        if (storedPassword) {
             setAccessPassword(storedPassword);
             setIsAuthorized(true);
         } else {
             window.sessionStorage.removeItem(SESSION_PASSWORD_KEY);
         }
-    }, [expectedPassword]);
+    }, []);
 
     useEffect(() => {
         const storedPresentationMode = window.localStorage.getItem(PRESENTATION_MODE_KEY);
@@ -312,6 +311,11 @@ export default function AdminPage() {
                 const data = (await response.json()) as NullableAdminPayload | { error?: string };
 
                 if (!response.ok || !("officials" in data) || !("clubs" in data)) {
+                    if (response.status === 401) {
+                        window.sessionStorage.removeItem(SESSION_PASSWORD_KEY);
+                        setAccessPassword("");
+                        setIsAuthorized(false);
+                    }
                     throw new Error("error" in data ? data.error || "No fue posible cargar el panel." : "No fue posible cargar el panel.");
                 }
 
@@ -437,18 +441,14 @@ export default function AdminPage() {
     const handleLogin = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
-        if (!expectedPassword) {
-            setErrorMessage("La contraseña administrativa no está configurada en el entorno.");
+        const trimmedPassword = passwordInput.trim();
+        if (!trimmedPassword) {
+            setErrorMessage("Ingresa la contraseña para continuar.");
             return;
         }
 
-        if (passwordInput !== expectedPassword) {
-            setErrorMessage("Contraseña incorrecta.");
-            return;
-        }
-
-        window.sessionStorage.setItem(SESSION_PASSWORD_KEY, passwordInput);
-        setAccessPassword(passwordInput);
+        window.sessionStorage.setItem(SESSION_PASSWORD_KEY, trimmedPassword);
+        setAccessPassword(trimmedPassword);
         setIsAuthorized(true);
         setPasswordInput("");
         setErrorMessage("");

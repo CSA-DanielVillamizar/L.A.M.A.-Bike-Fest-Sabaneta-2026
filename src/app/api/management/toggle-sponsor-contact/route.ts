@@ -2,7 +2,9 @@ import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
 function isAuthorized(request: NextRequest): boolean {
-    const expectedPassword = process.env.NEXT_PUBLIC_ADMIN_ACCESS_PASSWORD?.trim();
+    const expectedPassword = (
+        process.env.ADMIN_ACCESS_PASSWORD ?? process.env.NEXT_PUBLIC_ADMIN_ACCESS_PASSWORD ?? ""
+    ).trim();
     const providedPassword = request.headers.get("x-admin-access-password")?.trim();
 
     if (!expectedPassword) {
