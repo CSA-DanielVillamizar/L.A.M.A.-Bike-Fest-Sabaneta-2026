@@ -99,7 +99,94 @@ type AdminPayload = {
     };
 };
 
+type NullableCountryAggregate = {
+    country?: string | null;
+    totalPeople?: number | string | null;
+};
+
+type NullableCountryIsoAggregate = {
+    country?: string | null;
+    isoA3?: string | null;
+    totalPeople?: number | string | null;
+};
+
+type NullableChapterAggregate = {
+    chapter?: string | null;
+    totalPeople?: number | string | null;
+};
+
+type NullableGlobalCountryProgress = {
+    activeCountries?: number | string | null;
+    goalCountries?: number | string | null;
+    percentage?: number | string | null;
+};
+
+type NullableAdminPayload = {
+    officials?: OfficialAdminRecord[] | null;
+    clubs?: ClubAdminRecord[] | null;
+    sponsors?: SponsorAdminRecord[] | null;
+    analytics?: {
+        registrationsByCountry?: NullableCountryAggregate[] | null;
+        registrationsByCountryIso?: NullableCountryIsoAggregate[] | null;
+        registrationsByChapter?: NullableChapterAggregate[] | null;
+        globalCountryProgress?: NullableGlobalCountryProgress | null;
+    } | null;
+};
+
 const DONUT_COLORS = ["#f97316", "#ea580c", "#c2410c", "#a16207", "#0f172a", "#1f2937", "#334155", "#52525b"];
+
+function toSafeNumber(value: unknown, fallback = 0): number {
+    const parsed = typeof value === "number" ? value : Number(value);
+    return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function toSafeText(value: unknown, fallback = ""): string {
+    if (value === null || value === undefined) return fallback;
+    const text = String(value).trim();
+    return text || fallback;
+}
+
+function normalizeAdminPayload(payload: NullableAdminPayload): AdminPayload {
+    const registrationsByCountry = (payload.analytics?.registrationsByCountry ?? []).map((item) => ({
+        country: toSafeText(item?.country, "No registrado"),
+        totalPeople: Math.max(0, toSafeNumber(item?.totalPeople, 0)),
+    }));
+
+    const registrationsByCountryIso = (payload.analytics?.registrationsByCountryIso ?? [])
+        .map((item) => ({
+            country: toSafeText(item?.country, "No registrado"),
+            isoA3: toSafeText(item?.isoA3).toUpperCase(),
+            totalPeople: Math.max(0, toSafeNumber(item?.totalPeople, 0)),
+        }))
+        .filter((item) => item.isoA3.length === 3);
+
+    const registrationsByChapter = (payload.analytics?.registrationsByChapter ?? []).map((item) => ({
+        chapter: toSafeText(item?.chapter, "Sin capítulo"),
+        totalPeople: Math.max(0, toSafeNumber(item?.totalPeople, 0)),
+    }));
+
+    const rawProgress = payload.analytics?.globalCountryProgress;
+    const goalCountries = Math.max(1, toSafeNumber(rawProgress?.goalCountries, 26));
+    const activeCountries = Math.max(0, toSafeNumber(rawProgress?.activeCountries, 0));
+    const percentage = Math.min(100, Math.max(0, toSafeNumber(rawProgress?.percentage, (activeCountries / goalCountries) * 100)));
+
+    return {
+        officials: payload.officials ?? [],
+        clubs: payload.clubs ?? [],
+        sponsors: payload.sponsors ?? [],
+        analytics: {
+            registrationsByCountry,
+            registrationsByCountryIso,
+            registrationsByChapter,
+            globalCountryProgress: {
+                activeCountries,
+                goalCountries,
+                percentage,
+                countries: [],
+            },
+        },
+    };
+}
 
 const formatCopCurrency = (value: number) => new Intl.NumberFormat("es-CO", {
     style: "currency",
@@ -222,19 +309,21 @@ export default function AdminPage() {
                         "x-admin-access-password": accessPassword,
                     },
                 });
-                const data = (await response.json()) as AdminPayload | { error?: string };
+                const data = (await response.json()) as NullableAdminPayload | { error?: string };
 
                 if (!response.ok || !("officials" in data) || !("clubs" in data)) {
                     throw new Error("error" in data ? data.error || "No fue posible cargar el panel." : "No fue posible cargar el panel.");
                 }
 
-                setOfficials(data.officials);
-                setClubs(data.clubs);
-                setSponsors(data.sponsors ?? []);
-                setRegistrationsByCountry(data.analytics?.registrationsByCountry ?? []);
-                setRegistrationsByCountryIso(data.analytics?.registrationsByCountryIso ?? []);
-                setRegistrationsByChapter(data.analytics?.registrationsByChapter ?? []);
-                setGlobalCountryProgress(data.analytics?.globalCountryProgress ?? { activeCountries: 0, goalCountries: 26, percentage: 0 });
+                const normalizedData = normalizeAdminPayload(data);
+
+                setOfficials(normalizedData.officials);
+                setClubs(normalizedData.clubs);
+                setSponsors(normalizedData.sponsors);
+                setRegistrationsByCountry(normalizedData.analytics.registrationsByCountry);
+                setRegistrationsByCountryIso(normalizedData.analytics.registrationsByCountryIso);
+                setRegistrationsByChapter(normalizedData.analytics.registrationsByChapter);
+                setGlobalCountryProgress(normalizedData.analytics.globalCountryProgress);
             } catch (error) {
                 setErrorMessage(error instanceof Error ? error.message : "No fue posible cargar el panel.");
             } finally {
@@ -840,7 +929,7 @@ export default function AdminPage() {
                     <div className="mb-4">
                         <h2 className="font-display text-2xl font-bold text-zinc-100">Inscritos Oficiales</h2>
                         <p className="mt-1 text-sm text-zinc-400">
-                            El campo de correo no existe hoy en la base actual; el panel lo marca como no registrado.
+                            Vista alineada al esquema actual del sistema para participantes oficiales.
                         </p>
                     </div>
 
@@ -851,49 +940,30 @@ export default function AdminPage() {
                                     <th className="px-3 py-3">Nombre</th>
                                     <th className="px-3 py-3">Capítulo</th>
                                     <th className="px-3 py-3">País</th>
-                                    <th className="px-3 py-3">Teléfono</th>
-                                    <th className="px-3 py-3">Correo</th>
-                                    <th className="px-3 py-3">Acompañante</th>
-                                    <th className="px-3 py-3">Pago</th>
+                                    <th className="px-3 py-3">Categoría</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {loading ? (
                                     <tr>
-                                        <td colSpan={7} className="px-3 py-6 text-center text-zinc-400">
+                                        <td colSpan={4} className="px-3 py-6 text-center text-zinc-400">
                                             Cargando inscritos...
                                         </td>
                                     </tr>
                                 ) : officials.length === 0 ? (
                                     <tr>
-                                        <td colSpan={7} className="px-3 py-6 text-center text-zinc-400">
+                                        <td colSpan={4} className="px-3 py-6 text-center text-zinc-400">
                                             No hay inscritos oficiales registrados.
                                         </td>
                                     </tr>
                                 ) : (
                                     officials.map((item) => {
-                                        const pendingKey = `official:${item.id}`;
                                         return (
                                             <tr key={item.id} className="border-b border-white/5 align-top">
                                                 <td className="px-3 py-3 font-medium text-zinc-100">{item.name}</td>
                                                 <td className="px-3 py-3 text-zinc-300">{item.chapter}</td>
                                                 <td className="px-3 py-3 text-zinc-300">{item.country}</td>
-                                                <td className="px-3 py-3 text-zinc-300">{item.phone}</td>
-                                                <td className="px-3 py-3 text-zinc-400">{item.email}</td>
-                                                <td className="px-3 py-3 text-zinc-300">{item.companions}</td>
-                                                <td className="px-3 py-3">
-                                                    <button
-                                                        type="button"
-                                                        disabled={Boolean(pendingKeys[pendingKey])}
-                                                        onClick={() => handleTogglePayment(item.id, "official")}
-                                                        className={`rounded-full px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] transition disabled:opacity-60 ${item.isPaid
-                                                            ? "bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30"
-                                                            : "bg-red-500/20 text-red-300 hover:bg-red-500/30"
-                                                            }`}
-                                                    >
-                                                        {presentationMode ? "Oculto" : pendingKeys[pendingKey] ? "Actualizando..." : item.isPaid ? "Pagado" : "Pendiente"}
-                                                    </button>
-                                                </td>
+                                                <td className="px-3 py-3 text-zinc-300">{item.participantCategory || "No registrado"}</td>
                                             </tr>
                                         );
                                     })
