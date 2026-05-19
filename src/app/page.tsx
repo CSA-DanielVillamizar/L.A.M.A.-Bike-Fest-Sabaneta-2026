@@ -8,7 +8,7 @@ import { LiveStatsSection } from "@/components/sections/LiveStatsSection";
 import { OfficialRegistrationForm } from "@/components/sections/OfficialRegistrationForm";
 import { PresidentLetterSection } from "@/components/sections/PresidentLetterSection";
 import { RegistrationForms } from "@/components/sections/RegistrationForms";
-import { SponsorsSection } from "@/components/sections/SponsorsSection";
+import { SponsorsCTASection } from "@/components/sections/SponsorsCTASection";
 
 export default function Home() {
   return (
@@ -20,7 +20,7 @@ export default function Home() {
       <HotelSection />
       <GallerySection />
       <AgendaSection />
-      <SponsorsSection />
+      <SponsorsCTASection />
       <RegistrationForms />
       <div id="registro-oficial">
         <OfficialRegistrationForm />

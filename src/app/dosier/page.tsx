@@ -1,5 +1,6 @@
 "use client";
 
+import { SponsorsSection } from "@/components/sections/SponsorsSection";
 import { motion } from "framer-motion";
 import { Check, Download, Gift, Mail, MapPin, Medal, Phone, Shield, TrendingUp, Users, Zap } from "lucide-react";
 import Image from "next/image";
@@ -491,6 +492,8 @@ export default function DosierPage() {
                     </motion.div>
                 </div>
             </section>
+
+            <SponsorsSection />
 
             {/* FOOTER */}
             <footer className="print-page border-t border-white/10 bg-zinc-950 px-4 py-12 sm:px-6">
