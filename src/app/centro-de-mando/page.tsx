@@ -941,29 +941,61 @@ export default function AdminPage() {
                                     <th className="px-3 py-3">Capítulo</th>
                                     <th className="px-3 py-3">País</th>
                                     <th className="px-3 py-3">Categoría</th>
+                                    <th className="px-3 py-3">Estado Pago</th>
+                                    <th className="px-3 py-3">Valor</th>
+                                    <th className="px-3 py-3">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {loading ? (
                                     <tr>
-                                        <td colSpan={4} className="px-3 py-6 text-center text-zinc-400">
+                                        <td colSpan={7} className="px-3 py-6 text-center text-zinc-400">
                                             Cargando inscritos...
                                         </td>
                                     </tr>
                                 ) : officials.length === 0 ? (
                                     <tr>
-                                        <td colSpan={4} className="px-3 py-6 text-center text-zinc-400">
+                                        <td colSpan={7} className="px-3 py-6 text-center text-zinc-400">
                                             No hay inscritos oficiales registrados.
                                         </td>
                                     </tr>
                                 ) : (
                                     officials.map((item) => {
+                                        const pendingKey = `official:${item.id}`;
                                         return (
                                             <tr key={item.id} className="border-b border-white/5 align-top">
                                                 <td className="px-3 py-3 font-medium text-zinc-100">{item.name}</td>
                                                 <td className="px-3 py-3 text-zinc-300">{item.chapter}</td>
                                                 <td className="px-3 py-3 text-zinc-300">{item.country}</td>
                                                 <td className="px-3 py-3 text-zinc-300">{item.participantCategory || "No registrado"}</td>
+                                                <td className="px-3 py-3 text-zinc-300">
+                                                    <span
+                                                        className={`inline-flex rounded-full px-3 py-1 text-xs font-bold uppercase tracking-[0.12em] ${item.isPaid
+                                                            ? "bg-emerald-500/20 text-emerald-300"
+                                                            : "bg-zinc-600/30 text-zinc-300"
+                                                            }`}
+                                                    >
+                                                        {item.isPaid ? "Pagado" : "Pendiente"}
+                                                    </span>
+                                                </td>
+                                                <td className="px-3 py-3 text-zinc-300">{formatCopCurrency(Number(item.totalToPay) || 0)}</td>
+                                                <td className="px-3 py-3">
+                                                    <button
+                                                        type="button"
+                                                        disabled={Boolean(pendingKeys[pendingKey])}
+                                                        onClick={() => handleTogglePayment(item.id, "official")}
+                                                        className={`rounded-full px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] transition disabled:opacity-60 ${item.isPaid
+                                                            ? "bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30"
+                                                            : "bg-orange-500/20 text-orange-300 hover:bg-orange-500/30"
+                                                            }`}
+                                                    >
+                                                        {pendingKeys[pendingKey]
+                                                            ? "Actualizando..."
+                                                            : item.isPaid
+                                                                ? "Marcar pendiente"
+                                                                : "Marcar pagado"}
+                                                    </button>
+                                                </td>
                                             </tr>
                                         );
                                     })
@@ -1015,23 +1047,26 @@ export default function AdminPage() {
                                         <th className="px-3 py-3">Representante</th>
                                         <th className="px-3 py-3">Celular</th>
                                         <th className="px-3 py-3">Cantidad de Participantes</th>
+                                        <th className="px-3 py-3">Estado Pago</th>
+                                        <th className="px-3 py-3">Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {loading ? (
                                         <tr>
-                                            <td colSpan={4} className="px-3 py-6 text-center text-zinc-400">
+                                            <td colSpan={6} className="px-3 py-6 text-center text-zinc-400">
                                                 Cargando clubes...
                                             </td>
                                         </tr>
                                     ) : clubs.length === 0 ? (
                                         <tr>
-                                            <td colSpan={4} className="px-3 py-6 text-center text-zinc-400">
+                                            <td colSpan={6} className="px-3 py-6 text-center text-zinc-400">
                                                 No hay clubes registrados.
                                             </td>
                                         </tr>
                                     ) : (
                                         clubs.map((item) => {
+                                            const pendingKey = `club:${item.id}`;
                                             const clubPhone = item.contactPhone || item.phone || "";
                                             return (
                                                 <tr key={item.id} className="border-b border-white/5 align-top">
@@ -1052,6 +1087,33 @@ export default function AdminPage() {
                                                         )}
                                                     </td>
                                                     <td className="px-3 py-3 text-zinc-300">{Number(item.estimatedAttendees ?? item.attendees ?? 0)}</td>
+                                                    <td className="px-3 py-3 text-zinc-300">
+                                                        <span
+                                                            className={`inline-flex rounded-full px-3 py-1 text-xs font-bold uppercase tracking-[0.12em] ${item.isPaid
+                                                                ? "bg-emerald-500/20 text-emerald-300"
+                                                                : "bg-zinc-600/30 text-zinc-300"
+                                                                }`}
+                                                        >
+                                                            {item.isPaid ? "Pagado" : "Pendiente"}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-3 py-3">
+                                                        <button
+                                                            type="button"
+                                                            disabled={Boolean(pendingKeys[pendingKey])}
+                                                            onClick={() => handleTogglePayment(item.id, "club")}
+                                                            className={`rounded-full px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] transition disabled:opacity-60 ${item.isPaid
+                                                                ? "bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30"
+                                                                : "bg-orange-500/20 text-orange-300 hover:bg-orange-500/30"
+                                                                }`}
+                                                        >
+                                                            {pendingKeys[pendingKey]
+                                                                ? "Actualizando..."
+                                                                : item.isPaid
+                                                                    ? "Marcar pendiente"
+                                                                    : "Marcar pagado"}
+                                                        </button>
+                                                    </td>
                                                 </tr>
                                             );
                                         })
@@ -1063,6 +1125,7 @@ export default function AdminPage() {
                                             Total de Personas por Clubes
                                         </td>
                                         <td className="px-3 py-3 text-sm font-bold text-orange-300">{totalPeopleByClubs}</td>
+                                        <td colSpan={2} className="px-3 py-3" />
                                     </tr>
                                 </tfoot>
                             </table>
