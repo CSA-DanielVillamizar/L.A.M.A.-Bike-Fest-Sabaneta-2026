@@ -81,9 +81,9 @@ const agendaDays: AgendaDay[] = [
         events: [
             {
                 time: "11:00 AM – 02:00 PM",
-                title: "Rodada hacia MEDAYORK Mirador Gastro Bar",
+                title: "Rodada oficial de clausura a Guarne: La Enterradora Restaurante Bar",
                 description:
-                    "Rodada oficial hacia el Mirador Gastro Bar MEDAYORK.",
+                    "¡El broche de oro para un fin de semana histórico! Encendemos motores para la gran rodada de clausura hacia los hermosos paisajes del Oriente Antioqueño. Nuestro destino: La Enterradora, un paraíso campestre donde nos despediremos entre excelente gastronomía, naturaleza, caballos y un ambiente de fiesta inigualable. ¡La ruta perfecta para brindar por la hermandad y decir 'hasta pronto' a nuestras delegaciones!",
             },
             {
                 time: "03:00 PM – 08:00 PM",
