@@ -1,6 +1,6 @@
 "use client";
-import React from "react";
 import { motion } from "framer-motion";
+import React from "react";
 
 type AgendaEvent = {
     time: string;
@@ -63,7 +63,7 @@ const agendaDays: AgendaDay[] = [
                     <>
                         ¡La fiebre de la Copa Mundial 2026 se toma La Molienda! Únete a la gran familia L.A.M.A. frente a la pantalla gigante para vibrar con este choque titánico entre Colombia y Portugal. Adrenalina, hermandad y fútbol de clase mundial.{" "}
                         <br /><br />
-                        🇨🇴 <strong>Código Tricolor:</strong> Invitamos a todos nuestros hermanos y asistentes a vestir la camiseta de la Selección Colombia. ¡Vamos a teñir nuestra zona de integración de amarillo, azul y rojo para celebrar con orgullo!
+                        <strong>Código Tricolor:</strong> Invitamos a todos nuestros hermanos y asistentes a vestir la camiseta de la Selección Colombia. ¡Vamos a teñir nuestra zona de integración de amarillo, azul y rojo para celebrar con orgullo!
                     </>
                 ),
                 tags: ["Mundial 2026", "Pantalla Gigante", "Integración"],
