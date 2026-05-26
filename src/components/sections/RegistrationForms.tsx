@@ -1,7 +1,7 @@
 "use client";
 
 import { COUNTRIES } from "@/constants/countries";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 
 type ActiveTab = "clubs" | "brands";
 
@@ -40,6 +40,15 @@ export function RegistrationForms() {
     const [clubMessage, setClubMessage] = useState("");
     const [sponsorMessage, setSponsorMessage] = useState("");
     const [selectedSponsorCategory, setSelectedSponsorCategory] = useState("");
+
+    useEffect(() => {
+        if (window.location.hash === "#clubes") {
+            setActiveTab("clubs");
+            setTimeout(() => {
+                document.getElementById("clubes")?.scrollIntoView({ behavior: "smooth" });
+            }, 100);
+        }
+    }, []);
 
     const handleSponsorDossierRequest = () => {
         const message = "Hola Daniel, estoy interesado en participar como patrocinador en el XIII Aniversario L.A.M.A. Medellín. Me gustaría recibir el Dossier Comercial para conocer los planes de marca.";
@@ -122,7 +131,7 @@ export function RegistrationForms() {
     };
 
     return (
-        <section id="registro-patrocinadores" className="py-16 sm:py-20">
+        <section id="clubes" className="py-16 sm:py-20">
             <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">
                 <div id="registro" className="rounded-2xl border border-white/10 bg-black/35 p-6 sm:p-8">
                     <div className="inline-flex rounded-full border border-white/10 bg-zinc-900/80 p-1">
