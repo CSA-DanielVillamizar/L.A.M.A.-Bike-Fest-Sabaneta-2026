@@ -37,7 +37,13 @@ const agendaDays: AgendaDay[] = [
         day: "Sábado 27 de Junio",
         events: [
             {
-                time: "11:00 AM",
+                time: "09:30 AM",
+                title: "Punto de encuentro: Harley-Davidson Medellín",
+                description:
+                    "Nos reunimos en la Cra. 43A #10 sur 77, El Poblado. El punto de partida perfecto para calentar motores, organizar los capítulos, clubes hermanos y prepararnos para el gran despliegue continental.",
+            },
+            {
+                time: "10:00 AM",
                 title: "L.A.M.A. BIKE FEST \"Gran Caravana Internacional\"",
                 description:
                     "El gran desfile motorizado que recorrerá las calles de Sabaneta con delegaciones de 26 países.",
