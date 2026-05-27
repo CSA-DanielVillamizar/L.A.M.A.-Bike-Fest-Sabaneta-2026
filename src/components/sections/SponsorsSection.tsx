@@ -138,7 +138,7 @@ export function SponsorsSection() {
                     </p>
                     <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
                         <a
-                            href="/images/Dosier Patrocinadores L.A.M.A. Bike Fest 2026 - ESPUMAS MEDELLÍN.pdf"
+                            href="/images/Carta y Dosier Patrocinadores L.A.M.A. Bike Fest 2026.pdf"
                             download
                             target="_blank"
                             rel="noopener noreferrer"

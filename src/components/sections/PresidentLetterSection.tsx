@@ -53,7 +53,7 @@ export function PresidentLetterSection() {
 
                         <div className="pt-4">
                             <a
-                                href="/images/Dosier Patrocinadores L.A.M.A. Bike Fest 2026 - ESPUMAS MEDELLÍN.pdf"
+                                href="/images/Carta y Dosier Patrocinadores L.A.M.A. Bike Fest 2026.pdf"
                                 download
                                 target="_blank"
                                 rel="noopener noreferrer"

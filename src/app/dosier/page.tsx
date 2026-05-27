@@ -7,7 +7,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 export default function DosierPage() {
-    const dossierPdfHref = "/images/Dosier Patrocinadores L.A.M.A. Bike Fest 2026 - ESPUMAS MEDELLÍN.pdf";
+    const dossierPdfHref = "/images/Carta y Dosier Patrocinadores L.A.M.A. Bike Fest 2026.pdf";
 
     const handleWhatsApp = () => {
         const message = "Hola Daniel, estoy interesado en ser patrocinador del L.A.M.A. BIKE FEST 2026. Me gustaría conocer más detalles sobre los planes disponibles.";
