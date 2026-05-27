@@ -7,12 +7,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 export default function DosierPage() {
-    const handleDownloadPDF = () => {
-        const element = document.getElementById("dosier-content");
-        if (element) {
-            window.print();
-        }
-    };
+    const dossierPdfHref = "/images/Dosier Patrocinadores L.A.M.A. Bike Fest 2026 - ESPUMAS MEDELLÍN.pdf";
 
     const handleWhatsApp = () => {
         const message = "Hola Daniel, estoy interesado en ser patrocinador del L.A.M.A. BIKE FEST 2026. Me gustaría conocer más detalles sobre los planes disponibles.";
@@ -32,12 +27,15 @@ export default function DosierPage() {
                         >
                             Version Print
                         </Link>
-                        <button
-                            onClick={handleDownloadPDF}
+                        <a
+                            href={dossierPdfHref}
+                            download
+                            target="_blank"
+                            rel="noopener noreferrer"
                             className="inline-flex items-center gap-2 rounded-full bg-yellow-300 px-4 py-2 text-sm font-bold text-zinc-950 transition hover:bg-yellow-200"
                         >
                             <Download className="h-4 w-4" /> Descargar PDF
-                        </button>
+                        </a>
                     </div>
                 </div>
             </nav>
@@ -73,12 +71,15 @@ export default function DosierPage() {
                         >
                             <Phone className="h-5 w-5" /> Contáctame por WhatsApp
                         </button>
-                        <button
-                            onClick={handleDownloadPDF}
+                        <a
+                            href={dossierPdfHref}
+                            download
+                            target="_blank"
+                            rel="noopener noreferrer"
                             className="inline-flex items-center justify-center gap-2 rounded-full border border-yellow-300 bg-yellow-300/10 px-6 py-4 text-sm font-bold uppercase tracking-[0.12em] text-yellow-300 transition hover:bg-yellow-300/20"
                         >
                             <Download className="h-5 w-5" /> Descargar PDF
-                        </button>
+                        </a>
                     </div>
                 </motion.div>
             </section>

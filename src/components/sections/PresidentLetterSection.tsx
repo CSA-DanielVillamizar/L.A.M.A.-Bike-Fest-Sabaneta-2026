@@ -53,8 +53,10 @@ export function PresidentLetterSection() {
 
                         <div className="pt-4">
                             <a
-                                href="/images/XIII Aniversario L.A.M.A. Medellín & L.A.M.A. Bike Fest 2026 🇨🇴.pdf"
+                                href="/images/Dosier Patrocinadores L.A.M.A. Bike Fest 2026 - ESPUMAS MEDELLÍN.pdf"
                                 download
+                                target="_blank"
+                                rel="noopener noreferrer"
                                 className="inline-flex items-center rounded-full border border-yellow-500 bg-yellow-500/10 px-6 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-yellow-300 transition hover:bg-yellow-500/20"
                             >
                                 Descargar Dosier Oficial
