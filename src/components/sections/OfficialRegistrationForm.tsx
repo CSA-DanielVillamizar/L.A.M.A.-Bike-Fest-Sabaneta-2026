@@ -33,7 +33,7 @@ const JERSEY_SIZES = ["S", "M", "L", "XL", "XXL"] as const;
 const COMPANION_CATEGORIES = ["ESPOSA", "INVITADO", "HIJO/A", "CLUB HERMANO (Solo Sábado)"] as const;
 
 const BASE_COST = 100000;
-const SATURDAY_PASS_COST = 85000;
+const SATURDAY_PASS_COST = 55000;
 const COMPANION_COST = 100000;
 const JERSEY_COST = 65000;
 const OFFICIAL_WHATSAPP_GROUP_URL = "https://chat.whatsapp.com/KnwJ31J2ddBJsbc0Jr3Ufl";
@@ -616,7 +616,7 @@ export function OfficialRegistrationForm() {
                             <br />
                             Miembros L.A.M.A. ({formatCop(BASE_COST)}): Acceso total al aniversario + Cena de Gala Internacional.
                             <br />
-                            Invitados Clubes Hermanos ({formatCop(SATURDAY_PASS_COST)}): Pase exclusivo Sábado 27. Incluye Almuerzo Parrilla y Concierto en La Molienda.
+                            Invitados Clubes Hermanos ({formatCop(SATURDAY_PASS_COST)}): Pase exclusivo Sábado 27. Incluye Almuerzo Parrilla y Concierto en Los 2 Potrillos.
                         </p>
                     </div>
 
@@ -1119,7 +1119,7 @@ export function OfficialRegistrationForm() {
                                                             <p>{getParticipantBaseLabel(form.participantCategory || "")}</p>
                                                             <p className="text-xs text-zinc-400">
                                                                 {form.participantCategory === "CLUB HERMANO / INVITADO (Solo Sábado)"
-                                                                    ? "Incluye almuerzo y concierto en La Molienda"
+                                                                    ? "Incluye almuerzo y concierto en Los 2 Potrillos"
                                                                     : "Incluye cena de gala"}
                                                             </p>
                                                         </div>

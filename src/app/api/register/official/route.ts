@@ -33,7 +33,7 @@ type OfficialRegistrationPayload = {
 
 const MEMBER_PRICE = 100000;
 const SHIRT_PRICE = 65000;
-const SATURDAY_PASS_COST = 85000;
+const SATURDAY_PASS_COST = 55000;
 
 const ALLOWED_PARTICIPANT_CATEGORIES = new Set([
     "DAMA L.A.M.A.",
