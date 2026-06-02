@@ -29,7 +29,7 @@ const agendaDays: AgendaDay[] = [
                 time: "08:00 PM",
                 title: "Gran Integración de Bienvenida",
                 description:
-                    "Primer encuentro de todos los capítulos invitados en La Fonda La Molienda.",
+                    "Primer encuentro de todos los capítulos invitados en Parque de Sabaneta.",
             },
         ],
     },
@@ -52,7 +52,7 @@ const agendaDays: AgendaDay[] = [
                 time: "01:00 PM – 06:00 PM | Fonda Mis 2 Potrillos",
                 title: "Clausura L.A.M.A. Bike Fest Sabaneta 2026",
                 description:
-                    "Exhibición de alta gama, zona comercial y música en vivo. Pase de Almuerzo (Invitados y Clubes Hermanos): $85.000 COP. (Incluye Parrilla Mixta + Cerveza o Gaseosa).",
+                    "Exhibición de alta gama, zona comercial y música en vivo. Pase de Almuerzo (Invitados y Clubes Hermanos): $55.000 COP. (Incluye Parrilla Mixta + Cerveza o Gaseosa).",
                 note:
                     "Nota: Para miembros L.A.M.A. activos, este evento y el almuerzo ya están incluidos en su inscripción al XIII Aniversario.",
             },
