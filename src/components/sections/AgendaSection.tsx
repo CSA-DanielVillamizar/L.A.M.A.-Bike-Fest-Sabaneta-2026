@@ -49,7 +49,7 @@ const agendaDays: AgendaDay[] = [
                     "El gran desfile motorizado que recorrerá las calles de Sabaneta con delegaciones de 26 países.",
             },
             {
-                time: "01:00 PM – 06:00 PM | Fonda La Molienda",
+                time: "01:00 PM – 06:00 PM | Fonda Mis 2 Potrillos",
                 title: "Clausura L.A.M.A. Bike Fest Sabaneta 2026",
                 description:
                     "Exhibición de alta gama, zona comercial y música en vivo. Pase de Almuerzo (Invitados y Clubes Hermanos): $85.000 COP. (Incluye Parrilla Mixta + Cerveza o Gaseosa).",
