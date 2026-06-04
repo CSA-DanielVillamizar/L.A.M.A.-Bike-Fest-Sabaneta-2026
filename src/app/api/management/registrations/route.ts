@@ -96,6 +96,7 @@ export async function GET(request: Request) {
                             select: {
                                 fullName: true,
                                 category: true,
+                                documentId: true,
                                 wantsJersey: true,
                                 jerseySize: true,
                             },
@@ -221,6 +222,12 @@ export async function GET(request: Request) {
             companionNames: (registration.companions ?? [])
                 .map((c) => `${c.fullName} (${c.category})`)
                 .join(" | ") || "-",
+            companionDocuments: (registration.companions ?? [])
+                .map((c) => `${c.fullName}: ${c.documentId || "Sin documento"}`)
+                .join(" | ") || "-",
+            companionDetails: (registration.companions ?? [])
+                .map((c) => `${c.fullName} (${c.category})`)
+                .join(" | ") || "Ninguno",
             pilotJersey: registration.wantsJersey ? (registration.jerseySize ?? "Sin talla") : "No",
             jerseySize: safeString(registration.jerseySize),
             companionJerseys: (registration.companions ?? [])

@@ -44,6 +44,8 @@ type OfficialAdminRecord = {
     companionsCount: number;
     wantsJersey: boolean;
     companionNames: string;
+    companionDocuments: string;
+    companionDetails: string;
     pilotJersey: string;
     jerseySize: string | null;
     companionJerseys: string;
@@ -505,6 +507,9 @@ export default function AdminPage() {
             "Talla Camiseta": reg.jerseySize || "",
             "Tiene Acompañantes": yesNo(Boolean(reg.hasCompanions)),
             "Cantidad Acompañantes": Number(reg.companionsCount || 0),
+            "Detalle de Acompañantes": reg.companionDetails || reg.companionNames || "Ninguno",
+            "Documentos de Acompañantes": reg.companionDocuments || "Ninguno",
+            "Camisetas de Acompañantes": reg.companionJerseys || "Ninguno",
             "Total a Pagar": Number(reg.totalToPay || 0),
             "Estado de Pago (Sistema)": reg.paymentStatus || "",
             "Pagado": yesNo(Boolean(reg.isPaid)),
