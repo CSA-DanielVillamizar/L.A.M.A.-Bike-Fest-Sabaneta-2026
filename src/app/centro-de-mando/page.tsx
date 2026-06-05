@@ -40,15 +40,16 @@ type OfficialAdminRecord = {
     arrivalDate: string;
     medicalCondition: string | null;
     hasCompanions: boolean;
-    companions: string;
+    companions: Array<{
+        fullName: string;
+        category: string;
+        document: string;
+        tshirtSize: string | null;
+    }>;
     companionsCount: number;
     wantsJersey: boolean;
-    companionNames: string;
-    companionDocuments: string;
-    companionDetails: string;
     pilotJersey: string;
     jerseySize: string | null;
-    companionJerseys: string;
     paymentStatus: string;
     isPaid: boolean;
     totalToPay: number;
@@ -211,7 +212,12 @@ function yesNo(value: boolean): string {
 
 function autoFitColumns(rows: Array<Record<string, string | number>>) {
     if (!rows.length) return [] as Array<{ wch: number }>;
-    const headers = Object.keys(rows[0]);
+    const headers = Array.from(
+        rows.reduce((set, row) => {
+            Object.keys(row).forEach((header) => set.add(header));
+            return set;
+        }, new Set<string>()),
+    );
     return headers.map((header) => {
         const maxDataLength = rows.reduce((max, row) => {
             const cell = row[header] ?? "";
@@ -488,33 +494,41 @@ export default function AdminPage() {
     }, [maxCountryPeople]);
 
     const handleExportExcel = () => {
-        const officialRows = officials.map((reg) => ({
-            "ID": reg.id,
-            "Categoría de Participante": reg.participantCategory || "",
-            "Nombre Completo": reg.fullName || reg.name || "",
-            "Documento": reg.documentId || "",
-            "EPS": reg.eps || "",
-            "Contacto de Emergencia": reg.emergencyName || "",
-            "Teléfono de Emergencia": reg.emergencyPhone || reg.phone || "",
-            "País": reg.country || "",
-            "Capítulo L.A.M.A.": reg.chapter || "",
-            "Es Directivo": yesNo(Boolean(reg.isDirective)),
-            "Ámbito Directivo": reg.directiveScope || "",
-            "Rol Directivo": reg.directiveRole || "",
-            "Fecha de Llegada": reg.arrivalDate || "",
-            "Condición Médica": reg.medicalCondition || "",
-            "Solicita Camiseta": yesNo(Boolean(reg.wantsJersey)),
-            "Talla Camiseta": reg.jerseySize || "",
-            "Tiene Acompañantes": yesNo(Boolean(reg.hasCompanions)),
-            "Cantidad Acompañantes": Number(reg.companionsCount || 0),
-            "Detalle de Acompañantes": reg.companionDetails || reg.companionNames || "Ninguno",
-            "Documentos de Acompañantes": reg.companionDocuments || "Ninguno",
-            "Camisetas de Acompañantes": reg.companionJerseys || "Ninguno",
-            "Total a Pagar": Number(reg.totalToPay || 0),
-            "Estado de Pago (Sistema)": reg.paymentStatus || "",
-            "Pagado": yesNo(Boolean(reg.isPaid)),
-            "Fecha de Registro": formatDateOnly(reg.createdAt),
-        }));
+        const officialRows = officials.map((reg) => {
+            const row: Record<string, string | number> = {
+                "ID": reg.id,
+                "Categoría de Participante": reg.participantCategory || "",
+                "Nombre Completo": reg.fullName || reg.name || "",
+                "Documento": reg.documentId || "",
+                "EPS": reg.eps || "",
+                "Contacto de Emergencia": reg.emergencyName || "",
+                "Teléfono de Emergencia": reg.emergencyPhone || reg.phone || "",
+                "País": reg.country || "",
+                "Capítulo L.A.M.A.": reg.chapter || "",
+                "Es Directivo": yesNo(Boolean(reg.isDirective)),
+                "Ámbito Directivo": reg.directiveScope || "",
+                "Rol Directivo": reg.directiveRole || "",
+                "Fecha de Llegada": reg.arrivalDate || "",
+                "Condición Médica": reg.medicalCondition || "",
+                "Solicita Camiseta": yesNo(Boolean(reg.wantsJersey)),
+                "Talla Camiseta": reg.jerseySize || "",
+                "Tiene Acompañantes": yesNo(Boolean(reg.hasCompanions)),
+                "Cantidad Acompañantes": Number(reg.companionsCount || 0),
+                "Total a Pagar": Number(reg.totalToPay || 0),
+                "Estado de Pago (Sistema)": reg.paymentStatus || "",
+                "Pagado": yesNo(Boolean(reg.isPaid)),
+                "Fecha de Registro": formatDateOnly(reg.createdAt),
+            };
+
+            (Array.isArray(reg.companions) ? reg.companions : []).forEach((comp, index) => {
+                row[`Nombre Acompañante ${index + 1}`] = comp.fullName || "";
+                row[`Categoría Acompañante ${index + 1}`] = comp.category || "";
+                row[`Documento Acompañante ${index + 1}`] = comp.document || "";
+                row[`Talla Camiseta Acompañante ${index + 1}`] = comp.tshirtSize || "No";
+            });
+
+            return row;
+        });
 
         const clubRows = clubs.map((reg) => ({
             "ID": reg.id,

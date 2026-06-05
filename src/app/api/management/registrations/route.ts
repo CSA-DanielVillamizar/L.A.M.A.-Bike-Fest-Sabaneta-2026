@@ -216,23 +216,16 @@ export async function GET(request: Request) {
             arrivalDate: safeString(registration.arrivalDate),
             medicalCondition: safeString(registration.medicalCondition),
             hasCompanions: Boolean(registration.hasCompanions),
-            companions: registration.companionsCount > 0 ? `${registration.companionsCount} acompanante(s)` : "No",
+            companions: (registration.companions ?? []).map((companion) => ({
+                fullName: safeString(companion.fullName),
+                category: safeString(companion.category),
+                document: safeString(companion.documentId),
+                tshirtSize: companion.wantsJersey ? safeString(companion.jerseySize, "Sin talla") : null,
+            })),
             companionsCount: Number(registration.companionsCount || 0),
             wantsJersey: Boolean(registration.wantsJersey),
-            companionNames: (registration.companions ?? [])
-                .map((c) => `${c.fullName} (${c.category})`)
-                .join(" | ") || "-",
-            companionDocuments: (registration.companions ?? [])
-                .map((c) => `${c.fullName}: ${c.documentId || "Sin documento"}`)
-                .join(" | ") || "-",
-            companionDetails: (registration.companions ?? [])
-                .map((c) => `${c.fullName} (${c.category})`)
-                .join(" | ") || "Ninguno",
             pilotJersey: registration.wantsJersey ? (registration.jerseySize ?? "Sin talla") : "No",
             jerseySize: safeString(registration.jerseySize),
-            companionJerseys: (registration.companions ?? [])
-                .map((c) => `${c.fullName}: ${c.wantsJersey ? (c.jerseySize ?? "Sin talla") : "No"}`)
-                .join(" | ") || "-",
             paymentStatus: safeString(registration.paymentStatus),
             isPaid: Boolean(registration.isPaid),
             totalToPay: Number(registration.totalToPay || 0),
