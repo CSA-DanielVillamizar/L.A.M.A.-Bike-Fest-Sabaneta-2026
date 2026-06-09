@@ -1,3 +1,4 @@
+import { prisma } from "@/lib/prisma";
 import { randomUUID } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -221,6 +222,22 @@ export async function POST(request: NextRequest) {
         if (!Number.isFinite(totalSent) || Math.round(totalSent) !== Math.round(calculatedTotal)) {
             return NextResponse.json(
                 { error: "Inconsistencia en el cálculo de valores" },
+                { status: 400 },
+            );
+        }
+
+        const existingRegistration = await prisma.officialRegistration.findFirst({
+            where: {
+                documentId,
+            },
+            select: {
+                id: true,
+            },
+        });
+
+        if (existingRegistration) {
+            return NextResponse.json(
+                { error: "Este número de documento ya se encuentra registrado en el evento. Por favor verifica tus datos." },
                 { status: 400 },
             );
         }
