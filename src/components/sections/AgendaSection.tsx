@@ -89,13 +89,13 @@ const agendaDays: AgendaDay[] = [
                 time: "11:00 AM – 02:00 PM",
                 title: "Rodada oficial de clausura a Guarne: La Enterradora Restaurante Bar",
                 description:
-                    "¡El broche de oro para un fin de semana histórico! Encendemos motores para la gran rodada de clausura hacia los hermosos paisajes del Oriente Antioqueño. Nuestro destino: La Enterradora, un paraíso campestre donde nos despediremos entre excelente gastronomía, naturaleza, caballos y un ambiente de fiesta inigualable. ¡La ruta perfecta para brindar por la hermandad y decir 'hasta pronto' a nuestras delegaciones!",
+                    "¡El broche de oro para un fin de semana histórico! Rodamos hacia los hermosos paisajes del Oriente Antioqueño. En La Enterradora nos recibirá una deliciosa entradita de bondiola de cerdo para cada piloto (almuerzo principal libre por cuenta de cada asistente). A las 2:00 P.M. iniciaremos nuestro retorno en caravana hacia Sabaneta para seguir disfrutando de las Fiestas del Plátano.",
             },
             {
                 time: "03:00 PM – 08:00 PM",
-                title: "Tarde de Conciertos y Espectáculos Exclusivos",
+                title: "Continuidad de integración en Sabaneta — Fiestas del Plátano",
                 description:
-                    "Seguiremos disfrutando de conciertos en vivo y espectáculos exclusivos preparados para todos nuestros visitantes.",
+                    "Regresamos a Sabaneta para continuar la celebración en los tablados y actividades oficiales de las Fiestas del Plátano, manteniendo viva la hermandad L.A.M.A. hasta el cierre de la jornada.",
             },
         ],
     },
