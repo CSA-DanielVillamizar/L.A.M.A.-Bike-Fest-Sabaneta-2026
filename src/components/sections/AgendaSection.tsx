@@ -78,7 +78,7 @@ const agendaDays: AgendaDay[] = [
                 time: "08:00 PM",
                 title: "L.A.M.A. BIKE FEST \"After Ride Party\" — Fiestas del Plátano",
                 description:
-                    "Integración con los tablados oficiales de las Fiestas del Plátano en Sabaneta. Disfrutaremos de artistas de talla internacional como Los Inquietos del Vallenato, Rikarena, Binomio de Oro, Charrito Negro, Sergio Vargas y muchos más.",
+                    "Integración con los tablados oficiales de las Fiestas del Plátano en Sabaneta. Disfrutaremos de artistas de talla internacional como Jean Carlos Centeno, Víctor Manuelle y Luis Alberto Posada y muchos más.",
             },
         ],
     },
