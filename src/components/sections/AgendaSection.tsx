@@ -20,16 +20,16 @@ const agendaDays: AgendaDay[] = [
         day: "Viernes 26 de Junio",
         events: [
             {
-                time: "02:00 PM",
+                time: "03:00 PM",
                 title: "Check-in y Recibimiento de Delegaciones",
                 description:
                     "Llegada y registro oficial de los capítulos invitados en el Hotel Sede.",
             },
             {
-                time: "08:00 PM",
+                time: "07:00 PM",
                 title: "Gran Integración de Bienvenida",
                 description:
-                    "Primer encuentro de todos los capítulos invitados en Parque de Sabaneta.",
+                    "Primer encuentro de todos los capítulos invitados en KENNEDY BAR Cl. 72 Sur #45-05, Sabaneta, Antioquia (Antes del parque de sabaneta)",
             },
         ],
     },
