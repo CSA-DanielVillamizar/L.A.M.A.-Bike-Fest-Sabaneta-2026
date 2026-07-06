@@ -1,9 +1,11 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { QRCodeSVG as QRCode } from "qrcode.react";
 
 type VerifyResult = {
     id: string;
+    document: string;
     fullName: string;
     chapter: string;
     country: string;
@@ -48,10 +50,13 @@ export default function VerificarInscripcionPage() {
         return "⏳ Pago pendiente de verificación";
     }, [result]);
 
-    const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
+    const qrValue = useMemo(() => {
+        if (!result?.document) return "";
+        return `https://lamamedellinbikefestsabaneta.azurewebsites.net/verificar?q=${encodeURIComponent(result.document)}`;
+    }, [result]);
 
-        const trimmed = searchTerm.trim();
+    const executeSearch = useCallback(async (rawTerm: string) => {
+        const trimmed = rawTerm.trim();
         if (!trimmed) {
             setResult(null);
             setError("Ingresa un valor para realizar la búsqueda.");
@@ -84,6 +89,20 @@ export default function VerificarInscripcionPage() {
         } finally {
             setLoading(false);
         }
+    }, []);
+
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const queryValue = (params.get("q") || "").trim();
+        if (!queryValue) return;
+
+        setSearchTerm(queryValue);
+        void executeSearch(queryValue);
+    }, [executeSearch]);
+
+    const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        await executeSearch(searchTerm);
     };
 
     return (
@@ -131,6 +150,15 @@ export default function VerificarInscripcionPage() {
                         <div className="border-b border-dashed border-neutral-800 px-5 py-4">
                             <p className="text-xs uppercase tracking-[0.22em] text-zinc-500">Ticket de pre-inscripción</p>
                             <p className="mt-1 text-sm text-zinc-400">Código de confirmación: {result.id}</p>
+                        </div>
+
+                        <div className="border-b border-dashed border-neutral-800 px-5 py-5">
+                            <div className="mx-auto w-fit rounded-2xl bg-white p-4">
+                                <QRCode value={qrValue} size={176} includeMargin={true} bgColor="#ffffff" fgColor="#000000" />
+                            </div>
+                            <p className="mt-3 text-center text-xs uppercase tracking-[0.18em] text-zinc-400">
+                                Presenta este código en la zona de Check-in
+                            </p>
                         </div>
 
                         <div className="grid gap-4 px-5 py-5 text-sm sm:grid-cols-2">

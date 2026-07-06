@@ -59,6 +59,7 @@ export async function POST(request: Request) {
             select: {
                 id: true,
                 fullName: true,
+                documentId: true,
                 chapter: true,
                 createdAt: true,
                 participantCategory: true,
@@ -80,6 +81,7 @@ export async function POST(request: Request) {
         return NextResponse.json(
             {
                 id: registration.id,
+                document: registration.documentId,
                 fullName: registration.fullName,
                 chapter: registration.chapter,
                 country: registration.country || "No registrado",
