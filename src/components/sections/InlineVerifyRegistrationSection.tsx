@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
+import { QRCodeCanvas } from "qrcode.react";
 
 type VerifyResult = {
     id: string;
@@ -39,6 +40,21 @@ export function InlineVerifyRegistrationSection() {
             ? "Pagado"
             : "Pago pendiente";
     }, [result]);
+
+    const downloadQR = () => {
+        if (!result) return;
+
+        const canvas = document.getElementById("qr-credential") as HTMLCanvasElement;
+        if (!canvas) return;
+
+        const pngUrl = canvas.toDataURL("image/png");
+        const downloadLink = document.createElement("a");
+        downloadLink.href = pngUrl;
+        downloadLink.download = `Credencial_LAMA_${result.document}.png`;
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+    };
 
     const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -133,28 +149,51 @@ export function InlineVerifyRegistrationSection() {
                                 </span>
                             </div>
 
-                            <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
-                                <div className="rounded-xl border border-zinc-800 bg-zinc-900/70 p-3">
-                                    <dt className="text-xs uppercase tracking-[0.12em] text-zinc-500">ID</dt>
-                                    <dd className="mt-1 font-semibold text-zinc-100">{result.id}</dd>
+                            <div className="mt-4 grid gap-4 lg:grid-cols-[1.3fr_0.9fr]">
+                                <dl className="grid gap-3 text-sm sm:grid-cols-2">
+                                    <div className="rounded-xl border border-zinc-800 bg-zinc-900/70 p-3">
+                                        <dt className="text-xs uppercase tracking-[0.12em] text-zinc-500">ID</dt>
+                                        <dd className="mt-1 font-semibold text-zinc-100">{result.id}</dd>
+                                    </div>
+                                    <div className="rounded-xl border border-zinc-800 bg-zinc-900/70 p-3">
+                                        <dt className="text-xs uppercase tracking-[0.12em] text-zinc-500">Documento</dt>
+                                        <dd className="mt-1 font-semibold text-zinc-100">{result.document}</dd>
+                                    </div>
+                                    <div className="rounded-xl border border-zinc-800 bg-zinc-900/70 p-3">
+                                        <dt className="text-xs uppercase tracking-[0.12em] text-zinc-500">País</dt>
+                                        <dd className="mt-1 font-semibold text-zinc-100">{result.country}</dd>
+                                    </div>
+                                    <div className="rounded-xl border border-zinc-800 bg-zinc-900/70 p-3">
+                                        <dt className="text-xs uppercase tracking-[0.12em] text-zinc-500">Capítulo</dt>
+                                        <dd className="mt-1 font-semibold text-zinc-100">{result.chapter}</dd>
+                                    </div>
+                                    <div className="rounded-xl border border-zinc-800 bg-zinc-900/70 p-3 sm:col-span-2">
+                                        <dt className="text-xs uppercase tracking-[0.12em] text-zinc-500">Registro</dt>
+                                        <dd className="mt-1 font-semibold text-zinc-100">{formatDateTime(result.createdAt)}</dd>
+                                    </div>
+                                </dl>
+
+                                <div className="rounded-2xl border border-zinc-200 bg-white p-4 text-center text-zinc-900">
+                                    <QRCodeCanvas
+                                        id="qr-credential"
+                                        value={`https://lamamedellinbikefestsabaneta.azurewebsites.net/verificar?q=${result.document}`}
+                                        size={170}
+                                        level="M"
+                                        includeMargin
+                                        className="mx-auto"
+                                    />
+                                    <p className="mt-3 text-xs font-semibold uppercase tracking-[0.12em] text-zinc-700">
+                                        Credencial Digital QR
+                                    </p>
+                                    <button
+                                        type="button"
+                                        onClick={downloadQR}
+                                        className="mt-3 inline-flex items-center justify-center rounded-full bg-zinc-900 px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:bg-zinc-800"
+                                    >
+                                        ⬇️ Descargar mi QR
+                                    </button>
                                 </div>
-                                <div className="rounded-xl border border-zinc-800 bg-zinc-900/70 p-3">
-                                    <dt className="text-xs uppercase tracking-[0.12em] text-zinc-500">Documento</dt>
-                                    <dd className="mt-1 font-semibold text-zinc-100">{result.document}</dd>
-                                </div>
-                                <div className="rounded-xl border border-zinc-800 bg-zinc-900/70 p-3">
-                                    <dt className="text-xs uppercase tracking-[0.12em] text-zinc-500">País</dt>
-                                    <dd className="mt-1 font-semibold text-zinc-100">{result.country}</dd>
-                                </div>
-                                <div className="rounded-xl border border-zinc-800 bg-zinc-900/70 p-3">
-                                    <dt className="text-xs uppercase tracking-[0.12em] text-zinc-500">Capítulo</dt>
-                                    <dd className="mt-1 font-semibold text-zinc-100">{result.chapter}</dd>
-                                </div>
-                                <div className="rounded-xl border border-zinc-800 bg-zinc-900/70 p-3 sm:col-span-2">
-                                    <dt className="text-xs uppercase tracking-[0.12em] text-zinc-500">Registro</dt>
-                                    <dd className="mt-1 font-semibold text-zinc-100">{formatDateTime(result.createdAt)}</dd>
-                                </div>
-                            </dl>
+                            </div>
                         </article>
                     )}
                 </div>
