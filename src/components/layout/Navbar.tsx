@@ -6,9 +6,11 @@ import { useEffect, useState } from "react";
 
 const navLinks = [
     { href: "/#inicio", label: "Inicio" },
+    { href: "/#programa", label: "Agenda" },
     { href: "/comunidad", label: "Comunidad" },
-    { href: "/#programa", label: "Programa" },
-    { href: "/#clubes", label: "Clubes" },
+    { href: "/#verificar", label: "Verificar" },
+    { href: "/centro-de-mando", label: "Centro de Mando" },
+    { href: "/ceremonia-premios", label: "Ceremonia de Premios" },
     { href: "/#registro-oficial", label: "Inscribirme" },
     { href: "/#contacto", label: "Contacto" },
 ];

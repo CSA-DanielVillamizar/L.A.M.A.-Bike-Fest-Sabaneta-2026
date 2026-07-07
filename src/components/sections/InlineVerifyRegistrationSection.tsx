@@ -1,7 +1,7 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
 import { QRCodeCanvas } from "qrcode.react";
+import { FormEvent, useMemo, useState } from "react";
 
 type VerifyResult = {
     id: string;
@@ -95,7 +95,7 @@ export function InlineVerifyRegistrationSection() {
     };
 
     return (
-        <section className="pb-16 sm:pb-20">
+        <section id="verificar" className="pb-16 sm:pb-20">
             <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">
                 <div className="mb-5 flex items-center gap-3">
                     <div className="h-px flex-1 bg-zinc-700" />
@@ -139,11 +139,10 @@ export function InlineVerifyRegistrationSection() {
                             <div className="flex flex-wrap items-center justify-between gap-3">
                                 <h4 className="text-lg font-black text-zinc-50 sm:text-2xl">{result.fullName}</h4>
                                 <span
-                                    className={`rounded-full px-3 py-1 text-xs font-bold uppercase tracking-[0.12em] ${
-                                        paymentLabel === "Pagado"
+                                    className={`rounded-full px-3 py-1 text-xs font-bold uppercase tracking-[0.12em] ${paymentLabel === "Pagado"
                                             ? "bg-emerald-500/20 text-emerald-300"
                                             : "bg-amber-500/20 text-amber-300"
-                                    }`}
+                                        }`}
                                 >
                                     {paymentLabel}
                                 </span>
