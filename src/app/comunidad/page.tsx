@@ -6,6 +6,8 @@ export const dynamic = "force-dynamic";
 const CHAPTER_ALIASES: Record<string, string> = {
     "MIAMI 305": "Miami",
     "MIAMI": "Miami",
+    "LAMA MIAMI": "Miami",
+    "L A M A MIAMI": "Miami",
     "BOGOTA": "Bogotá",
     "MEDELLIN": "Medellín",
     "VALLE DEL ABURRA": "Valle de Aburrá",
@@ -44,11 +46,15 @@ function normalizeChapterName(rawChapter: string): string {
     const trimmed = String(rawChapter || "").trim();
     if (!trimmed) return "";
 
-    const aliasKey = normalizeAliasKey(trimmed);
+    // Some attendees prepend LAMA to chapter names (e.g. "Lama Miami").
+    const withoutLamaPrefix = trimmed.replace(/^l\.?\s*a\.?\s*m\.?\s*a\.?\s+/i, "").trim();
+    const normalizedSource = withoutLamaPrefix || trimmed;
+
+    const aliasKey = normalizeAliasKey(normalizedSource);
     const alias = CHAPTER_ALIASES[aliasKey];
     if (alias) return alias;
 
-    return toTitleCase(trimmed);
+    return toTitleCase(normalizedSource);
 }
 
 export default async function ComunidadPage() {
