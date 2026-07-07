@@ -1,15 +1,15 @@
 import { AgendaSection } from "@/components/sections/AgendaSection";
 import { ContactSection } from "@/components/sections/ContactSection";
-import { GallerySection } from "@/components/sections/GallerySection";
+// import { GallerySection } from "@/components/sections/GallerySection";
 import { HeroSection } from "@/components/sections/HeroSection";
 import { HotelSection } from "@/components/sections/HotelSection";
 import { InfoSections } from "@/components/sections/InfoSections";
-import { LiveStatsSection } from "@/components/sections/LiveStatsSection";
 import { InlineVerifyRegistrationSection } from "@/components/sections/InlineVerifyRegistrationSection";
+import { LiveStatsSection } from "@/components/sections/LiveStatsSection";
 import { OfficialRegistrationForm } from "@/components/sections/OfficialRegistrationForm";
 import { PresidentLetterSection } from "@/components/sections/PresidentLetterSection";
-import { RegistrationForms } from "@/components/sections/RegistrationForms";
-import { SponsorsCTASection } from "@/components/sections/SponsorsCTASection";
+// import { RegistrationForms } from "@/components/sections/RegistrationForms";
+// import { SponsorsCTASection } from "@/components/sections/SponsorsCTASection";
 
 export default function Home() {
   return (
@@ -19,10 +19,10 @@ export default function Home() {
       <PresidentLetterSection />
       <InfoSections />
       <HotelSection />
-      <GallerySection />
+      {/* <GallerySection /> */}
       <AgendaSection />
-      <SponsorsCTASection />
-      <RegistrationForms />
+      {/* <SponsorsCTASection /> */}
+      {/* <RegistrationForms /> */}
       <div id="registro-oficial">
         <OfficialRegistrationForm />
       </div>
