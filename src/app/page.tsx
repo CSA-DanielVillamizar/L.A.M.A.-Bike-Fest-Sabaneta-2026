@@ -5,6 +5,7 @@ import { HeroSection } from "@/components/sections/HeroSection";
 import { HotelSection } from "@/components/sections/HotelSection";
 import { InfoSections } from "@/components/sections/InfoSections";
 import { LiveStatsSection } from "@/components/sections/LiveStatsSection";
+import { InlineVerifyRegistrationSection } from "@/components/sections/InlineVerifyRegistrationSection";
 import { OfficialRegistrationForm } from "@/components/sections/OfficialRegistrationForm";
 import { PresidentLetterSection } from "@/components/sections/PresidentLetterSection";
 import { RegistrationForms } from "@/components/sections/RegistrationForms";
@@ -24,6 +25,9 @@ export default function Home() {
       <RegistrationForms />
       <div id="registro-oficial">
         <OfficialRegistrationForm />
+      </div>
+      <div className="mt-8">
+        <InlineVerifyRegistrationSection />
       </div>
       <ContactSection />
     </>

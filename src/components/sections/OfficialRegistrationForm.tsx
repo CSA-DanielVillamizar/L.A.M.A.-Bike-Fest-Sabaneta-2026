@@ -594,7 +594,6 @@ export function OfficialRegistrationForm() {
 
             setForm(initialForm);
             setSelectedCountry("");
-            setCurrentStep(1);
         } catch (error) {
             setErrorMessage(error instanceof Error ? error.message : "Error al enviar la inscripción.");
         } finally {
@@ -719,6 +718,7 @@ export function OfficialRegistrationForm() {
                                 onClick={() => {
                                     setSuccessRegistration(null);
                                     setErrorMessage("");
+                                    setCurrentStep(1);
                                 }}
                                 className="inline-flex items-center justify-center rounded-full border border-transparent px-6 py-2 text-sm font-semibold text-zinc-400 transition hover:text-zinc-200"
                             >
@@ -1213,7 +1213,7 @@ export function OfficialRegistrationForm() {
                                         <button
                                             type="submit"
                                             disabled={loading}
-                                            className="inline-flex items-center justify-center rounded-full bg-orange-500 px-6 py-3 text-sm font-bold uppercase tracking-[0.12em] text-zinc-950 transition hover:bg-orange-400 disabled:opacity-60"
+                                            className="inline-flex items-center justify-center rounded-full bg-amber-400 px-6 py-3 text-sm font-bold uppercase tracking-[0.12em] text-zinc-950 transition hover:bg-amber-300 disabled:opacity-60"
                                         >
                                             {loading ? "Guardando..." : "Finalizar Registro"}
                                         </button>
