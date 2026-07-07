@@ -5,12 +5,12 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 const navLinks = [
-    { href: "#inicio", label: "Inicio" },
+    { href: "/#inicio", label: "Inicio" },
     { href: "/comunidad", label: "Comunidad" },
-    { href: "#programa", label: "Programa" },
-    { href: "#clubes", label: "Clubes" },
-    { href: "#registro-oficial", label: "Inscribirme" },
-    { href: "#contacto", label: "Contacto" },
+    { href: "/#programa", label: "Programa" },
+    { href: "/#clubes", label: "Clubes" },
+    { href: "/#registro-oficial", label: "Inscribirme" },
+    { href: "/#contacto", label: "Contacto" },
 ];
 
 export function Navbar() {
@@ -42,7 +42,7 @@ export function Navbar() {
             >
                 <nav className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
                     {/* Logo */}
-                    <Link href="#inicio" className="flex shrink-0 items-center gap-3" onClick={closeMenu}>
+                    <Link href="/#inicio" className="flex shrink-0 items-center gap-3" onClick={closeMenu}>
                         <Image
                             src="/images/LogoBikeFestSabaneta2026.png"
                             alt="Logo L.A.M.A. Bike Fest Sabaneta 2026"
@@ -67,7 +67,7 @@ export function Navbar() {
                             <Link
                                 key={link.href}
                                 href={link.href}
-                                className={`whitespace-nowrap rounded-full px-2 py-1 transition ${link.href === "#registro-oficial"
+                                className={`whitespace-nowrap rounded-full px-2 py-1 transition ${link.href === "/#registro-oficial"
                                     ? "border border-orange-500/60 bg-orange-500/15 px-3 py-1.5 font-semibold text-orange-300 hover:bg-orange-500/25 hover:text-orange-200"
                                     : "hover:text-orange-400"
                                     }`}
@@ -117,7 +117,7 @@ export function Navbar() {
                             key={link.href}
                             href={link.href}
                             onClick={closeMenu}
-                            className={`flex items-center rounded-xl px-4 py-4 text-sm font-semibold uppercase tracking-[0.14em] transition active:scale-[0.98] ${link.href === "#registro-oficial"
+                            className={`flex items-center rounded-xl px-4 py-4 text-sm font-semibold uppercase tracking-[0.14em] transition active:scale-[0.98] ${link.href === "/#registro-oficial"
                                 ? "mt-2 justify-center border border-orange-500 bg-orange-500/20 text-orange-300 hover:bg-orange-500/30"
                                 : "border-b border-white/5 text-zinc-200 hover:text-orange-400 last:border-0"
                                 }`}
